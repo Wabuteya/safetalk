@@ -1,0 +1,103 @@
+/* Main Layout */
+.therapist-dashboard-layout {
+    display: flex;
+    min-height: 100vh;
+  }
+  
+  /* We can reuse the student sidebar styles and add therapist-specific overrides */
+.therapist-sidebar {
+  background-color: #004C99;
+  color: #ffffff;
+}
+.therapist-sidebar .sidebar-header {
+  border-bottom: 1px solid #005cbf;
+}
+.therapist-sidebar .sidebar-nav a {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  color: #e0e0e0;
+  text-decoration: none;
+  transition: background-color 0.3s ease;
+}
+.therapist-sidebar .sidebar-nav a:hover {
+  background-color: #005cbf;
+}
+.therapist-sidebar .sidebar-nav a.active {
+  background-color: #007BFF;
+  color: #ffffff;
+}
+.therapist-sidebar .nav-icon {
+  font-size: 1.25rem;
+  min-width: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.therapist-sidebar .sidebar-footer {
+  margin-top: auto;
+  padding: 1.5rem;
+}
+.therapist-sidebar .logout-btn {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #8c1f1f;
+  border: none;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+}
+.therapist-sidebar .logout-btn:hover {
+  background-color: #6b1515;
+}
+.therapist-sidebar .logout-icon {
+  font-size: 1rem;
+}
+  
+  .therapist-main-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .therapist-page-content {
+    background-color: #f8f9fa;
+    padding: 2rem 3rem;
+    flex-grow: 1;
+  }
+  
+  /* Crisis Alert Banner */
+  .crisis-alert-banner {
+    background-color: #6d0c0c;
+    color: white;
+    padding: 1rem 3rem;
+    text-align: center;
+    font-weight: bold;
+  }
+  .crisis-alert-banner a {
+    color: white;
+    text-decoration: underline;
+    margin-left: 1rem;
+    font-weight: bold;
+  }
+  
+  /* Therapist Home Page Widgets */
+  /* We can re-use the .dashboard-grid and .widget-card from StudentDashboard.css */
+  .priority-alert {
+      background-color: #ece3e2;
+      border: 2px solid #660d0d;
+  }
+  .priority-alert h3 {
+      color: #790909;
+  }
+  .priority-alert button {
+      background-color: #7d1313;
+      color: white;
+  }

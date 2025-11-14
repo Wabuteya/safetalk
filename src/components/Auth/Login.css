@@ -1,0 +1,224 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  color-scheme: light;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+  background: radial-gradient(circle at top left, #d1e9ff, transparent 55%),
+    radial-gradient(circle at bottom right, #fbd3ff, transparent 50%),
+    linear-gradient(135deg, #f5f8ff 0%, #fdfdfd 100%);
+}
+
+.login-card {
+  width: min(100%, 480px);
+  background-color: #ffffff;
+  border-radius: 1.5rem;
+  padding: 2.75rem 2.5rem;
+  box-shadow: 0 35px 80px -45px rgba(62, 72, 100, 0.55);
+  border: 1px solid rgba(41, 72, 116, 0.08);
+  backdrop-filter: blur(8px);
+}
+
+.login-header h1 {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1e2a44;
+}
+
+.login-header p {
+  margin-top: 0.5rem;
+  font-size: 1rem;
+  color: #5b6888;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.user-type-group {
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.user-type-group legend {
+  font-weight: 600;
+  color: #1e2a44;
+  margin-bottom: 0.75rem;
+}
+
+.user-type-options {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.user-type-option {
+  border: 1px solid rgba(30, 42, 68, 0.12);
+  border-radius: 1rem;
+  padding: 1rem 1.25rem;
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  cursor: pointer;
+  transition: border 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  background-color: rgba(255, 255, 255, 0.8);
+}
+
+.user-type-option:hover {
+  border-color: rgba(30, 42, 68, 0.24);
+  box-shadow: 0 10px 25px -20px rgba(62, 72, 100, 0.55);
+}
+
+.user-type-option.active {
+  border-color: #3a7cfd;
+  background-color: rgba(58, 124, 253, 0.08);
+  box-shadow: 0 16px 32px -25px rgba(58, 124, 253, 0.6);
+}
+
+.user-type-option input {
+  accent-color: #3a7cfd;
+  width: 18px;
+  height: 18px;
+}
+
+.user-type-label {
+  display: block;
+  font-weight: 600;
+  color: #1e2a44;
+}
+
+.user-type-description {
+  display: block;
+  font-size: 0.875rem;
+  color: #5b6888;
+  margin-top: 0.25rem;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.input-label {
+  font-weight: 600;
+  color: #1e2a44;
+}
+
+.input-group input {
+  width: 100%;
+  border-radius: 0.85rem;
+  border: 1px solid rgba(30, 42, 68, 0.12);
+  padding: 0.85rem 1rem;
+  font-size: 1rem;
+  transition: border 0.2s ease, box-shadow 0.2s ease;
+  background: rgba(255, 255, 255, 0.9);
+  color: #1e2a44;
+  box-sizing: border-box;
+}
+
+.input-group input:focus {
+  border-color: #3a7cfd;
+  box-shadow: 0 0 0 4px rgba(58, 124, 253, 0.18);
+  outline: none;
+}
+
+.input-group.has-error input {
+  border-color: #ff6161;
+  box-shadow: 0 0 0 4px rgba(255, 97, 97, 0.2);
+}
+
+.error-message {
+  font-size: 0.8125rem;
+  color: #d93855;
+}
+
+.form-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.login-btn {
+  background: linear-gradient(135deg, #3a7cfd 0%, #5f96ff 50%, #7fb0ff 100%);
+  border: none;
+  color: #ffffff;
+  font-weight: 600;
+  border-radius: 0.9rem;
+  padding: 0.95rem 1rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+.login-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 36px -18px rgba(58, 124, 253, 0.65);
+  filter: brightness(1.02);
+}
+
+.login-btn:disabled {
+  cursor: wait;
+  opacity: 0.7;
+  transform: none;
+  box-shadow: none;
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  color: #3a7cfd;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+  text-decoration: none;
+}
+
+.link-btn:hover {
+  text-decoration: underline;
+}
+
+.login-footer {
+  margin-top: 2.5rem;
+  text-align: center;
+  color: #5b6888;
+  font-size: 0.95rem;
+}
+
+.login-footer a {
+  color: #3a7cfd;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.login-footer a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 540px) {
+  .login-card {
+    padding: 2.25rem 1.75rem;
+    border-radius: 1.25rem;
+  }
+
+  .login-header h1 {
+    font-size: 1.75rem;
+  }
+
+  .user-type-option {
+    padding: 0.85rem 1rem;
+  }
+}

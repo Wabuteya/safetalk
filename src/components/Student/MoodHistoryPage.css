@@ -1,0 +1,100 @@
+.mood-history-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+  
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap; /* Allows filters to wrap on small screens */
+  }
+  
+  .page-header h1 {
+    margin: 0;
+    color: #333;
+  }
+  
+  .time-filters button {
+    background-color: transparent;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    padding: 0.5rem 1rem;
+    margin-left: 0.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .time-filters button:hover {
+    background-color: #f0f0f0;
+  }
+  
+  .time-filters button.active {
+    background-color: #007BFF;
+    color: white;
+    border-color: #007BFF;
+  }
+  
+  .chart-container {
+    background-color: #ffffff;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  }
+  
+  .insights-container {
+    margin-top: 1rem;
+  }
+  
+  .insights-container h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  .insights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+  }
+  
+  .insight-card {
+    background-color: #ffffff;
+    padding: 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    text-align: center;
+  }
+  
+  .insight-value {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #007BFF;
+    margin: 0;
+  }
+  
+  .insight-label {
+    margin: 0;
+    color: #777;
+  }
+  
+  .intelligent-prompt {
+    background-color: #E3F2FD;
+    border: 1px solid #007BFF;
+    text-align: left;
+  }
+  .intelligent-prompt h4 {
+      margin-top: 0;
+      color: #004C99;
+  }
+  .book-session-btn {
+      width: 100%;
+      background-color: #007BFF;
+      color: white;
+      padding: 0.75rem;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 1rem;
+  }

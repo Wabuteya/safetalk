@@ -1,0 +1,150 @@
+.signup-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #E3F2FD; /* Light Sky Blue */
+    padding: 2rem 0;
+  }
+  
+  .signup-card {
+    background-color: #ffffff;
+    padding: 2.5rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 500px;
+  }
+  
+  .signup-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+  
+  .signup-header h2 {
+    margin: 0;
+    color: #004C99;
+  }
+  
+  .signup-header p {
+      color: #555;
+  }
+  
+  .disclaimer {
+    background-color: #E3F2FD; /* Light Sky Blue */
+    border-left: 4px solid #007BFF; /* Sky Blue */
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    border-radius: 5px;
+    font-size: 0.9rem;
+    color: #333;
+  }
+  
+  .form-row {
+      display: flex;
+      gap: 1rem;
+      width: 100%;
+  }
+  
+  .form-row .form-group {
+      flex: 1;
+  }
+  
+  .form-group {
+    margin-bottom: 1rem;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .form-group input, .form-group select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box; /* Important for padding and width */
+  }
+  
+  .error-message {
+      color: #D32F2F;
+      font-size: 0.9rem;
+      margin-top: -0.5rem;
+      margin-bottom: 1rem;
+  }
+  
+  .submit-btn, .google-btn {
+    width: 100%;
+    padding: 0.8rem;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .submit-btn {
+    background-color: #007BFF; /* Sky Blue */
+    color: #ffffff;
+  }
+  
+  .submit-btn:hover {
+    background-color: #0056b3;
+  }
+  
+  .divider {
+    text-align: center;
+    margin: 1.5rem 0;
+    color: #aaa;
+  }
+  
+  .google-btn {
+    background-color: #f0f0f0;
+    color: #333;
+    border: 1px solid #ccc;
+  }
+  
+  .google-btn:hover {
+    background-color: #e0e0e0;
+  }
+  
+  .login-link {
+    text-align: center;
+    margin-top: 1.5rem;
+  }
+  
+  .login-link a {
+    color: #007BFF; /* Sky Blue */
+    text-decoration: none;
+    font-weight: bold;
+  }
+  
+  .login-link a:hover {
+    text-decoration: underline;
+  }
+
+  /* --- Add this at the end of SignUpPage.css --- */
+
+/* Media Query for mobile devices and smaller screens */
+@media (max-width: 600px) {
+    .signup-card {
+      /* Reduce padding on very small screens */
+      padding: 1.5rem;
+      margin: 1rem;
+    }
+  
+    .form-row {
+      /* This is the key change: stack the form fields vertically */
+      flex-direction: column;
+      gap: 0; /* Remove the gap since they are no longer side-by-side */
+    }
+  
+    /* We need to re-add margin to the form groups that were inside the row */
+    .form-row .form-group {
+      margin-bottom: 1rem;
+    }
+  }

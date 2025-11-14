@@ -1,0 +1,174 @@
+/* General Styling */
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    color: #333;
+  }
+  
+  .landing-page {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+  
+  /* Header and Navigation */
+  .header {
+    background-color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+  
+  .navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #007BFF; /* Sky Blue */
+  }
+  
+  .nav-links {
+    list-style: none;
+    display: flex;
+    gap: 2rem;
+  }
+  
+  .nav-links a {
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+    transition: color 0.3s ease;
+  }
+  
+  .nav-links a:hover {
+    color: #007BFF; /* Sky Blue */
+  }
+  
+  .auth-buttons button {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  
+  .login-btn {
+    background-color: transparent;
+    color: #007BFF; /* Sky Blue */
+    margin-right: 0.5rem;
+  }
+  
+  .signup-btn {
+    background-color: #007BFF; /* Sky Blue */
+    color: #ffffff;
+  }
+  
+  .login-btn:hover {
+      background-color: #f0f0f0;
+  }
+  
+  .signup-btn:hover {
+      background-color: #0056b3;
+  }
+  
+  /* Hero Section */
+  .hero-section {
+    background-color: #E3F2FD; /* Light Sky Blue */
+    text-align: center;
+    padding: 6rem 2rem;
+  }
+  
+  .hero-content h1 {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: #004C99;
+  }
+  
+  .hero-content p {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+    color: #333;
+  }
+  
+  .cta-button {
+    background-color: #007BFF; /* Sky Blue */
+    color: #ffffff;
+    padding: 1rem 2rem;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .cta-button:hover {
+    background-color: #0056b3;
+  }
+  
+  /* Features Section */
+  .features-section {
+    padding: 4rem 2rem;
+    text-align: center;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .features-section h2 {
+    font-size: 2.5rem;
+    margin-bottom: 3rem;
+  }
+  
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+  }
+  
+  .feature-card {
+    background-color: #ffffff;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: left;
+  }
+  
+  .feature-card h3 {
+    color: #007BFF; /* Sky Blue */
+    margin-top: 0;
+  }
+  
+  /* About Section */
+  .about-section {
+    background-color: #f8f9fa;
+    padding: 4rem 2rem;
+    text-align: center;
+  }
+  
+  .about-section h2 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+  }
+  
+  .about-section p {
+      max-width: 800px;
+      margin: 0 auto;
+      line-height: 1.6;
+  }
+  
+  /* Footer */
+  .footer {
+    background-color: #004C99;
+    color: #ffffff;
+    text-align: center;
+    padding: 2rem;
+    margin-top: auto;
+  }

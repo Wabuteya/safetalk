@@ -1,0 +1,99 @@
+.crisis-alerts-layout {
+    display: flex;
+    height: calc(100vh - 4rem - 54px); /* Full height minus padding and potential banner */
+    gap: 2rem;
+  }
+  
+  /* Alert Queue Sidebar */
+  .alert-queue {
+    width: 300px;
+    flex-shrink: 0;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  }
+  .alert-queue h3 {
+    padding: 1rem;
+    margin: 0;
+    border-bottom: 1px solid #eee;
+  }
+  .alert-item {
+    padding: 1rem;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+  }
+  .alert-item.active {
+    background-color: #fbe9e7;
+    border-left: 4px solid #D32F2F;
+  }
+  .alert-item .alias { font-weight: bold; margin: 0; }
+  .alert-item .trigger { font-size: 0.9rem; color: #555; margin: 0; }
+  .no-alerts { padding: 1rem; color: #777; }
+  
+  /* Alert Details Main Content */
+  .alert-details {
+    flex-grow: 1;
+    background-color: #ffffff;
+    border-radius: 10px;
+    padding: 2rem;
+    overflow-y: auto;
+  }
+  .detail-section {
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid #eee;
+  }
+  .trigger-text {
+    background-color: #f8f9fa;
+    border: 1px solid #ddd;
+    padding: 1rem;
+    border-radius: 5px;
+    font-style: italic;
+    line-height: 1.6;
+  }
+  .reveal-btn, .resolve-btn {
+    background-color: #D32F2F;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .contact-info-revealed { font-weight: bold; }
+  .action-log textarea {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-bottom: 1rem;
+  }
+  .resolve-btn { background-color: #28a745; }
+  .no-alert-selected { text-align: center; padding-top: 4rem; color: #777; }
+  
+  /* Confirmation Modal */
+  .modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+  }
+  .modal-content {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 10px;
+    max-width: 500px;
+  }
+  .modal-actions {
+    margin-top: 1.5rem;
+    text-align: right;
+  }
+  .modal-btn { padding: 0.6rem 1.2rem; border-radius: 5px; cursor: pointer; }
+  .modal-btn.cancel { background-color: #f0f0f0; border: 1px solid #ccc; }
+  .modal-btn.confirm { background-color: #D32F2F; color: white; border: none; margin-left: 0.5rem; }

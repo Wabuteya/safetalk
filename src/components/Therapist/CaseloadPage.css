@@ -1,0 +1,73 @@
+.caseload-layout .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 2rem;
+  }
+  
+  .search-bar input {
+    padding: 0.6rem 1rem;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    min-width: 250px;
+  }
+  
+  .caseload-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+  
+  /* Student Summary Card */
+  .student-card {
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .student-alias {
+    margin: 0 0 1rem 0;
+    color: #4A148C; /* Matches therapist theme */
+    border-bottom: 1px solid #eee;
+    padding-bottom: 1rem;
+  }
+  
+  .student-card-details {
+    flex-grow: 1;
+  }
+  
+  .student-card-details p {
+    color: #555;
+    font-size: 0.9rem;
+  }
+  
+  .new-journal-indicator {
+    background-color: #E3F2FD;
+    color: #007BFF;
+    font-weight: bold;
+    font-size: 0.8rem;
+    padding: 0.5rem;
+    border-radius: 5px;
+    text-align: center;
+  }
+  
+  .view-progress-btn {
+    display: block; /* Make the link a block to fill width */
+    text-align: center;
+    background-color: #7B1FA2;
+    color: white;
+    text-decoration: none;
+    padding: 0.75rem;
+    border-radius: 5px;
+    font-weight: bold;
+    margin-top: 1rem;
+    transition: background-color 0.2s ease;
+  }
+  
+  .view-progress-btn:hover {
+    background-color: #4A148C;
+  }

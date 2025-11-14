@@ -1,0 +1,159 @@
+.journal-layout {
+    display: flex;
+    height: calc(100vh - 4rem); /* Full height minus dashboard padding */
+    gap: 2rem;
+  }
+  
+  /* Left Sidebar */
+  .journal-sidebar {
+    width: 300px;
+    flex-shrink: 0;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+  }
+  
+.new-entry-btn {
+    background-color: #007BFF;
+    color: white;
+    border: 2px solid #007BFF;
+    padding: 1rem;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    margin: 1rem;
+    border-radius: 8px;
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
+  }
+  
+.new-entry-btn:hover {
+    background-color: #005ad1;
+    border-color: #005ad1;
+    transform: translateY(-1px);
+  }
+  
+  .entry-list {
+    overflow-y: auto;
+    flex-grow: 1;
+  }
+  
+.entry-item {
+    padding: 1rem;
+    margin: 0 1rem 1rem;
+    border: 1px solid #e3e8f3;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  }
+  
+.entry-item:hover {
+    background-color: #f8fafe;
+    border-color: #c9d8ff;
+    box-shadow: 0 6px 18px -12px rgba(0, 0, 0, 0.3);
+  }
+  
+  .entry-item.active {
+    background-color: #E3F2FD;
+    border-left: 4px solid #007BFF;
+  }
+  
+  .entry-date {
+    font-weight: bold;
+    margin: 0 0 0.25rem 0;
+    color: #333;
+  }
+  
+  .entry-preview {
+    font-size: 0.9rem;
+    margin: 0;
+    color: #666;
+  }
+  
+  .shared-indicator {
+    font-size: 0.75rem;
+    color: #1E88E5;
+    background-color: #E3F2FD;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-weight: bold;
+    display: inline-block;
+    margin-top: 0.5rem;
+  }
+  
+  
+  /* Right Main Content */
+  .journal-main {
+    flex-grow: 1;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    padding: 2rem;
+  }
+  
+  .journal-welcome {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    color: #777;
+    text-align: center;
+  }
+  
+  /* Editor Styles */
+  .journal-editor textarea {
+    width: 100%;
+    height: calc(100% - 100px); /* Adjust height based on surrounding elements */
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 1rem;
+    font-family: inherit;
+    font-size: 1rem;
+    resize: none;
+  }
+  
+  .editor-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+  }
+  
+  .share-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #555;
+  }
+  
+  .save-btn {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  /* Viewer Styles */
+  .viewer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+  }
+  .viewer-header .shared-indicator.large {
+      font-size: 0.9rem;
+      padding: 0.5rem 1rem;
+  }
+  .viewer-content {
+    white-space: pre-wrap; /* Preserves line breaks and spacing */
+    line-height: 1.7;
+    font-size: 1.1rem;
+    color: #333;
+  }

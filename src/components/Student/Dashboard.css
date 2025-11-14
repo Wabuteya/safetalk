@@ -1,0 +1,204 @@
+/* Main Dashboard Layout */
+.dashboard-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 260px;
+  background-color: #004C99; /* Darker blue for contrast */
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0; /* Prevents sidebar from shrinking */
+}
+
+.dashboard-content {
+  flex-grow: 1;
+  background-color: #f8f9fa;
+  padding: 2rem 3rem;
+  overflow-y: auto; /* Allows content to scroll */
+}
+
+/* Sidebar Styling */
+.sidebar-header {
+  padding: 1.5rem;
+  text-align: center;
+  border-bottom: 1px solid #005cbf;
+}
+.sidebar-profile {
+    text-align: center;
+    padding: 1rem;
+    font-weight: bold;
+}
+.sidebar-nav {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex-grow: 1; /* Pushes footer down */
+}
+.sidebar-nav a {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  color: #e0e0e0;
+  text-decoration: none;
+  transition: background-color 0.3s ease;
+}
+.sidebar-nav a:hover {
+  background-color: #005cbf;
+}
+/* Style for the active NavLink */
+.sidebar-nav a.active {
+  background-color: #007BFF;
+  font-weight: bold;
+  color: #ffffff;
+}
+
+.nav-icon {
+  font-size: 1.25rem;
+  min-width: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.sidebar-footer {
+  padding: 1.5rem;
+  margin-top: auto;
+}
+
+/* Crisis support styles */
+.crisis-support {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background-color: #ffffff;
+  border: 1px solid rgba(211, 47, 47, 0.25);
+  border-radius: 8px;
+  box-shadow: 0 12px 24px -18px rgba(211, 47, 47, 0.6);
+}
+
+.crisis-btn {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #8c1f1f;
+  border: none;
+  color: white;
+  font-weight: bold;
+  font-size: 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.crisis-btn:hover {
+  background-color: #6b1515;
+}
+
+.crisis-icon {
+  font-size: 1rem;
+}
+
+.crisis-support p {
+  font-size: 0.75rem;
+  color: #444;
+  line-height: 1.4;
+  margin: 0;
+}
+.logout-btn {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #8c1f1f;
+  border: none;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+.logout-btn:hover {
+  background-color: #6b1515;
+}
+
+.logout-icon {
+  font-size: 1rem;
+}
+
+/* Dashboard Home Content Styling */
+.welcome-header {
+  margin-bottom: 2rem;
+}
+.welcome-header h1 {
+    color: #333;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.widget-card {
+  background-color: #ffffff;
+  padding: 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+.widget-card h3 {
+    margin-top: 0;
+    color: #007BFF;
+}
+.widget-card button {
+    background-color: #E3F2FD;
+    color: #007BFF;
+    border: none;
+    padding: 0.6rem 1rem;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+}
+.mood-options {
+    display: flex;
+    justify-content: space-around;
+    font-size: 2rem;
+    margin-top: 1rem;
+}
+.mood-options span {
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+.mood-options span:hover {
+    transform: scale(1.2);
+}
+
+/* Placeholder Page Styling */
+.placeholder-page {
+  padding: 3rem;
+  text-align: center;
+}
+
+.placeholder-page h1 {
+  color: #1c2751;
+  margin-bottom: 1rem;
+  font-size: 2.5rem;
+}
+
+.placeholder-page p {
+  color: #6171a4;
+  font-size: 1.1rem;
+}
+
+/* Dashboard Home Styling */
+.dashboard-home {
+  width: 100%;
+}

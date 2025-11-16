@@ -89,10 +89,8 @@ body {
     linear-gradient(135deg, #f5f8ff 0%, #fdfdfd 100%);
   text-align: center;
   padding: 6rem 2rem;
-  /* Full-bleed background across the viewport on wide screens */
-  width: 100vw;
-  margin-left: calc(50% - 50vw);
-  margin-right: calc(50% - 50vw);
+  /* Full width layout without scrollbar issues */
+  width: 100%;
   box-sizing: border-box;
   display: flex;
   justify-content: center;

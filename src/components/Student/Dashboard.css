@@ -6,10 +6,8 @@
   background: radial-gradient(circle at top left, #d1e9ff, transparent 55%),
     radial-gradient(circle at bottom right, #fbd3ff, transparent 50%),
     linear-gradient(135deg, #f5f8ff 0%, #fdfdfd 100%);
-  /* Make the background full-bleed across the viewport width */
-  width: 100vw;
-  margin-left: calc(50% - 50vw);
-  margin-right: calc(50% - 50vw);
+  /* Full width layout without scrollbar issues */
+  width: 100%;
 }
 
 .sidebar {

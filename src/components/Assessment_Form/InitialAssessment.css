@@ -8,10 +8,8 @@
     linear-gradient(135deg, #f4f7ff 0%, #fdfdff 100%);
   padding: clamp(1.5rem, 4vw, 2rem);
   box-sizing: border-box;
-  /* Full-bleed background to eliminate right gutter on ultra-wide screens */
-  width: 100vw;
-  margin-left: calc(50% - 50vw);
-  margin-right: calc(50% - 50vw);
+  /* Full width layout without scrollbar issues */
+  width: 100%;
 }
 
 .assessment-card {

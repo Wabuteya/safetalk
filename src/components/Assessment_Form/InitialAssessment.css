@@ -6,7 +6,12 @@
   background: radial-gradient(circle at top left, #cfe0ff, transparent 55%),
     radial-gradient(circle at bottom right, #ffe3f2, transparent 50%),
     linear-gradient(135deg, #f4f7ff 0%, #fdfdff 100%);
-  padding: 2rem;
+  padding: clamp(1.5rem, 4vw, 2rem);
+  box-sizing: border-box;
+  /* Full-bleed background to eliminate right gutter on ultra-wide screens */
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
 }
 
 .assessment-card {
@@ -18,6 +23,7 @@
   width: 100%;
   max-width: 650px;
   backdrop-filter: blur(12px);
+  margin: 0 auto; /* keep centered on narrow viewports */
 }
 
 .assessment-header {

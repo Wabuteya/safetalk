@@ -98,7 +98,31 @@ const Login = ({ onLogin }) => {
 
   return (
     <div className="login-page">
-      <div className="login-card">
+      <div className="login-shell">
+        <section className="login-hero">
+          <span className="hero-chip">Secure by default</span>
+          <h1>Pick up where you left off</h1>
+          <p>
+            Manage student journeys, respond to live chats, and keep every conversation
+            protected inside SafeTalk’s encrypted workspace.
+          </p>
+          <div className="hero-stat-grid">
+            <div className="stat-card">
+              <strong>1.2K</strong>
+              <span>Students Supported</span>
+            </div>
+            <div className="stat-card">
+              <strong>98%</strong>
+              <span>Satisfaction Rate</span>
+            </div>
+            <div className="stat-card">
+              <strong>24/7</strong>
+              <span>Secure Access</span>
+            </div>
+          </div>
+        </section>
+
+        <div className="login-card">
         <header className="login-header">
           <h1>Welcome back to SafeTalk</h1>
           <p>Your confidential space for mental health support.</p>
@@ -172,6 +196,7 @@ const Login = ({ onLogin }) => {
             New to SafeTalk? <Link to="/signup">Create a confidential account</Link>
           </p>
         </footer>
+        </div>
       </div>
     </div>
   );

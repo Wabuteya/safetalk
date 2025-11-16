@@ -2,6 +2,10 @@
 .therapist-dashboard-layout {
     display: flex;
     min-height: 100vh;
+    /* Full-bleed background so no right gutter on ultra-wide screens */
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
   }
   
   /* We can reuse the student sidebar styles and add therapist-specific overrides */
@@ -19,10 +23,11 @@
   padding: 1rem 1.5rem;
   color: #e0e0e0;
   text-decoration: none;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.25s ease, transform 0.2s ease, filter 0.2s ease;
 }
 .therapist-sidebar .sidebar-nav a:hover {
   background-color: #005cbf;
+  transform: translateX(4px);
 }
 .therapist-sidebar .sidebar-nav a.active {
   background-color: #007BFF;
@@ -68,10 +73,50 @@
   }
   
   .therapist-page-content {
-    background-color: #f8f9fa;
+  background: radial-gradient(circle at top left, #d1e9ff, transparent 55%),
+    radial-gradient(circle at bottom right, #fbd3ff, transparent 50%),
+    linear-gradient(135deg, #f5f8ff 0%, #fdfdfd 100%);
     padding: 2rem 3rem;
     flex-grow: 1;
   }
+
+/* Generic widget/card + button transitions for therapist pages */
+.therapist-page-content .dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+.therapist-page-content .widget-card {
+  background-color: #ffffff;
+  padding: 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.therapist-page-content .widget-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 28px -8px rgba(0,0,0,0.15);
+}
+.therapist-page-content .widget-card h3 {
+  margin-top: 0;
+}
+.therapist-page-content .widget-card button,
+.therapist-page-content .btn {
+  background-color: #E3F2FD;
+  color: #007BFF;
+  border: none;
+  padding: 0.6rem 1rem;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.25s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+.therapist-page-content .widget-card button:hover,
+.therapist-page-content .btn:hover {
+  background-color: #d6e8ff;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 18px -10px rgba(0,0,0,0.2);
+}
   
   /* Crisis Alert Banner */
   .crisis-alert-banner {

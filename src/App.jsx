@@ -20,6 +20,12 @@ import TherapistDashboard from './components/Therapist/TherapistDashboard';
 import TherapistDashboardHome from './components/Therapist/TherapistDashboardHome';
 import CaseloadPage from './components/Therapist/CaseloadPage';
 import CrisisAlertsPage from './components/Therapist/CrisisAlertsPage';
+import ManageResourcesPage from './components/Therapist/ManageResourcesPage';
+import AppointmentsPage from './components/Therapist/AppointmentsPage';
+import TherapistProfilePageTherapist from './components/Therapist/TherapistProfilePage';
+import AdminDashboard from './components/Admin/AdminDashboard';
+import AdminDashboardHome from './components/Admin/AdminDashboardHome';
+import ManageTherapistsPage from './components/Admin/ManageTherapistsPage';
 import SignUpPage from './components/SignUp/SignUpPage';
 import InitialAssessment from './components/Assessment_Form/InitialAssessment';
 
@@ -67,27 +73,30 @@ const AppRoutes = () => {
           path="student/:studentId"
           element={<Placeholder title="Student Progress & Details Page" />}
         />
-        <Route
-          path="appointments"
-          element={<Placeholder title="Appointments Page" />}
-        />
+        <Route path="appointments" element={<AppointmentsPage />} />
         <Route path="chat" element={<Placeholder title="Live Chat Page" />} />
-        <Route
-          path="resources"
-          element={<Placeholder title="Manage Resources Page" />}
-        />
+        <Route path="resources" element={<ManageResourcesPage />} />
         <Route path="alerts" element={<CrisisAlertsPage />} />
-        <Route
-          path="profile"
-          element={<Placeholder title="Therapist Profile Page" />}
-        />
+        <Route path="profile" element={<TherapistProfilePageTherapist />} />
       </Route>
 
-      {/* Admin Dashboard placeholder */}
-      <Route
-        path="/admin-dashboard"
-        element={<Placeholder title="Admin Dashboard" />}
-      />
+      {/* Admin Dashboard Nested Routes */}
+      <Route path="/admin-dashboard" element={<AdminDashboard />}>
+        <Route index element={<AdminDashboardHome />} />
+        <Route
+          path="users"
+          element={<Placeholder title="Manage Students Page" />}
+        />
+        <Route path="therapists" element={<ManageTherapistsPage />} />
+        <Route
+          path="content"
+          element={<Placeholder title="Manage Content Page" />}
+        />
+        <Route
+          path="health"
+          element={<Placeholder title="System Health Page" />}
+        />
+      </Route>
 
       {/* Catch all */}
       <Route path="*" element={<Navigate to="/" replace />} />

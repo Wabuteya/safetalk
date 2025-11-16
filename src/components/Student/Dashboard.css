@@ -2,11 +2,19 @@
 .dashboard-layout {
   display: flex;
   min-height: 100vh;
+  /* Full width gradient background to avoid right-side gaps on wide screens */
+  background: radial-gradient(circle at top left, #d1e9ff, transparent 55%),
+    radial-gradient(circle at bottom right, #fbd3ff, transparent 50%),
+    linear-gradient(135deg, #f5f8ff 0%, #fdfdfd 100%);
+  /* Make the background full-bleed across the viewport width */
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
 }
 
 .sidebar {
   width: 260px;
-  background-color: #004C99; /* Darker blue for contrast */
+  background-color: #007bff; /* Sky blue to match landing CTA */
   color: #ffffff;
   display: flex;
   flex-direction: column;
@@ -15,7 +23,9 @@
 
 .dashboard-content {
   flex-grow: 1;
-  background-color: #f8f9fa;
+  background: radial-gradient(circle at top left, #d1e9ff, transparent 55%),
+    radial-gradient(circle at bottom right, #fbd3ff, transparent 50%),
+    linear-gradient(135deg, #f5f8ff 0%, #fdfdfd 100%);
   padding: 2rem 3rem;
   overflow-y: auto; /* Allows content to scroll */
 }
@@ -24,7 +34,7 @@
 .sidebar-header {
   padding: 1.5rem;
   text-align: center;
-  border-bottom: 1px solid #005cbf;
+  border-bottom: 1px solid #0056b3;
 }
 .sidebar-profile {
     text-align: center;
@@ -44,14 +54,15 @@
   padding: 1rem 1.5rem;
   color: #e0e0e0;
   text-decoration: none;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.25s ease, transform 0.2s ease, filter 0.2s ease;
 }
 .sidebar-nav a:hover {
-  background-color: #005cbf;
+  background-color: #0056b3;
+  transform: translateX(4px);
 }
 /* Style for the active NavLink */
 .sidebar-nav a.active {
-  background-color: #007BFF;
+  background-color: #0056b3;
   font-weight: bold;
   color: #ffffff;
 }
@@ -153,19 +164,30 @@
   padding: 1.5rem;
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.widget-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 28px -8px rgba(0, 0, 0, 0.15);
 }
 .widget-card h3 {
     margin-top: 0;
     color: #007BFF;
 }
 .widget-card button {
-    background-color: #E3F2FD;
-    color: #007BFF;
-    border: none;
-    padding: 0.6rem 1rem;
-    border-radius: 5px;
-    font-weight: bold;
-    cursor: pointer;
+  background-color: #E3F2FD;
+  color: #007BFF;
+  border: none;
+  padding: 0.6rem 1rem;
+  border-radius: 5px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.25s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+.widget-card button:hover {
+  background-color: #d6e8ff;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 18px -10px rgba(0, 0, 0, 0.2);
 }
 .mood-options {
     display: flex;

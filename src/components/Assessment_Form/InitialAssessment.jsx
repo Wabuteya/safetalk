@@ -1,6 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '../../supabaseClient';
 import './InitialAssessment.css';
+
+const ADJECTIVES = ['Anonymous', 'Clever', 'Quiet', 'Brave', 'Calm', 'Gentle', 'Happy'];
+const NOUNS = ['Panda', 'Koala', 'Bunny', 'Fox', 'Bear', 'Lion', 'Tiger', 'Sparrow'];
 
 const InitialAssessment = () => {
   const navigate = useNavigate();
@@ -9,6 +13,15 @@ const InitialAssessment = () => {
     challenges: [],
     therapyGoals: '',
   });
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+    fetchUser();
+  }, []);
 
   const handleCheckboxChange = (e) => {
     const { value, checked } = e.target;
@@ -29,17 +42,71 @@ const InitialAssessment = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const finalizeGoogleUserProfile = async (user) => {
+    // Finalize profile for new Google users who don't have role/alias yet
+    if (!user.user_metadata?.role) {
+      const randomAdjective = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)];
+      const randomNoun = NOUNS[Math.floor(Math.random() * NOUNS.length)];
+      const generatedAlias = `${randomAdjective} ${randomNoun}`;
+
+      await supabase.auth.updateUser({
+        data: { 
+          role: 'student', 
+          alias: generatedAlias 
+        }
+      });
+      
+      localStorage.setItem('userAlias', generatedAlias);
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // In a real application, you would send this data to your backend API.
-    console.log('Assessment Submitted:', answers);
-    // Navigate to the user dashboard after submission.
-    navigate('/student-dashboard'); 
+    
+    if (!user) {
+      alert('Could not identify user. Please try logging in again.');
+      return;
+    }
+
+    try {
+      // Step 1: Save assessment data
+      const { error: assessmentError } = await supabase.from('assessments').insert({
+        user_id: user.id,
+        overall_mood: answers.overallMood,
+        challenges: answers.challenges,
+        therapy_goals: answers.therapyGoals
+      });
+
+      if (assessmentError) throw assessmentError;
+
+      // Step 2: Finalize profile for new Google users
+      await finalizeGoogleUserProfile(user);
+
+      // Navigate to the user dashboard after submission
+      navigate('/student-dashboard');
+    } catch (error) {
+      console.error('Error submitting assessment:', error);
+      alert(error.message || 'Failed to save assessment. Please try again.');
+    }
   };
   
-  const handleSkip = () => {
-    // Navigate directly to the dashboard without submitting data.
-    navigate('/student-dashboard');
+  const handleSkip = async () => {
+    if (!user) {
+      alert('Could not identify user. Please try logging in again.');
+      return;
+    }
+
+    try {
+      // Still finalize profile for Google users even if they skip
+      await finalizeGoogleUserProfile(user);
+      
+      // Navigate directly to the dashboard without submitting data
+      navigate('/student-dashboard');
+    } catch (error) {
+      console.error('Error finalizing profile:', error);
+      // Still navigate even if profile finalization fails
+      navigate('/student-dashboard');
+    }
   };
 
   const challengesOptions = [

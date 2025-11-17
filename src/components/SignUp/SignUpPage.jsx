@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom'; // Import Link for navigation
+import { Link, useNavigate } from 'react-router-dom';
 import './SignUpPage.css';
+import { supabase } from '../../supabaseClient';
+
+// --- Alias generation wordlists (outside component) ---
+const ADJECTIVES = ['Anonymous', 'Clever', 'Quiet', 'Brave', 'Calm', 'Gentle', 'Happy'];
+const NOUNS = ['Panda', 'Koala', 'Bunny', 'Fox', 'Bear', 'Lion', 'Tiger', 'Sparrow'];
 
 const SignUpPage = () => {
   const navigate = useNavigate();
@@ -24,8 +29,9 @@ const SignUpPage = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleEmailSignUp = async (e) => {
     e.preventDefault();
+    
     // Password validation logic
     if (formData.password !== formData.confirmPassword) {
       setPasswordError("Passwords do not match.");
@@ -36,10 +42,85 @@ const SignUpPage = () => {
       return;
     }
     setPasswordError('');
-    // On successful validation, you would send data to your backend here
-    console.log("Form Submitted:", formData);
-    // After successful submission, you would navigate to the Initial Assessment page
-    navigate('/assessment');
+
+    // Check if Supabase is configured
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    
+    if (!supabaseUrl || !supabaseKey) {
+      alert('Supabase is not configured. Please check your .env file and ensure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set.');
+      console.error('Missing Supabase configuration:', { supabaseUrl: !!supabaseUrl, supabaseKey: !!supabaseKey });
+      return;
+    }
+
+    // Generate the alias
+    const randomAdjective = ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)];
+    const randomNoun = NOUNS[Math.floor(Math.random() * NOUNS.length)];
+    const generatedAlias = `${randomAdjective} ${randomNoun}`;
+
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            role: 'student',
+            alias: generatedAlias,
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            contact: formData.contact,
+            gender: formData.gender,
+          },
+          // This tells Supabase where to send the user AFTER they click the email link
+          emailRedirectTo: `${window.location.origin}/assessment`
+        }
+      });
+      
+      if (error) {
+        console.error('Supabase signup error:', error);
+        throw error;
+      }
+      
+      // Check if signup was successful
+      if (data?.user) {
+        navigate('/please-verify');
+      } else {
+        alert('Signup failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Signup error details:', error);
+      const errorMessage = error?.error_description || error?.message || 'Failed to create account. Please check your connection and try again.';
+      alert(errorMessage);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    // Check if Supabase is configured
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    
+    if (!supabaseUrl || !supabaseKey) {
+      alert('Supabase is not configured. Please check your .env file and ensure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set.');
+      return;
+    }
+
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/assessment`,
+        }
+      });
+      
+      if (error) {
+        console.error('Google OAuth error:', error);
+        throw error;
+      }
+    } catch (error) {
+      console.error('Google sign-in error details:', error);
+      const errorMessage = error?.error_description || error?.message || 'Failed to sign in with Google. Please try again.';
+      alert(errorMessage);
+    }
   };
 
   return (
@@ -54,7 +135,7 @@ const SignUpPage = () => {
           <p><strong>Please Note:</strong> This information will only be used for emergency purposes. Upon login, you will be assigned an anonymous profile to ensure your privacy when interacting with therapists.</p>
         </div>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleEmailSignUp}>
           <div className="form-row">
             <div className="form-group">
               <label htmlFor="firstName">First Name</label>
@@ -110,8 +191,7 @@ const SignUpPage = () => {
           
           <div className="divider">or</div>
 
-          <button type="button" className="google-btn">
-            {/* You can add a Google icon here */}
+          <button type="button" className="google-btn" onClick={handleGoogleSignIn}>
             Continue with Google
           </button>
         </form>

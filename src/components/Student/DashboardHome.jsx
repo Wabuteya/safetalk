@@ -1,10 +1,37 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../../supabaseClient';
 
 const DashboardHome = () => {
+  const [userAlias, setUserAlias] = useState('Welcome');
+
+  useEffect(() => {
+    // Try to get alias from localStorage first (for quick display)
+    const storedAlias = localStorage.getItem('userAlias');
+    if (storedAlias) {
+      setUserAlias(storedAlias);
+    }
+
+    // Also fetch from Supabase to ensure we have the latest
+    const fetchUserAlias = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user?.user_metadata?.alias) {
+          const alias = user.user_metadata.alias;
+          setUserAlias(alias);
+          localStorage.setItem('userAlias', alias);
+        }
+      } catch (error) {
+        console.error('Error fetching user alias:', error);
+      }
+    };
+
+    fetchUserAlias();
+  }, []);
+
   return (
     <div className="dashboard-home">
       <div className="welcome-header">
-        <h1>Welcome, Anonymous Panda!</h1>
+        <h1>Welcome, {userAlias}!</h1>
         <p>Your safe space is ready. What would you like to do today?</p>
       </div>
 

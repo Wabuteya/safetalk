@@ -2,8 +2,7 @@ import {
   BrowserRouter,
   Navigate,
   Route,
-  Routes,
-  useNavigate
+  Routes
 } from 'react-router-dom';
 import LandingPage from './components/Landing/LandingPage';
 import Login from './components/Auth/Login';
@@ -28,26 +27,20 @@ import AdminDashboardHome from './components/Admin/AdminDashboardHome';
 import ManageTherapistsPage from './components/Admin/ManageTherapistsPage';
 import SignUpPage from './components/SignUp/SignUpPage';
 import InitialAssessment from './components/Assessment_Form/InitialAssessment';
+import VerifyEmailPage from './VerifyEmailPage';
+import ForgotPasswordPage from './components/ForgotPasswordPage';
+import UpdatePasswordPage from './components/UpdatePasswordPage';
 
 const AppRoutes = () => {
-  const navigate = useNavigate();
-
-  const handleLogin = (payload) => {
-    if (payload?.userType === 'therapist') {
-      navigate('/therapist-dashboard', { replace: true });
-    } else if (payload?.userType === 'admin') {
-      navigate('/admin-dashboard', { replace: true });
-    } else {
-      navigate('/student-dashboard', { replace: true });
-    }
-  };
-
   return (
     <Routes>
       {/* Auth Routes */}
       <Route path="/" element={<LandingPage />} />
-      <Route path="/login" element={<Login onLogin={handleLogin} />} />
+      <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<SignUpPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/update-password" element={<UpdatePasswordPage />} />
+      <Route path="/please-verify" element={<VerifyEmailPage />} />
       <Route path="/assessment" element={<InitialAssessment />} />
 
       {/* Student Dashboard Nested Routes */}

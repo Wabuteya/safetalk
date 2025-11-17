@@ -1,0 +1,183 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+.verify-email-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: clamp(2rem, 5vw, 3rem) 1.5rem;
+    background: radial-gradient(circle at top left, #d1e9ff, transparent 55%),
+                radial-gradient(circle at bottom right, #fbd3ff, transparent 50%),
+                linear-gradient(135deg, #f5f8ff 0%, #fdfdfd 100%);
+    box-sizing: border-box;
+    width: 100%;
+    margin: 0;
+}
+
+.verify-email-card {
+    background-color: #ffffff;
+    padding: 3rem 2.5rem;
+    border-radius: 1.5rem;
+    box-shadow: 0 35px 80px -45px rgba(62, 72, 100, 0.55);
+    border: 1px solid rgba(41, 72, 116, 0.08);
+    backdrop-filter: blur(8px);
+    width: 100%;
+    max-width: 520px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    text-align: center;
+}
+
+.verify-email-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 40px 90px -50px rgba(15, 26, 61, 0.8);
+}
+
+.ve-header {
+    margin-bottom: 2.5rem;
+}
+
+.ve-icon {
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+    display: inline-block;
+    animation: float 3s ease-in-out infinite, pulse 2s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+.ve-header h2 {
+    margin: 0 0 1rem 0;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1e2a44;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.ve-main-text {
+    margin: 0 0 0.75rem 0;
+    color: #1e2a44;
+    font-size: 1.1rem;
+    font-weight: 500;
+    line-height: 1.6;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.ve-sub-text {
+    margin: 0;
+    color: #5b6888;
+    font-size: 1rem;
+    line-height: 1.6;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.ve-info-box {
+    background: linear-gradient(135deg, rgba(58, 124, 253, 0.08) 0%, rgba(95, 150, 255, 0.05) 100%);
+    border: 1px solid rgba(58, 124, 253, 0.15);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    margin: 2rem 0;
+    text-align: left;
+}
+
+.ve-info-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: #1e2a44;
+    font-size: 0.95rem;
+}
+
+.ve-info-item:last-child {
+    margin-bottom: 0;
+}
+
+.ve-info-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background: linear-gradient(135deg, #3a7cfd 0%, #5f96ff 100%);
+    color: #ffffff;
+    border-radius: 50%;
+    font-size: 0.875rem;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.ve-footer {
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(30, 42, 68, 0.1);
+}
+
+.ve-help-text {
+    margin: 0 0 1rem 0;
+    color: #5b6888;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.ve-back-link {
+    margin-top: 1rem;
+}
+
+.ve-link {
+    color: #3a7cfd;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: color 0.2s ease, text-decoration 0.2s ease;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.ve-link:hover {
+    color: #2a6ce8;
+    text-decoration: underline;
+}
+
+/* Responsive Design */
+@media (max-width: 540px) {
+    .verify-email-card {
+        padding: 2.25rem 1.75rem;
+        border-radius: 1.25rem;
+    }
+
+    .ve-header h2 {
+        font-size: 1.75rem;
+    }
+
+    .ve-icon {
+        font-size: 3.5rem;
+    }
+
+    .ve-main-text {
+        font-size: 1rem;
+    }
+
+    .ve-info-box {
+        padding: 1.25rem;
+    }
+}

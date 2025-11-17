@@ -1,99 +1,63 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './Login.css';
+import { supabase } from '../../supabaseClient';
 
-const USER_TYPES = [
-  {
-    id: 'student',
-    label: 'Student',
-    description: 'Access peer support, guided journaling, and mood trackers.'
-  },
-  {
-    id: 'therapist',
-    label: 'Therapist',
-    description: 'Connect with students, review sessions, and share resources.'
-  },
-  {
-    id: 'admin',
-    label: 'Administrator',
-    description: 'Manage platform settings, permissions, and analytics.'
-  }
-];
-
-const Login = ({ onLogin }) => {
+const Login = () => {
   const navigate = useNavigate();
-  const [userType, setUserType] = useState(USER_TYPES[0]?.id ?? 'student');
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  });
-  const [errors, setErrors] = useState({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
-  const activeUserLabel = USER_TYPES.find((type) => type.id === userType)?.label ?? 'member';
+  const handleEmailLogin = async (e) => {
+    e.preventDefault();
+    setError('');
 
-  const handleChange = (field) => (event) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: event.target.value
-    }));
-    setErrors((prev) => ({
-      ...prev,
-      [field]: ''
-    }));
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: password,
+      });
+
+      if (error) throw error;
+
+      if (data.user) {
+        const userRole = data.user.user_metadata?.role;
+        const userAlias = data.user.user_metadata?.alias;
+
+        if (userAlias) {
+          localStorage.setItem('userAlias', userAlias);
+        } else {
+          localStorage.removeItem('userAlias');
+        }
+
+        if (userRole === 'student') {
+          navigate('/student-dashboard');
+        } else if (userRole === 'therapist') {
+          navigate('/therapist-dashboard');
+        } else if (userRole === 'admin') {
+          navigate('/admin-dashboard');
+        } else {
+          // Handle no role - default to student dashboard
+          navigate('/student-dashboard');
+        }
+      }
+    } catch (error) {
+      setError(error.error_description || error.message);
+    }
   };
 
-  const validate = () => {
-    const nextErrors = {};
-    if (!formData.email.trim()) {
-      nextErrors.email = 'Email is required.';
-    } else if (!/^\S+@\S+\.\S+$/.test(formData.email)) {
-      nextErrors.email = 'Enter a valid email address.';
+  const handleGoogleSignIn = async () => {
+    try {
+      await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/student-dashboard`,
+        }
+      });
+    } catch (error) {
+      setError(error.error_description || error.message);
     }
-
-    if (!formData.password.trim()) {
-      nextErrors.password = 'Password is required.';
-    } else if (formData.password.length < 8) {
-      nextErrors.password = 'Password must be at least 8 characters.';
-    }
-
-    return nextErrors;
-  };
-
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    const nextErrors = validate();
-    if (Object.keys(nextErrors).length) {
-      setErrors(nextErrors);
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false);
-      
-      // Call the onLogin callback if provided
-      if (onLogin) {
-        onLogin({ userType, ...formData });
-      }
-
-      // Navigate based on user type
-      switch (userType) {
-        case 'student':
-          navigate('/student-dashboard', { replace: true });
-          break;
-        case 'therapist':
-          navigate('/therapist-dashboard', { replace: true });
-          break;
-        case 'admin':
-          navigate('/admin-dashboard', { replace: true });
-          break;
-        default:
-          navigate('/student-dashboard', { replace: true });
-      }
-    }, 600);
   };
 
   return (
@@ -128,68 +92,60 @@ const Login = ({ onLogin }) => {
           <p>Your confidential space for mental health support.</p>
         </header>
 
-        <form onSubmit={handleSubmit} className="login-form" noValidate>
-          <fieldset className="user-type-group">
-            <legend>Continue as</legend>
-            <div className="user-type-options">
-              {USER_TYPES.map(({ id, label, description }) => (
-                <label
-                  key={id}
-                  className={`user-type-option${userType === id ? ' active' : ''}`}
-                >
-                  <input
-                    type="radio"
-                    name="userType"
-                    value={id}
-                    checked={userType === id}
-                    onChange={(event) => setUserType(event.target.value)}
-                  />
-                  <div>
-                    <span className="user-type-label">{label}</span>
-                    <span className="user-type-description">{description}</span>
-                  </div>
-                </label>
-              ))}
-            </div>
-          </fieldset>
-
-          <label className={`input-group${errors.email ? ' has-error' : ''}`}>
+        <form onSubmit={handleEmailLogin} className="login-form" noValidate>
+          <label className="input-group">
             <span className="input-label">Email</span>
             <input
               type="email"
               name="email"
               placeholder="you@example.com"
-              value={formData.email}
-              onChange={handleChange('email')}
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setError('');
+              }}
               autoComplete="email"
+              required
             />
-            {errors.email ? <span className="error-message">{errors.email}</span> : null}
           </label>
 
-          <label className={`input-group${errors.password ? ' has-error' : ''}`}>
+          <label className="input-group">
             <span className="input-label">Password</span>
             <input
               type="password"
               name="password"
               placeholder="••••••••"
-              value={formData.password}
-              onChange={handleChange('password')}
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                setError('');
+              }}
               autoComplete="current-password"
+              required
             />
-            {errors.password ? (
-              <span className="error-message">{errors.password}</span>
-            ) : null}
           </label>
 
+          {error && (
+            <div className="error-message" style={{ marginTop: '-0.5rem', marginBottom: '0.5rem' }}>
+              {error}
+            </div>
+          )}
+
           <div className="form-actions">
-            <button type="submit" className="login-btn" disabled={isSubmitting}>
-              {isSubmitting ? 'Signing in…' : `Continue as ${activeUserLabel}`}
+            <button type="submit" className="login-btn">
+              Log In
             </button>
             <Link to="/forgot-password" className="link-btn">
               Forgot password?
             </Link>
           </div>
         </form>
+
+        <div className="divider">or</div>
+
+        <button type="button" className="google-btn" onClick={handleGoogleSignIn}>
+          Continue with Google
+        </button>
 
         <footer className="login-footer">
           <p>

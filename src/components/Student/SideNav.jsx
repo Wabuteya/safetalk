@@ -1,4 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { 
   FaBook, 
   FaHeart, 
@@ -9,12 +10,40 @@ import {
   FaExclamationTriangle
 } from 'react-icons/fa';
 import { AiOutlineDashboard } from 'react-icons/ai';
+import { supabase } from '../../supabaseClient';
 
 const SideNav = () => {
   const navigate = useNavigate();
+  const [userAlias, setUserAlias] = useState('Anonymous User');
 
-  const handleLogout = () => {
-    // Clear any user session data here
+  useEffect(() => {
+    // Try to get alias from localStorage first
+    const storedAlias = localStorage.getItem('userAlias');
+    if (storedAlias) {
+      setUserAlias(storedAlias);
+    }
+
+    // Also fetch from Supabase to ensure we have the latest
+    const fetchUserAlias = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user?.user_metadata?.alias) {
+          const alias = user.user_metadata.alias;
+          setUserAlias(alias);
+          localStorage.setItem('userAlias', alias);
+        }
+      } catch (error) {
+        console.error('Error fetching user alias:', error);
+      }
+    };
+
+    fetchUserAlias();
+  }, []);
+
+  const handleLogout = async () => {
+    // Clear user session and localStorage
+    await supabase.auth.signOut();
+    localStorage.removeItem('userAlias');
     navigate('/', { replace: true });
   };
 
@@ -30,7 +59,7 @@ const SideNav = () => {
         <h3>SafeTalk </h3>
       </div>
       <div className="sidebar-profile">
-        <p className="sidebar-alias">🐼 Anonymous Panda</p>
+        <p className="sidebar-alias">🐼 {userAlias}</p>
       </div>
       <ul className="sidebar-nav">
         <li>

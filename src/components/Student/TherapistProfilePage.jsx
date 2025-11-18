@@ -1,29 +1,74 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { supabase } from '../../supabaseClient';
 import './TherapistProfilePage.css';
 
-// We need the same mock data here to find the therapist by ID.
-// In a real app, you'd fetch this single therapist's data from an API.
-const therapistsData = [
-  { id: 1, name: 'Dr. Evelyn Reed', title: 'Clinical Psychologist', specialties: ['Anxiety', 'Depression'], bio: 'Specializing in cognitive-behavioral therapy for students facing academic and social pressures. My approach is collaborative and evidence-based, aiming to empower you with the skills to navigate life\'s challenges.', imageUrl: 'https://via.placeholder.com/150', experience: '8 Years', credentials: 'PhD in Clinical Psychology' },
-  { id: 2, name: 'Dr. Samuel Chen', title: 'Licensed Counselor', specialties: ['Relationships', 'Stress Management'], bio: 'Focused on helping students navigate relationship challenges and develop healthy coping mechanisms. I provide a non-judgmental space to explore your thoughts and feelings.', imageUrl: 'https://via.placeholder.com/150', experience: '6 Years', credentials: 'M.A. in Counseling' },
-  { id: 3, name: 'Dr. Maria Garcia', title: 'Therapist, PhD', specialties: ['Academic Stress', 'Anxiety'], bio: 'Experienced in mindfulness and stress-reduction techniques to help with exam and performance anxiety. Together, we can build a toolbox of strategies for success.', imageUrl: 'https://via.placeholder.com/150', experience: '10 Years', credentials: 'PhD in Counseling Psychology' },
-  { id: 4, name: 'Dr. Ben Carter', title: 'Licensed Social Worker', specialties: ['Family Issues', 'Depression'], bio: 'Providing a supportive space to explore family dynamics and work through feelings of depression. My goal is to help you find strength and resilience.', imageUrl: 'https://via.placeholder.com/150', experience: '7 Years', credentials: 'LCSW, MSW' },
-];
-
 const TherapistProfilePage = () => {
-  // 1. Get the therapistId from the URL
   const { therapistId } = useParams();
+  const [therapist, setTherapist] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  // 2. Find the correct therapist from our data
-  // Note: useParams returns a string, so we convert it to a number
-  const therapist = therapistsData.find(t => t.id === Number(therapistId));
+  useEffect(() => {
+    fetchTherapist();
+  }, [therapistId]);
 
-  // Handle case where therapist is not found
-  if (!therapist) {
+  const fetchTherapist = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      
+      // Fetch therapist by user_id (UUID)
+      const { data, error: fetchError } = await supabase
+        .from('therapist_profiles')
+        .select('*')
+        .eq('user_id', therapistId)
+        .eq('is_live', true)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      if (data) {
+        // Map database data to component format
+        setTherapist({
+          id: data.user_id,
+          name: data.full_name || 'Therapist',
+          title: data.title || 'Therapist',
+          specialties: Array.isArray(data.specialties) 
+            ? data.specialties 
+            : (typeof data.specialties === 'string' 
+                ? data.specialties.split(',').map(s => s.trim()).filter(s => s)
+                : []),
+          bio: data.bio || 'No bio available.',
+          imageUrl: data.image_url || null, // null if no image
+          experience: 'Not specified', // Not in database schema yet
+          credentials: data.title || 'Licensed Therapist'
+        });
+      } else {
+        setError('Therapist not found or not available.');
+      }
+    } catch (err) {
+      console.error('Error fetching therapist:', err);
+      setError('Failed to load therapist profile. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="therapist-profile-layout">
+        <div style={{ textAlign: 'center', padding: '3rem' }}>
+          <p>Loading therapist profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !therapist) {
     return (
       <div className="profile-not-found">
-        <h2>Therapist not found.</h2>
+        <h2>{error || 'Therapist not found.'}</h2>
         <Link to="/student-dashboard/therapists">Go back to the list</Link>
       </div>
     );
@@ -43,7 +88,17 @@ const TherapistProfilePage = () => {
         &larr; Back to All Therapists
       </Link>
       <div className="profile-header">
-        <img src={therapist.imageUrl} alt={therapist.name} className="profile-photo" />
+        {therapist.imageUrl && (
+          <img 
+            src={therapist.imageUrl} 
+            alt={therapist.name} 
+            className="profile-photo"
+            onError={(e) => {
+              // Hide image if it fails to load
+              e.target.style.display = 'none';
+            }}
+          />
+        )}
         <div className="profile-header-info">
           <h1>{therapist.name}</h1>
           <p className="profile-title">{therapist.title}</p>

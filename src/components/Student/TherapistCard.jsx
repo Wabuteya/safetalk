@@ -4,7 +4,17 @@ import './FindTherapistPage.css';
 const TherapistCard = ({ therapist }) => {
   return (
     <div className="therapist-card">
-      <img src={therapist.imageUrl} alt={`Dr. ${therapist.name}`} className="therapist-photo" />
+      {therapist.imageUrl && (
+        <img 
+          src={therapist.imageUrl} 
+          alt={`${therapist.name}`} 
+          className="therapist-photo"
+          onError={(e) => {
+            // Hide image if it fails to load
+            e.target.style.display = 'none';
+          }}
+        />
+      )}
       <h3 className="therapist-name">{therapist.name}</h3>
       <p className="therapist-title">{therapist.title}</p>
       <div className="specialty-tags">

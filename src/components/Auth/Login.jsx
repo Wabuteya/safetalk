@@ -19,9 +19,24 @@ const Login = () => {
         password: password,
       });
 
-      if (error) throw error;
+      if (error) {
+        // Check if error is due to unconfirmed email
+        if (error.message.includes('Email not confirmed') || error.message.includes('email_not_confirmed')) {
+          setError('Please confirm your email address before logging in. Check your inbox for the confirmation link.');
+          return;
+        }
+        throw error;
+      }
 
       if (data.user) {
+        // Check if email is confirmed
+        if (!data.user.email_confirmed_at) {
+          setError('Please confirm your email address before logging in. Check your inbox for the confirmation link. If you didn\'t receive it, you can request a new one from the sign-up page.');
+          // Sign out the user since they shouldn't be logged in
+          await supabase.auth.signOut();
+          return;
+        }
+
         const userRole = data.user.user_metadata?.role;
         const userAlias = data.user.user_metadata?.alias;
 

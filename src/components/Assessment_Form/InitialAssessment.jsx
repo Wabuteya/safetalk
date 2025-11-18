@@ -17,11 +17,25 @@ const InitialAssessment = () => {
 
   useEffect(() => {
     const fetchUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user }, error } = await supabase.auth.getUser();
+      
+      if (error || !user) {
+        alert('Please log in to continue.');
+        navigate('/login');
+        return;
+      }
+
+      // Check if email is confirmed
+      if (!user.email_confirmed_at) {
+        alert('Please confirm your email address before proceeding. Check your inbox for the confirmation link.');
+        navigate('/please-verify');
+        return;
+      }
+
       setUser(user);
     };
     fetchUser();
-  }, []);
+  }, [navigate]);
 
   const handleCheckboxChange = (e) => {
     const { value, checked } = e.target;

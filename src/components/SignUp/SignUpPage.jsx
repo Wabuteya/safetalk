@@ -20,6 +20,8 @@ const SignUpPage = () => {
   });
 
   const [passwordError, setPasswordError] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -31,25 +33,29 @@ const SignUpPage = () => {
 
   const handleEmailSignUp = async (e) => {
     e.preventDefault();
+    setError('');
+    setPasswordError('');
+    setLoading(true);
     
     // Password validation logic
     if (formData.password !== formData.confirmPassword) {
       setPasswordError("Passwords do not match.");
+      setLoading(false);
       return;
     }
     if (formData.password.length < 8) {
       setPasswordError("Password must be at least 8 characters long.");
+      setLoading(false);
       return;
     }
-    setPasswordError('');
 
     // Check if Supabase is configured
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
     
     if (!supabaseUrl || !supabaseKey) {
-      alert('Supabase is not configured. Please check your .env file and ensure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set.');
-      console.error('Missing Supabase configuration:', { supabaseUrl: !!supabaseUrl, supabaseKey: !!supabaseKey });
+      setError('Supabase is not configured. Please check your .env file and ensure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set.');
+      setLoading(false);
       return;
     }
 
@@ -59,7 +65,7 @@ const SignUpPage = () => {
     const generatedAlias = `${randomAdjective} ${randomNoun}`;
 
     try {
-      const { data, error } = await supabase.auth.signUp({
+      const { data, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
@@ -76,21 +82,53 @@ const SignUpPage = () => {
         }
       });
       
-      if (error) {
-        console.error('Supabase signup error:', error);
-        throw error;
+      if (signUpError) {
+        console.error('Supabase signup error:', signUpError);
+        console.error('Full error object:', JSON.stringify(signUpError, null, 2));
+        
+        // Provide more helpful error messages
+        let errorMessage = signUpError.error_description || signUpError.message || 'Failed to create account.';
+        
+        if (errorMessage.includes('already registered') || errorMessage.includes('already been registered')) {
+          errorMessage = 'An account with this email already exists. Please log in instead.';
+        } else if (errorMessage.includes('email') || errorMessage.includes('confirmation')) {
+          // Show the actual error from Supabase for debugging
+          errorMessage = `Error sending confirmation email.\n\nSupabase Error: ${errorMessage}\n\nPlease check:\n1. Go to Supabase Dashboard → Authentication → Settings\n2. Enable "Enable email confirmations"\n3. Set Site URL to: http://localhost:5173\n4. Add Redirect URL: http://localhost:5173/**\n5. Go to Email Templates → Reset "Confirm signup" template to default\n\nCheck browser console (F12) for detailed error.`;
+        } else if (errorMessage.includes('rate limit')) {
+          errorMessage = 'Too many requests. Please wait a few minutes and try again.';
+        }
+        
+        setError(errorMessage);
+        setLoading(false);
+        return;
       }
       
       // Check if signup was successful
+      // Only proceed if user was created AND email confirmation was sent
       if (data?.user) {
-        navigate('/please-verify');
+        // Check if email confirmation is required and was sent
+        // If email confirmation is enabled, user.email_confirmed_at will be null until confirmed
+        // The session will also be null if confirmation is required
+        if (data.session === null && data.user) {
+          // Email confirmation required - navigate to verification page
+          navigate('/please-verify');
+        } else if (data.session) {
+          // Email confirmation not required or already confirmed - go to assessment
+          navigate('/assessment');
+        } else {
+          // Edge case - user created but unclear state
+          setError('Account created but email confirmation status is unclear. Please check your email or contact support.');
+          setLoading(false);
+        }
       } else {
-        alert('Signup failed. Please try again.');
+        setError('Signup failed. Please try again.');
+        setLoading(false);
       }
     } catch (error) {
       console.error('Signup error details:', error);
       const errorMessage = error?.error_description || error?.message || 'Failed to create account. Please check your connection and try again.';
-      alert(errorMessage);
+      setError(errorMessage);
+      setLoading(false);
     }
   };
 
@@ -139,11 +177,27 @@ const SignUpPage = () => {
           <div className="form-row">
             <div className="form-group">
               <label htmlFor="firstName">First Name</label>
-              <input type="text" id="firstName" name="firstName" value={formData.firstName} onChange={handleChange} required />
+              <input 
+                type="text" 
+                id="firstName" 
+                name="firstName" 
+                value={formData.firstName} 
+                onChange={handleChange} 
+                required 
+                disabled={loading}
+              />
             </div>
             <div className="form-group">
               <label htmlFor="lastName">Last Name</label>
-              <input type="text" id="lastName" name="lastName" value={formData.lastName} onChange={handleChange} required />
+              <input 
+                type="text" 
+                id="lastName" 
+                name="lastName" 
+                value={formData.lastName} 
+                onChange={handleChange} 
+                required 
+                disabled={loading}
+              />
             </div>
           </div>
 
@@ -156,6 +210,7 @@ const SignUpPage = () => {
                 value={formData.gender}
                 onChange={handleChange}
                 required
+                disabled={loading}
               >
                 <option value="" disabled>
                   Select...
@@ -166,32 +221,88 @@ const SignUpPage = () => {
             </div>
             <div className="form-group">
                 <label htmlFor="contact">Contact Number</label>
-                <input type="tel" id="contact" name="contact" value={formData.contact} onChange={handleChange} required />
+                <input 
+                  type="tel" 
+                  id="contact" 
+                  name="contact" 
+                  value={formData.contact} 
+                  onChange={handleChange} 
+                  required 
+                  disabled={loading}
+                />
             </div>
           </div>
 
           <div className="form-group">
             <label htmlFor="email">Email Address</label>
-            <input type="email" id="email" name="email" value={formData.email} onChange={handleChange} required />
+            <input 
+              type="email" 
+              id="email" 
+              name="email" 
+              value={formData.email} 
+              onChange={(e) => {
+                handleChange(e);
+                setError('');
+              }} 
+              required 
+              disabled={loading}
+            />
           </div>
 
           <div className="form-group">
             <label htmlFor="password">Password</label>
-            <input type="password" id="password" name="password" value={formData.password} onChange={handleChange} required />
+            <input 
+              type="password" 
+              id="password" 
+              name="password" 
+              value={formData.password} 
+              onChange={handleChange} 
+              required 
+              disabled={loading}
+            />
           </div>
 
           <div className="form-group">
             <label htmlFor="confirmPassword">Confirm Password</label>
-            <input type="password" id="confirmPassword" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} required />
+            <input 
+              type="password" 
+              id="confirmPassword" 
+              name="confirmPassword" 
+              value={formData.confirmPassword} 
+              onChange={handleChange} 
+              required 
+              disabled={loading}
+            />
           </div>
 
           {passwordError && <p className="error-message">{passwordError}</p>}
+          {error && (
+            <div className="error-message" style={{ 
+              padding: '0.75rem', 
+              marginBottom: '1rem', 
+              backgroundColor: '#f8d7da', 
+              color: '#721c24', 
+              borderRadius: '0.5rem',
+              border: '1px solid #f5c6cb',
+              fontSize: '0.9rem',
+              whiteSpace: 'pre-line'
+            }}>
+              {error}
+            </div>
+          )}
           
-          <button type="submit" className="submit-btn">Create Account</button>
+          <button type="submit" className="submit-btn" disabled={loading}>
+            {loading ? 'Creating Account...' : 'Create Account'}
+          </button>
           
           <div className="divider">or</div>
 
-          <button type="button" className="google-btn" onClick={handleGoogleSignIn}>
+          <button 
+            type="button" 
+            className="google-btn" 
+            onClick={handleGoogleSignIn}
+            disabled={loading}
+          >
             Continue with Google
           </button>
         </form>

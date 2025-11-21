@@ -30,6 +30,7 @@ import InitialAssessment from './components/Assessment_Form/InitialAssessment';
 import VerifyEmailPage from './VerifyEmailPage';
 import ForgotPasswordPage from './components/ForgotPasswordPage';
 import UpdatePasswordPage from './components/UpdatePasswordPage';
+import SetPasswordPage from './components/SetPasswordPage';
 
 const AppRoutes = () => {
   return (
@@ -40,6 +41,7 @@ const AppRoutes = () => {
       <Route path="/signup" element={<SignUpPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/update-password" element={<UpdatePasswordPage />} />
+      <Route path="/set-password" element={<SetPasswordPage />} />
       <Route path="/please-verify" element={<VerifyEmailPage />} />
       <Route path="/assessment" element={<InitialAssessment />} />
 

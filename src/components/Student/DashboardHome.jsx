@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
 
 const DashboardHome = () => {
+  const navigate = useNavigate();
   const [userAlias, setUserAlias] = useState('Welcome');
 
   useEffect(() => {
@@ -48,16 +50,28 @@ const DashboardHome = () => {
           </div>
         </div>
 
-        <div className="widget-card journal">
+        <div 
+          className="widget-card journal" 
+          onClick={() => navigate('/student-dashboard/journal')}
+        >
           <h3>My Journal</h3>
           <p>Write down your thoughts. Your privacy is our priority.</p>
-          <button>Write a New Entry</button>
+          <button onClick={(e) => {
+            e.stopPropagation();
+            navigate('/student-dashboard/journal');
+          }}>Write a New Entry</button>
         </div>
 
-        <div className="widget-card resources">
+        <div 
+          className="widget-card resources"
+          onClick={() => navigate('/student-dashboard/resources')}
+        >
           <h3>Motivational Resources</h3>
           <p>Explore articles and tools to support your wellness journey.</p>
-          <button>Explore Resources</button>
+          <button onClick={(e) => {
+            e.stopPropagation();
+            navigate('/student-dashboard/resources');
+          }}>Explore Resources</button>
         </div>
         
         <div className="widget-card appointments">

@@ -170,6 +170,25 @@
   transform: translateY(-4px);
   box-shadow: 0 16px 28px -8px rgba(0, 0, 0, 0.15);
 }
+
+/* Clickable cards (journal and resources) */
+.widget-card.journal,
+.widget-card.resources {
+  cursor: pointer;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease;
+}
+
+.widget-card.journal:hover,
+.widget-card.resources:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 28px -8px rgba(0, 123, 255, 0.2);
+  background-color: #f8fbff;
+}
+
+.widget-card.journal:active,
+.widget-card.resources:active {
+  transform: translateY(-2px);
+}
 .widget-card h3 {
     margin-top: 0;
     color: #007BFF;

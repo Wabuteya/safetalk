@@ -1,4 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { AiOutlineDashboard } from 'react-icons/ai';
 import {
   FaClipboardList,
@@ -9,11 +10,52 @@ import {
   FaUserCircle,
   FaSignOutAlt
 } from 'react-icons/fa';
+import { supabase } from '../../supabaseClient';
 
 const TherapistSideNav = () => {
   const navigate = useNavigate();
+  const [therapistName, setTherapistName] = useState('Therapist');
 
-  const handleLogout = () => {
+  useEffect(() => {
+    const fetchTherapistName = async () => {
+      try {
+        // Get current user
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (user) {
+          // Fetch therapist profile from database
+          const { data: profile } = await supabase
+            .from('therapist_profiles')
+            .select('full_name, title')
+            .eq('user_id', user.id)
+            .single();
+
+          if (profile?.full_name) {
+            // Use title if available, otherwise just use full name
+            const displayName = profile.title 
+              ? `${profile.title} ${profile.full_name}`
+              : profile.full_name;
+            setTherapistName(displayName);
+          } else {
+            // Fallback to user metadata if profile doesn't exist yet
+            const metadataName = user.user_metadata?.full_name;
+            if (metadataName) {
+              setTherapistName(metadataName);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching therapist name:', error);
+        // Keep default 'Therapist' if error
+      }
+    };
+
+    fetchTherapistName();
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    localStorage.removeItem('userAlias');
     navigate('/', { replace: true });
   };
 
@@ -23,8 +65,7 @@ const TherapistSideNav = () => {
         <h3>Therapist Portal</h3>
       </div>
       <div className="sidebar-profile">
-        {/* This name will come from the therapist's own user data */}
-        <p className="sidebar-alias"> 👩🏽‍⚕️Dr. Evelyn Reed</p>
+        <p className="sidebar-alias">{therapistName}</p>
       </div>
       <ul className="sidebar-nav">
         <li>

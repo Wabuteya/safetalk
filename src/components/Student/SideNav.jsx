@@ -59,7 +59,7 @@ const SideNav = () => {
         <h3>SafeTalk </h3>
       </div>
       <div className="sidebar-profile">
-        <p className="sidebar-alias">🐼 {userAlias}</p>
+        <p className="sidebar-alias">{userAlias}</p>
       </div>
       <ul className="sidebar-nav">
         <li>

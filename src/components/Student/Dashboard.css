@@ -2,23 +2,31 @@
 .dashboard-layout {
   display: flex;
   min-height: 100vh;
-  /* Full width gradient background to avoid right-side gaps on wide screens */
-  background: radial-gradient(circle at top left, #d1e9ff, transparent 55%),
-    radial-gradient(circle at bottom right, #fbd3ff, transparent 50%),
-    linear-gradient(135deg, #f5f8ff 0%, #fdfdfd 100%);
+  /* Light grey background for the card effect */
+  background-color: #f5f5f5;
+  padding: 1.5rem;
+  gap: 1.5rem;
   /* Cross-browser full-bleed fix - use 100% instead of 100vw */
   width: 100%;
   margin-left: 0;
   margin-right: 0;
 }
 
+/* Sidebar - Card/Tile Format */
 .sidebar {
-  width: 260px;
-  background-color: #007bff; /* Sky blue to match landing CTA */
-  color: #ffffff;
+  width: 280px;
+  background-color: #ffffff;
+  color: #333333;
   display: flex;
   flex-direction: column;
-  flex-shrink: 0; /* Prevents sidebar from shrinking */
+  flex-shrink: 0;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  height: calc(100vh - 3rem);
+  max-height: calc(100vh - 3rem);
+  position: sticky;
+  top: 1.5rem;
 }
 
 .dashboard-content {
@@ -27,67 +35,144 @@
     radial-gradient(circle at bottom right, #fbd3ff, transparent 50%),
     linear-gradient(135deg, #f5f8ff 0%, #fdfdfd 100%);
   padding: 2rem 3rem;
-  overflow-y: auto; /* Allows content to scroll */
+  overflow-y: auto;
+  border-radius: 12px;
 }
 
 /* Sidebar Styling */
 .sidebar-header {
-  padding: 1.5rem;
-  text-align: center;
-  border-bottom: 1px solid #0056b3;
+  padding: 1.5rem 1.25rem;
+  border-bottom: 1px solid #e8e8e8;
+  background-color: #ffffff;
 }
+
+.sidebar-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  text-align: left;
+}
+
 .sidebar-profile {
-    text-align: center;
-    padding: 1rem;
-    font-weight: bold;
+  text-align: left;
+  padding: 1rem 1.25rem;
+  font-weight: 500;
+  color: #666666;
+  border-bottom: 1px solid #e8e8e8;
+  background-color: #ffffff;
 }
+
+.sidebar-profile .sidebar-alias {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #666666;
+}
+
 .sidebar-nav {
   list-style: none;
-  padding: 0;
+  padding: 0.75rem 0;
   margin: 0;
-  flex-grow: 1; /* Pushes footer down */
+  flex-grow: 1;
+  overflow-y: auto;
+  background-color: #ffffff;
 }
+
+/* Section Headings */
+.sidebar-nav li.nav-section-heading {
+  padding: 0.75rem 1.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #888888;
+  margin-top: 0.5rem;
+  list-style: none;
+}
+
+.sidebar-nav li.nav-section-heading:first-child {
+  margin-top: 0;
+}
+
+.sidebar-nav li:not(.nav-section-heading) {
+  margin: 0;
+}
+
 .sidebar-nav a {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 1rem 1.5rem;
-  color: #e0e0e0;
+  gap: 0.875rem;
+  padding: 0.875rem 1.25rem;
+  color: #333333;
   text-decoration: none;
-  transition: background-color 0.25s ease, transform 0.2s ease, filter 0.2s ease;
+  transition: background-color 0.2s ease;
+  border-radius: 0;
+  font-size: 0.95rem;
 }
+
 .sidebar-nav a:hover {
-  background-color: #0056b3;
-  transform: translateX(4px);
+  background-color: #f8f8f8;
 }
+
 /* Style for the active NavLink */
 .sidebar-nav a.active {
-  background-color: #0056b3;
-  font-weight: bold;
-  color: #ffffff;
+  background-color: #f0f0f0;
+  color: #1a1a1a;
+  font-weight: 500;
 }
 
 .nav-icon {
-  font-size: 1.25rem;
-  min-width: 1.25rem;
+  font-size: 1.2rem;
+  min-width: 1.2rem;
   display: flex;
   align-items: center;
   justify-content: center;
+  color: #4F8EC5;
 }
+
+.sidebar-nav a.active .nav-icon {
+  color: #4F8EC5;
+}
+
 .sidebar-footer {
-  padding: 1.5rem;
+  padding: 1rem 1.25rem;
   margin-top: auto;
+  border-top: 1px solid #e8e8e8;
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  position: relative;
+  z-index: 10;
+}
+
+/* Scrollbar styling for the nav */
+.sidebar-nav::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar-nav::-webkit-scrollbar-track {
+  background: #f5f5f5;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb {
+  background: #d0d0d0;
+  border-radius: 3px;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb:hover {
+  background: #b0b0b0;
 }
 
 /* Crisis support styles */
 .crisis-support {
   text-align: center;
-  margin-bottom: 1.5rem;
-  padding: 1rem;
-  background-color: #ffffff;
-  border: 1px solid rgba(211, 47, 47, 0.25);
+  padding: 0.875rem;
+  background-color: #fff5f5;
+  border: 1px solid rgba(211, 47, 47, 0.2);
   border-radius: 8px;
-  box-shadow: 0 12px 24px -18px rgba(211, 47, 47, 0.6);
+  box-shadow: 0 2px 4px rgba(211, 47, 47, 0.1);
+  margin: 0;
 }
 
 .crisis-btn {
@@ -96,53 +181,62 @@
   background-color: #8c1f1f;
   border: none;
   color: white;
-  font-weight: bold;
-  font-size: 1rem;
-  border-radius: 5px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  border-radius: 6px;
   cursor: pointer;
   margin-bottom: 0.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+  transition: background-color 0.2s ease, transform 0.15s ease;
 }
 
 .crisis-btn:hover {
   background-color: #6b1515;
+  transform: translateY(-1px);
 }
 
 .crisis-icon {
-  font-size: 1rem;
+  font-size: 0.95rem;
 }
 
 .crisis-support p {
-  font-size: 0.75rem;
-  color: #444;
+  font-size: 0.7rem;
+  color: #666;
   line-height: 1.4;
   margin: 0;
 }
+
 .logout-btn {
   width: 100%;
   padding: 0.75rem;
   background-color: #8c1f1f;
   border: none;
   color: white;
-  border-radius: 5px;
+  border-radius: 6px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  font-size: 1rem;
-  transition: background-color 0.3s ease;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background-color 0.2s ease, transform 0.15s ease;
+  margin: 0;
+  position: relative;
+  z-index: 10;
+  pointer-events: auto;
 }
 
 .logout-btn:hover {
   background-color: #6b1515;
+  transform: translateY(-1px);
 }
 
 .logout-icon {
-  font-size: 1rem;
+  font-size: 0.95rem;
 }
 
 /* Dashboard Home Content Styling */

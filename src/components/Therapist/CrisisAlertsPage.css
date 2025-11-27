@@ -1,3 +1,21 @@
+.no-alerts-message {
+  padding: 2rem;
+  text-align: center;
+  color: #666;
+}
+
+.no-alerts-message .subtext {
+  font-size: 0.9rem;
+  color: #999;
+  margin-top: 0.5rem;
+}
+
+.no-alert-selected .subtext {
+  font-size: 0.9rem;
+  color: #999;
+  margin-top: 0.5rem;
+}
+
 .crisis-alerts-layout {
     display: flex;
     height: calc(100vh - 4rem - 54px); /* Full height minus padding and potential banner */

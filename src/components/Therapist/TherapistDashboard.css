@@ -1,85 +1,193 @@
 /* Main Layout */
 .therapist-dashboard-layout {
-    display: flex;
-    min-height: 100vh;
-    /* Full-bleed background so no right gutter on ultra-wide screens */
-    /* Cross-browser full-bleed fix - use 100% instead of 100vw */
-    width: 100%;
-    margin-left: 0;
-    margin-right: 0;
-  }
-  
-  /* We can reuse the student sidebar styles and add therapist-specific overrides */
+  display: flex;
+  min-height: 100vh;
+  /* Full-bleed background so no right gutter on ultra-wide screens */
+  /* Cross-browser full-bleed fix - use 100% instead of 100vw */
+  width: 100%;
+  margin-left: 0;
+  margin-right: 0;
+  /* Light grey background for the card effect */
+  background-color: #f5f5f5;
+  padding: 1.5rem;
+  gap: 1.5rem;
+}
+
+/* Therapist Sidebar - Card/Tile Format (matching admin design) */
 .therapist-sidebar {
-  background-color: #004C99;
-  color: #ffffff;
+  width: 280px;
+  background-color: #ffffff;
+  color: #333333;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  height: fit-content;
+  max-height: calc(100vh - 3rem);
+  position: sticky;
+  top: 1.5rem;
 }
+
 .therapist-sidebar .sidebar-header {
-  border-bottom: 1px solid #005cbf;
+  padding: 1.5rem 1.25rem;
+  border-bottom: 1px solid #e8e8e8;
+  background-color: #ffffff;
 }
+
+.therapist-sidebar .sidebar-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  text-align: left;
+}
+
+.therapist-sidebar .sidebar-profile {
+  text-align: left;
+  padding: 1rem 1.25rem;
+  font-weight: 500;
+  color: #666666;
+  border-bottom: 1px solid #e8e8e8;
+  background-color: #ffffff;
+}
+
+.therapist-sidebar .sidebar-profile .sidebar-alias {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #666666;
+}
+
+.therapist-sidebar .sidebar-nav {
+  list-style: none;
+  padding: 0.75rem 0;
+  margin: 0;
+  flex-grow: 1;
+  overflow-y: auto;
+  background-color: #ffffff;
+}
+
+/* Section Headings */
+.therapist-sidebar .sidebar-nav li.nav-section-heading {
+  padding: 0.75rem 1.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #888888;
+  margin-top: 0.5rem;
+  list-style: none;
+}
+
+.therapist-sidebar .sidebar-nav li.nav-section-heading:first-child {
+  margin-top: 0;
+}
+
+.therapist-sidebar .sidebar-nav li:not(.nav-section-heading) {
+  margin: 0;
+}
+
 .therapist-sidebar .sidebar-nav a {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 1rem 1.5rem;
-  color: #e0e0e0;
+  gap: 0.875rem;
+  padding: 0.875rem 1.25rem;
+  color: #333333;
   text-decoration: none;
-  transition: background-color 0.25s ease, transform 0.2s ease, filter 0.2s ease;
+  transition: background-color 0.2s ease;
+  border-radius: 0;
+  font-size: 0.95rem;
 }
+
 .therapist-sidebar .sidebar-nav a:hover {
-  background-color: #005cbf;
-  transform: translateX(4px);
+  background-color: #f8f8f8;
 }
+
 .therapist-sidebar .sidebar-nav a.active {
-  background-color: #007BFF;
-  color: #ffffff;
+  background-color: #f0f0f0;
+  color: #1a1a1a;
+  font-weight: 500;
 }
+
 .therapist-sidebar .nav-icon {
-  font-size: 1.25rem;
-  min-width: 1.25rem;
+  font-size: 1.2rem;
+  min-width: 1.2rem;
   display: flex;
   align-items: center;
   justify-content: center;
+  color: #4F8EC5;
 }
+
+.therapist-sidebar .sidebar-nav a.active .nav-icon {
+  color: #4F8EC5;
+}
+
 .therapist-sidebar .sidebar-footer {
+  padding: 1rem 1.25rem;
   margin-top: auto;
-  padding: 1.5rem;
+  border-top: 1px solid #e8e8e8;
+  background-color: #ffffff;
 }
+
 .therapist-sidebar .logout-btn {
   width: 100%;
   padding: 0.75rem;
   background-color: #8c1f1f;
   border: none;
   color: white;
-  border-radius: 5px;
+  border-radius: 6px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  font-size: 1rem;
-  transition: background-color 0.3s ease;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: background-color 0.2s ease, transform 0.15s ease;
 }
+
 .therapist-sidebar .logout-btn:hover {
   background-color: #6b1515;
+  transform: translateY(-1px);
 }
+
 .therapist-sidebar .logout-icon {
   font-size: 1rem;
 }
+
+/* Scrollbar styling for the nav */
+.therapist-sidebar .sidebar-nav::-webkit-scrollbar {
+  width: 6px;
+}
+
+.therapist-sidebar .sidebar-nav::-webkit-scrollbar-track {
+  background: #f5f5f5;
+}
+
+.therapist-sidebar .sidebar-nav::-webkit-scrollbar-thumb {
+  background: #d0d0d0;
+  border-radius: 3px;
+}
+
+.therapist-sidebar .sidebar-nav::-webkit-scrollbar-thumb:hover {
+  background: #b0b0b0;
+}
   
-  .therapist-main-content {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .therapist-page-content {
+.therapist-main-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.therapist-page-content {
   background: radial-gradient(circle at top left, #d1e9ff, transparent 55%),
     radial-gradient(circle at bottom right, #fbd3ff, transparent 50%),
     linear-gradient(135deg, #f5f8ff 0%, #fdfdfd 100%);
-    padding: 2rem 3rem;
-    flex-grow: 1;
-  }
+  padding: 2rem 3rem;
+  flex-grow: 1;
+  border-radius: 12px;
+}
 
 /* Generic widget/card + button transitions for therapist pages */
 .therapist-page-content .dashboard-grid {
@@ -135,15 +243,4 @@
   }
   
   /* Therapist Home Page Widgets */
-  /* We can re-use the .dashboard-grid and .widget-card from StudentDashboard.css */
-  .priority-alert {
-      background-color: #ece3e2;
-      border: 2px solid #660d0d;
-  }
-  .priority-alert h3 {
-      color: #790909;
-  }
-  .priority-alert button {
-      background-color: #7d1313;
-      color: white;
-  }
+  /* Widget cards use styles from StudentDashboard.css */

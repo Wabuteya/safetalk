@@ -5,14 +5,34 @@ import {
   FaUserMd,
   FaRegNewspaper,
   FaHeartbeat,
-  FaSignOutAlt
+  FaSignOutAlt,
+  FaExchangeAlt
 } from 'react-icons/fa';
+import { supabase } from '../../supabaseClient';
 
 const AdminSideNav = () => {
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    navigate('/', { replace: true });
+  const handleLogout = async () => {
+    try {
+      // Clear user session
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error('Error signing out:', error);
+      }
+      
+      // Clear localStorage
+      localStorage.removeItem('userAlias');
+      
+      // Force navigation to home page (full page reload)
+      window.location.href = '/';
+    } catch (err) {
+      console.error('Logout error:', err);
+      // Force navigation even if there's an error
+      localStorage.removeItem('userAlias');
+      window.location.href = '/';
+    }
   };
 
   return (
@@ -25,12 +45,14 @@ const AdminSideNav = () => {
         <p className="sidebar-alias">System Admin</p>
       </div>
       <ul className="sidebar-nav">
+        <li className="nav-section-heading">DASHBOARD</li>
         <li>
           <NavLink to="/admin-dashboard" end>
             <AiOutlineDashboard className="nav-icon" />
             <span>Analytics</span>
           </NavLink>
         </li>
+        <li className="nav-section-heading">USER MANAGEMENT</li>
         <li>
           <NavLink to="/admin-dashboard/users">
             <FaUserGraduate className="nav-icon" />
@@ -44,12 +66,19 @@ const AdminSideNav = () => {
           </NavLink>
         </li>
         <li>
+          <NavLink to="/admin-dashboard/change-requests">
+            <FaExchangeAlt className="nav-icon" />
+            <span>Change Requests</span>
+          </NavLink>
+        </li>
+        <li className="nav-section-heading">SYSTEM</li>
+        <li>
           <NavLink to="/admin-dashboard/content">
             <FaRegNewspaper className="nav-icon" />
             <span>Manage Content</span>
           </NavLink>
         </li>
-         <li>
+        <li>
           <NavLink to="/admin-dashboard/health">
             <FaHeartbeat className="nav-icon" />
             <span>System Health</span>

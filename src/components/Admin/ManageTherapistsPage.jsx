@@ -83,8 +83,8 @@ const ManageTherapistsPage = () => {
       await fetchTherapists();
 
       setSuccess(data?.message || `Invitation successfully sent to ${newTherapist.email}!`);
-      setIsModalOpen(false);
-      setNewTherapist({ name: '', email: '' });
+    setIsModalOpen(false);
+    setNewTherapist({ name: '', email: '' });
     } catch (error) {
       console.error('Error sending invitation:', error);
       console.error('Full error object:', error);
@@ -270,36 +270,36 @@ const ManageTherapistsPage = () => {
             <p>No therapists found. Add your first therapist using the button above.</p>
           </div>
         ) : (
-          <table className="admin-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Date Added</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {therapists.map(therapist => (
-                <tr key={therapist.id}>
-                  <td>{therapist.name}</td>
-                  <td>{therapist.email}</td>
-                  <td>{therapist.dateAdded}</td>
-                  <td><span className={`status-badge status-${therapist.status.toLowerCase().replace(' ', '-')}`}>{therapist.status}</span></td>
-                  <td className="actions-cell">
+        <table className="admin-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Date Added</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {therapists.map(therapist => (
+              <tr key={therapist.id}>
+                <td>{therapist.name}</td>
+                <td>{therapist.email}</td>
+                <td>{therapist.dateAdded}</td>
+                <td><span className={`status-badge status-${therapist.status.toLowerCase().replace(' ', '-')}`}>{therapist.status}</span></td>
+                <td className="actions-cell">
                     <button 
                       className="action-btn edit" 
                       onClick={() => handleResetPassword(therapist.email)}
                     >
                       Reset Password
                     </button>
-                    <button className="action-btn delete">Deactivate</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  <button className="action-btn delete">Deactivate</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
         )}
       </div>
     </div>

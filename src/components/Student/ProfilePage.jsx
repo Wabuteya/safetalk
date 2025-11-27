@@ -7,7 +7,7 @@ const ProfilePage = () => {
     firstName: 'Alex',
     lastName: 'Doe',
     contact: '123-456-7890',
-    gender: 'Prefer not to say',
+    gender: 'Male',
   });
 
   const [passwordData, setPasswordData] = useState({
@@ -88,8 +88,6 @@ const ProfilePage = () => {
               <select id="gender" name="gender" value={profileData.gender} onChange={handleProfileChange}>
                 <option>Male</option>
                 <option>Female</option>
-                <option>Non-binary</option>
-                <option>Prefer not to say</option>
               </select>
             </div>
           </div>

@@ -1,5 +1,5 @@
+import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
 import { AiOutlineDashboard } from 'react-icons/ai';
 import {
   FaClipboardList,
@@ -11,16 +11,19 @@ import {
   FaSignOutAlt
 } from 'react-icons/fa';
 import { supabase } from '../../supabaseClient';
+import StatusSelector from './StatusSelector.jsx'; // Import the new component
 
 const TherapistSideNav = () => {
   const navigate = useNavigate();
   const [therapistName, setTherapistName] = useState('Therapist');
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const fetchTherapistName = async () => {
+    const fetchUser = async () => {
       try {
         // Get current user
         const { data: { user } } = await supabase.auth.getUser();
+        setUser(user);
         
         if (user) {
           // Fetch therapist profile from database
@@ -50,13 +53,42 @@ const TherapistSideNav = () => {
       }
     };
 
-    fetchTherapistName();
+    fetchUser();
   }, []);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    localStorage.removeItem('userAlias');
-    navigate('/', { replace: true });
+    try {
+      // Set status to offline before logging out
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          await supabase
+            .from('therapist_profiles')
+            .update({ status: 'offline' })
+            .eq('user_id', user.id);
+        }
+      } catch (error) {
+        console.error('Error setting status to offline on logout:', error);
+      }
+      
+      // Clear user session
+      const { error: signOutError } = await supabase.auth.signOut();
+      
+      if (signOutError) {
+        console.error('Error signing out:', signOutError);
+      }
+      
+      // Clear localStorage
+      localStorage.removeItem('userAlias');
+      
+      // Force navigation to home page (full page reload)
+      window.location.href = '/';
+    } catch (err) {
+      console.error('Logout error:', err);
+      // Force navigation even if there's an error
+      localStorage.removeItem('userAlias');
+      window.location.href = '/';
+    }
   };
 
   return (
@@ -66,14 +98,18 @@ const TherapistSideNav = () => {
       </div>
       <div className="sidebar-profile">
         <p className="sidebar-alias">{therapistName}</p>
+        {/* --- ADD THE NEW COMPONENT HERE --- */}
+        {user && <StatusSelector userId={user.id} />}
       </div>
       <ul className="sidebar-nav">
+        <li className="nav-section-heading">DASHBOARD</li>
         <li>
           <NavLink to="/therapist-dashboard" end>
             <AiOutlineDashboard className="nav-icon" />
             <span>Dashboard Home</span>
           </NavLink>
         </li>
+        <li className="nav-section-heading">CLIENT MANAGEMENT</li>
         <li>
           <NavLink to="/therapist-dashboard/caseload">
             <FaClipboardList className="nav-icon" />
@@ -92,6 +128,7 @@ const TherapistSideNav = () => {
             <span>Live Chat</span>
           </NavLink>
         </li>
+        <li className="nav-section-heading">RESOURCES</li>
         <li>
           <NavLink to="/therapist-dashboard/resources">
             <FaLightbulb className="nav-icon" />
@@ -101,9 +138,10 @@ const TherapistSideNav = () => {
         <li>
           <NavLink to="/therapist-dashboard/alerts">
             <FaBell className="nav-icon" />
-            <span>Crisis Alerts (1)</span>
+            <span>Crisis Alerts</span>
           </NavLink>
         </li>
+        <li className="nav-section-heading">ACCOUNT</li>
         <li>
           <NavLink to="/therapist-dashboard/profile">
             <FaUserCircle className="nav-icon" />

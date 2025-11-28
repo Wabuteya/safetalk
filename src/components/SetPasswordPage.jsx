@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import './SetPasswordPage.css';
+import PasswordInput from './PasswordInput';
 
 const SetPasswordPage = () => {
     const navigate = useNavigate();
@@ -131,8 +132,7 @@ const SetPasswordPage = () => {
                 <form onSubmit={handleSubmit} className="sp-form">
                     <div className="sp-form-group">
                         <label htmlFor="password" className="sp-label">Password</label>
-                        <input 
-                            type="password" 
+                        <PasswordInput 
                             id="password" 
                             value={password} 
                             onChange={(e) => {
@@ -153,8 +153,7 @@ const SetPasswordPage = () => {
                     
                     <div className="sp-form-group">
                         <label htmlFor="confirmPassword" className="sp-label">Confirm Password</label>
-                        <input 
-                            type="password" 
+                        <PasswordInput 
                             id="confirmPassword" 
                             value={confirmPassword} 
                             onChange={(e) => {

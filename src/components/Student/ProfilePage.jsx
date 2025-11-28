@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './ProfilePage.css';
+import PasswordInput from '../PasswordInput';
 
 const ProfilePage = () => {
   // Mock data - in a real app, this would be fetched from the backend
@@ -106,15 +107,15 @@ const ProfilePage = () => {
             <p className="section-description">Change your password below.</p>
             <div className="form-group">
                 <label htmlFor="currentPassword">Current Password</label>
-                <input type="password" id="currentPassword" name="currentPassword" value={passwordData.currentPassword} onChange={handlePasswordChange} required/>
+                <PasswordInput id="currentPassword" name="currentPassword" value={passwordData.currentPassword} onChange={handlePasswordChange} required/>
             </div>
             <div className="form-group">
                 <label htmlFor="newPassword">New Password</label>
-                <input type="password" id="newPassword" name="newPassword" value={passwordData.newPassword} onChange={handlePasswordChange} required/>
+                <PasswordInput id="newPassword" name="newPassword" value={passwordData.newPassword} onChange={handlePasswordChange} required/>
             </div>
             <div className="form-group">
                 <label htmlFor="confirmPassword">Confirm New Password</label>
-                <input type="password" id="confirmPassword" name="confirmPassword" value={passwordData.confirmPassword} onChange={handlePasswordChange} required/>
+                <PasswordInput id="confirmPassword" name="confirmPassword" value={passwordData.confirmPassword} onChange={handlePasswordChange} required/>
             </div>
             <button type="submit" className="save-btn">Change Password</button>
         </form>

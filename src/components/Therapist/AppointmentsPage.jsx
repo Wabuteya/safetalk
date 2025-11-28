@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
@@ -24,12 +24,8 @@ const AppointmentsPage = () => {
   const handleCloseModal = useCallback(() => {
     setSelectedEvent(null);
   }, []);
-  
-  useEffect(() => {
-    fetchAppointments();
-  }, [user]);
 
-  const fetchAppointments = async () => {
+  const fetchAppointments = useCallback(async () => {
     try {
       setLoading(true);
       setError('');
@@ -40,15 +36,24 @@ const AppointmentsPage = () => {
         return;
       }
 
-      // Fetch appointments first
+      // Get today's date in YYYY-MM-DD format (local timezone)
+      const today = new Date();
+      const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+      console.log('Fetching appointments for therapist:', user.id);
+      console.log('Today date string:', todayStr);
+
+      // Fetch appointments - include today and future dates
       const { data: appointments, error: appointmentsError } = await supabase
         .from('appointments')
         .select('id, therapist_id, student_id, appointment_date, start_time, end_time, status, notes, student_notes')
         .eq('therapist_id', user.id)
         .in('status', ['scheduled', 'completed'])
-        .gte('appointment_date', new Date().toISOString().split('T')[0])
+        .gte('appointment_date', todayStr)
         .order('appointment_date', { ascending: true })
         .order('start_time', { ascending: true });
+
+      console.log('Fetched appointments:', appointments);
 
       if (appointmentsError) throw appointmentsError;
 
@@ -95,7 +100,18 @@ const AppointmentsPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    fetchAppointments();
+  }, [fetchAppointments]);
+
+  // Refresh appointments when switching to calendar tab
+  useEffect(() => {
+    if (activeTab === 'calendar' && user) {
+      fetchAppointments();
+    }
+  }, [activeTab, user, fetchAppointments]);
 
   const handleCancelAppointment = async () => {
     if (!window.confirm('Are you sure you want to cancel this appointment?')) {
@@ -157,6 +173,15 @@ const AppointmentsPage = () => {
           >
             Set Availability
           </button>
+          {activeTab === 'calendar' && (
+            <button
+              onClick={fetchAppointments}
+              className="refresh-btn"
+              title="Refresh appointments"
+            >
+              ↻ Refresh
+            </button>
+          )}
         </div>
       </div>
 

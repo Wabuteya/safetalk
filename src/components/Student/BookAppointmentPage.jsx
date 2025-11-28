@@ -67,7 +67,13 @@ const BookAppointmentPage = () => {
       if (therapistError) throw therapistError;
       setTherapist(therapistProfile);
 
-      if (availError) throw availError;
+      if (availError) {
+        console.error('Error fetching availability:', availError);
+        throw availError;
+      }
+
+      console.log('Fetched availability data for therapist:', therapistId, availabilityData);
+      console.log('Number of availability slots:', availabilityData?.length || 0);
 
       // Group by day of week
       const grouped = {};
@@ -81,6 +87,7 @@ const BookAppointmentPage = () => {
         });
       });
 
+      console.log('Grouped availability by day:', grouped);
       setAvailability(grouped);
     } catch (err) {
       console.error('Error fetching therapist and availability:', err);
@@ -148,7 +155,7 @@ const BookAppointmentPage = () => {
     return slots;
   };
 
-  const getAvailableTimeSlots = async (dayOfWeek) => {
+  const getAvailableTimeSlots = useCallback(async (dayOfWeek, date) => {
     if (!availability[dayOfWeek]) return [];
     
     // Generate granular time slots (1-hour increments) for each available block
@@ -159,15 +166,15 @@ const BookAppointmentPage = () => {
     });
     
     // Check which slots are already booked for the selected date (batch check)
-    const bookedSlots = await checkBookedSlots(selectedDate, allSlots);
+    const bookedSlots = await checkBookedSlots(date, allSlots);
     
     // Filter out booked slots
     const availableSlots = allSlots.filter(slot => !bookedSlots.has(slot.start_time));
     
     return availableSlots;
-  };
+  }, [availability, therapistId]);
 
-  const checkBookedSlots = async (date, timeSlots) => {
+  const checkBookedSlots = useCallback(async (date, timeSlots) => {
     try {
       if (!date || !timeSlots || timeSlots.length === 0) return new Set();
       
@@ -198,7 +205,7 @@ const BookAppointmentPage = () => {
       console.error('Error checking booked slots:', err);
       return new Set();
     }
-  };
+  }, [therapistId]);
 
   const handleDateSelect = useCallback(async (date) => {
     setSelectedDate(date);
@@ -208,12 +215,18 @@ const BookAppointmentPage = () => {
     // Load available time slots for the selected date
     if (date) {
       setLoadingTimeSlots(true);
-      const dayOfWeek = new Date(date).getDay();
-      const slots = await getAvailableTimeSlots(dayOfWeek);
-      setAvailableTimeSlots(slots);
-      setLoadingTimeSlots(false);
+      try {
+        const dayOfWeek = new Date(date).getDay();
+        const slots = await getAvailableTimeSlots(dayOfWeek, date);
+        setAvailableTimeSlots(slots);
+      } catch (err) {
+        console.error('Error loading time slots:', err);
+        setError('Failed to load available time slots. Please try again.');
+      } finally {
+        setLoadingTimeSlots(false);
+      }
     }
-  }, []);
+  }, [getAvailableTimeSlots]);
 
   const handleTimeSlotSelect = useCallback((slot) => {
     // Slot availability is already checked when loading, so we can just select it
@@ -254,7 +267,7 @@ const BookAppointmentPage = () => {
         setBooking(false);
         // Reload available slots
         const dayOfWeek = new Date(selectedDate).getDay();
-        const slots = await getAvailableTimeSlots(dayOfWeek);
+        const slots = await getAvailableTimeSlots(dayOfWeek, selectedDate);
         setAvailableTimeSlots(slots);
         return;
       }

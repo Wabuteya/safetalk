@@ -133,9 +133,11 @@ const SignUpPage = () => {
         // Check if email confirmation is required
         if (data.session === null && data.user) {
           // Email confirmation required - navigate to verification page
+          setLoading(false); // Stop loading before navigation
           navigate('/please-verify');
         } else if (data.session) {
           // Email confirmation not required or already confirmed - go to assessment
+          setLoading(false); // Stop loading before navigation
           navigate('/assessment');
         } else {
           // Edge case - user created but unclear state

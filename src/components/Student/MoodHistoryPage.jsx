@@ -1,4 +1,3 @@
-import React from 'react';
 import './MoodHistoryPage.css';
 
 const MoodHistoryPage = () => {

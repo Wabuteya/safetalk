@@ -2,13 +2,15 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
 import { useUser } from '../../contexts/UserContext';
+import TherapistNotes from './TherapistNotes';
 import './StudentDetailView.css';
 
 // Appointments List Component for Student Detail View
-const AppointmentsList = ({ studentId, studentAlias }) => {
+const AppointmentsList = ({ studentId, studentAlias, onAppointmentCountChange }) => {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [deleting, setDeleting] = useState(null);
 
   useEffect(() => {
     fetchAppointments();
@@ -36,11 +38,46 @@ const AppointmentsList = ({ studentId, studentAlias }) => {
 
       if (appointmentsError) throw appointmentsError;
       setAppointments(appointmentsData || []);
+      
+      // Notify parent component of appointment count
+      if (onAppointmentCountChange) {
+        onAppointmentCountChange(appointmentsData?.length || 0);
+      }
     } catch (err) {
       console.error('Error fetching appointments:', err);
       setError(`Failed to load appointments: ${err.message || 'Unknown error'}.`);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteAppointment = async (appointmentId) => {
+    if (!window.confirm('Are you sure you want to delete this appointment? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      setDeleting(appointmentId);
+      const { error: deleteError } = await supabase
+        .from('appointments')
+        .delete()
+        .eq('id', appointmentId);
+
+      if (deleteError) throw deleteError;
+
+      // Remove from local state
+      setAppointments(prev => prev.filter(apt => apt.id !== appointmentId));
+      
+      // Update count
+      if (onAppointmentCountChange) {
+        const newCount = appointments.length - 1;
+        onAppointmentCountChange(newCount);
+      }
+    } catch (err) {
+      console.error('Error deleting appointment:', err);
+      alert('Failed to delete appointment. Please try again.');
+    } finally {
+      setDeleting(null);
     }
   };
 
@@ -124,20 +161,38 @@ const AppointmentsList = ({ studentId, studentAlias }) => {
         <div className="appointments-section">
           <h3>Past Appointments</h3>
           <div className="appointments-grid">
-            {past.map(apt => (
-              <div key={apt.id} className="appointment-card past">
-                <div className="appointment-header">
-                  <h4>{formatDate(apt.appointment_date)}</h4>
-                  {getStatusBadge(apt.status)}
+            {past.map(apt => {
+              const isPast = new Date(apt.appointment_date) < new Date(new Date().toISOString().split('T')[0]);
+              return (
+                <div key={apt.id} className="appointment-card past">
+                  <div className="appointment-header">
+                    <h4>{formatDate(apt.appointment_date)}</h4>
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                      {getStatusBadge(apt.status)}
+                      {isPast && (
+                        <button
+                          onClick={() => handleDeleteAppointment(apt.id)}
+                          disabled={deleting === apt.id}
+                          className="delete-appointment-btn"
+                          title="Delete appointment"
+                        >
+                          {deleting === apt.id ? 'Deleting...' : '🗑️'}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  <div className="appointment-details">
+                    <p><strong>Time:</strong> {formatTime(apt.start_time)} - {formatTime(apt.end_time)}</p>
+                    {apt.student_notes && (
+                      <p><strong>Student Notes:</strong> {apt.student_notes}</p>
+                    )}
+                    {apt.notes && (
+                      <p><strong>Therapist Notes:</strong> {apt.notes}</p>
+                    )}
+                  </div>
                 </div>
-                <div className="appointment-details">
-                  <p><strong>Time:</strong> {formatTime(apt.start_time)} - {formatTime(apt.end_time)}</p>
-                  {apt.notes && (
-                    <p><strong>Therapist Notes:</strong> {apt.notes}</p>
-                  )}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
@@ -158,6 +213,8 @@ const StudentDetailView = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [student, setStudent] = useState(null);
   const [sharedJournals, setSharedJournals] = useState([]);
+  const [appointmentCount, setAppointmentCount] = useState(0);
+  const [noteCount, setNoteCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -172,8 +229,8 @@ const StudentDetailView = () => {
       setLoading(true);
       setError('');
 
-        // Verify relationship and fetch student profile + journals in parallel
-        const [relationshipResult, profileResult, journalsResult] = await Promise.all([
+        // Verify relationship and fetch student profile + journals + appointment count + notes count in parallel
+        const [relationshipResult, profileResult, journalsResult, appointmentsResult, notesResult] = await Promise.all([
           supabase
             .from('therapist_student_relations')
             .select('therapist_id') // Only need therapist_id for verification
@@ -191,12 +248,24 @@ const StudentDetailView = () => {
             .eq('student_id', studentId)
             .eq('is_shared_with_therapist', true)
             .order('entry_date', { ascending: false })
-            .order('shared_at', { ascending: false })
+            .order('shared_at', { ascending: false }),
+          supabase
+            .from('appointments')
+            .select('id') // Only need count
+            .eq('therapist_id', user.id)
+            .eq('student_id', studentId),
+          supabase
+            .from('therapist_notes')
+            .select('id') // Only need count
+            .eq('therapist_id', user.id)
+            .eq('student_id', studentId)
         ]);
 
         const { data: relationship, error: relError } = relationshipResult;
         const { data: studentProfile, error: profileError } = profileResult;
         const { data: journals, error: journalsError } = journalsResult;
+        const { data: appointments, error: appointmentsError } = appointmentsResult;
+        const { data: notes, error: notesError } = notesResult;
 
         if (relError || !relationship) {
           setError('Student not found in your caseload.');
@@ -224,6 +293,18 @@ const StudentDetailView = () => {
           console.error('Error fetching journals:', journalsError);
         } else {
           setSharedJournals(journals || []);
+        }
+
+        if (appointmentsError) {
+          console.error('Error fetching appointment count:', appointmentsError);
+        } else {
+          setAppointmentCount(appointments?.length || 0);
+        }
+
+        if (notesError) {
+          console.error('Error fetching note count:', notesError);
+        } else {
+          setNoteCount(notes?.length || 0);
         }
 
       } catch (err) {
@@ -326,13 +407,13 @@ const StudentDetailView = () => {
           className={`tab-btn ${activeTab === 'appointments' ? 'active' : ''}`}
           onClick={() => setActiveTab('appointments')}
         >
-          Appointments
+          Appointments {appointmentCount > 0 && <span className="tab-badge">({appointmentCount})</span>}
         </button>
         <button
           className={`tab-btn ${activeTab === 'notes' ? 'active' : ''}`}
           onClick={() => setActiveTab('notes')}
         >
-          Therapist Notes
+          Therapist Notes {noteCount > 0 && <span className="tab-badge">({noteCount})</span>}
         </button>
       </div>
 
@@ -425,17 +506,21 @@ const StudentDetailView = () => {
 
         {activeTab === 'appointments' && (
           <div className="appointments-tab">
-            <AppointmentsList studentId={studentId} studentAlias={student?.alias} />
+            <AppointmentsList 
+              studentId={studentId} 
+              studentAlias={student?.alias}
+              onAppointmentCountChange={setAppointmentCount}
+            />
           </div>
         )}
 
         {activeTab === 'notes' && (
           <div className="notes-tab">
-            <div className="placeholder-content">
-              <div className="placeholder-icon">📋</div>
-              <h2>Therapist Notes</h2>
-              <p>Private notes (not visible to student) will be implemented here.</p>
-            </div>
+            <TherapistNotes 
+              studentId={studentId} 
+              studentAlias={student?.alias}
+              onNoteCountChange={setNoteCount}
+            />
           </div>
         )}
       </div>

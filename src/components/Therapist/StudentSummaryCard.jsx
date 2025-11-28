@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import './CaseloadPage.css';
 import './StatusSelector.css'; // For status dot colors
@@ -38,9 +37,25 @@ const StudentSummaryCard = ({ student }) => {
         <div className="detail-item">
           <strong>Journals Shared:</strong> {student.journalsShared || 0}
         </div>
+        <div className="detail-item">
+          <strong>Appointments:</strong> {student.appointmentsCount || 0}
+        </div>
+        <div className="detail-item">
+          <strong>Notes:</strong> {student.notesCount || 0}
+        </div>
         {student.newJournals > 0 && (
           <div className="new-journal-indicator">
             {student.newJournals} New Journal{student.newJournals > 1 ? 's' : ''}
+          </div>
+        )}
+        {student.appointmentsCount > 0 && (
+          <div className="appointment-indicator">
+            {student.appointmentsCount} Appointment{student.appointmentsCount > 1 ? 's' : ''}
+          </div>
+        )}
+        {student.notesCount > 0 && (
+          <div className="notes-indicator">
+            {student.notesCount} Note{student.notesCount > 1 ? 's' : ''}
           </div>
         )}
       </div>

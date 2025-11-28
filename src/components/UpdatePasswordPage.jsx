@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import './UpdatePasswordPage.css'; // Dedicated CSS file
+import PasswordInput from './PasswordInput';
 
 const UpdatePasswordPage = () => {
     const navigate = useNavigate();
@@ -208,8 +209,7 @@ const UpdatePasswordPage = () => {
                 <form onSubmit={handleSubmit} className="up-form">
                     <div className="up-form-group">
                         <label htmlFor="password" className="up-label">New Password</label>
-                        <input 
-                            type="password" 
+                        <PasswordInput 
                             id="password" 
                             value={password} 
                             onChange={(e) => {
@@ -230,8 +230,7 @@ const UpdatePasswordPage = () => {
                     
                     <div className="up-form-group">
                         <label htmlFor="confirmPassword" className="up-label">Confirm New Password</label>
-                        <input 
-                            type="password" 
+                        <PasswordInput 
                             id="confirmPassword" 
                             value={confirmPassword} 
                             onChange={(e) => {

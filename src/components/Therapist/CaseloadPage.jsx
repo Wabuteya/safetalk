@@ -38,8 +38,8 @@ const CaseloadPage = () => {
 
         const studentIds = relationships.map(rel => rel.student_id);
 
-        // Fetch student profiles and journal counts in parallel for better performance
-        const [profilesResult, journalsResult] = await Promise.all([
+        // Fetch student profiles, journal counts, appointment counts, and note counts in parallel for better performance
+        const [profilesResult, journalsResult, appointmentsResult, notesResult] = await Promise.all([
           supabase
             .from('student_profiles')
             .select('user_id, alias') // Only select needed fields
@@ -48,17 +48,35 @@ const CaseloadPage = () => {
             .from('journal_entries')
             .select('student_id, therapist_viewed_at') // Only select needed fields
             .in('student_id', studentIds)
-            .eq('is_shared_with_therapist', true)
+            .eq('is_shared_with_therapist', true),
+          supabase
+            .from('appointments')
+            .select('student_id') // Only select needed fields
+            .in('student_id', studentIds)
+            .eq('therapist_id', user.id),
+          supabase
+            .from('therapist_notes')
+            .select('student_id') // Only select needed fields
+            .in('student_id', studentIds)
+            .eq('therapist_id', user.id)
         ]);
 
         const { data: studentProfiles, error: profilesError } = profilesResult;
         const { data: journalCounts, error: journalError } = journalsResult;
+        const { data: appointments, error: appointmentsError } = appointmentsResult;
+        const { data: notes, error: notesError } = notesResult;
 
         if (profilesError) {
           console.error('Error fetching student profiles:', profilesError);
         }
         if (journalError) {
           console.error('Error fetching journal counts:', journalError);
+        }
+        if (appointmentsError) {
+          console.error('Error fetching appointment counts:', appointmentsError);
+        }
+        if (notesError) {
+          console.error('Error fetching note counts:', notesError);
         }
 
         // Create a map for quick lookup
@@ -81,6 +99,24 @@ const CaseloadPage = () => {
           }
         });
 
+        // Count appointments per student
+        const appointmentCountMap = {};
+        (appointments || []).forEach(apt => {
+          if (!appointmentCountMap[apt.student_id]) {
+            appointmentCountMap[apt.student_id] = 0;
+          }
+          appointmentCountMap[apt.student_id]++;
+        });
+
+        // Count notes per student
+        const noteCountMap = {};
+        (notes || []).forEach(note => {
+          if (!noteCountMap[note.student_id]) {
+            noteCountMap[note.student_id] = 0;
+          }
+          noteCountMap[note.student_id]++;
+        });
+
         // Format student data with aliases from database
         const formattedStudents = studentIds.map(studentId => {
           const profile = profileMap[studentId];
@@ -89,6 +125,8 @@ const CaseloadPage = () => {
             alias: profile?.alias || `Student ${studentId.substring(0, 8)}...`,
             journalsShared: journalCountMap[studentId] || 0,
             newJournals: unreadJournalCountMap[studentId] || 0,
+            appointmentsCount: appointmentCountMap[studentId] || 0,
+            notesCount: noteCountMap[studentId] || 0,
             lastContact: 'N/A', // Will need to fetch from chat/appointments
             status: 'offline' // Will need to fetch from student status if available
           };

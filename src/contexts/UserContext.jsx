@@ -30,29 +30,39 @@ export const UserProvider = ({ children }) => {
             
             // Fetch profile in background (non-blocking)
             const role = session.user.user_metadata?.role;
-            if (role === 'student') {
-              supabase
-                .from('student_profiles')
-                .select('user_id, alias')
-                .eq('user_id', session.user.id)
-                .single()
-                .then(({ data: profile }) => {
-                  if (profile) setUserProfile(profile);
-                })
-                .catch(() => {});
-            } else if (role === 'therapist') {
-              supabase
-                .from('therapist_profiles')
-                .select('user_id, full_name')
-                .eq('user_id', session.user.id)
-                .single()
-                .then(({ data: profile }) => {
-                  if (profile) setUserProfile(profile);
-                })
-                .catch(() => {});
-            } else if (role === 'admin') {
-              setUserProfile({ user_id: session.user.id });
-            }
+          if (role === 'student') {
+            supabase
+              .from('student_profiles')
+              .select('user_id, alias')
+              .eq('user_id', session.user.id)
+              .maybeSingle()
+              .then(({ data: profile, error }) => {
+                if (!error && profile) {
+                  setUserProfile(profile);
+                }
+              })
+              .catch((err) => {
+                // Silently handle errors - profile fetch is not critical
+                console.warn('Error fetching student profile:', err);
+              });
+          } else if (role === 'therapist') {
+            supabase
+              .from('therapist_profiles')
+              .select('user_id, full_name')
+              .eq('user_id', session.user.id)
+              .maybeSingle()
+              .then(({ data: profile, error }) => {
+                if (!error && profile) {
+                  setUserProfile(profile);
+                }
+              })
+              .catch((err) => {
+                // Silently handle errors - profile fetch is not critical
+                console.warn('Error fetching therapist profile:', err);
+              });
+          } else if (role === 'admin') {
+            setUserProfile({ user_id: session.user.id });
+          }
             break; // Found user, exit loop
           }
         } catch (err) {
@@ -88,23 +98,23 @@ export const UserProvider = ({ children }) => {
           console.log('User role:', role);
           
           if (role === 'student') {
-            const { data: profile } = await supabase
+            const { data: profile, error: profileError } = await supabase
               .from('student_profiles')
               .select('user_id, alias')
               .eq('user_id', session.user.id)
-              .single();
+              .maybeSingle();
             
-            if (profile) {
+            if (!profileError && profile) {
               setUserProfile(profile);
             }
           } else if (role === 'therapist') {
-            const { data: profile } = await supabase
+            const { data: profile, error: profileError } = await supabase
               .from('therapist_profiles')
               .select('user_id, full_name')
               .eq('user_id', session.user.id)
-              .single();
+              .maybeSingle();
             
-            if (profile) {
+            if (!profileError && profile) {
               setUserProfile(profile);
             }
           } else if (role === 'admin') {

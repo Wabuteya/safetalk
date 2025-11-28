@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './Login.css';
 import { supabase } from '../../supabaseClient';
+import PasswordInput from '../PasswordInput';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -169,8 +170,7 @@ const Login = () => {
 
           <label className="input-group">
             <span className="input-label">Password</span>
-            <input
-              type="password"
+            <PasswordInput
               name="password"
               placeholder="••••••••"
               value={password}

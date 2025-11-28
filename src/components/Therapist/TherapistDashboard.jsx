@@ -70,7 +70,7 @@ const TherapistDashboard = () => {
                     .from('therapist_profiles')
                     .select('is_live, status')
                     .eq('user_id', currentUser.id)
-                    .single();
+                    .maybeSingle();
                 
                 if (error && error.code !== 'PGRST116') {
                     console.error("Error checking profile:", error);

@@ -15,9 +15,11 @@ import FindTherapistPage from './components/Student/FindTherapistPage';
 import ResourcesPage from './components/Student/ResourcesPage';
 import ProfilePage from './components/Student/ProfilePage';
 import TherapistProfilePage from './components/Student/TherapistProfilePage';
+import BookAppointmentPage from './components/Student/BookAppointmentPage';
 import TherapistDashboard from './components/Therapist/TherapistDashboard';
 import TherapistDashboardHome from './components/Therapist/TherapistDashboardHome';
 import CaseloadPage from './components/Therapist/CaseloadPage';
+import StudentDetailView from './components/Therapist/StudentDetailView';
 import CrisisAlertsPage from './components/Therapist/CrisisAlertsPage';
 import ManageResourcesPage from './components/Therapist/ManageResourcesPage';
 import AppointmentsPage from './components/Therapist/AppointmentsPage';
@@ -25,11 +27,13 @@ import TherapistProfilePageTherapist from './components/Therapist/TherapistProfi
 import AdminDashboard from './components/Admin/AdminDashboard';
 import AdminDashboardHome from './components/Admin/AdminDashboardHome';
 import ManageTherapistsPage from './components/Admin/ManageTherapistsPage';
+import ManageChangeRequestsPage from './components/Admin/ManageChangeRequestsPage';
 import SignUpPage from './components/SignUp/SignUpPage';
 import InitialAssessment from './components/Assessment_Form/InitialAssessment';
 import VerifyEmailPage from './VerifyEmailPage';
 import ForgotPasswordPage from './components/ForgotPasswordPage';
 import UpdatePasswordPage from './components/UpdatePasswordPage';
+import SetPasswordPage from './components/SetPasswordPage';
 
 const AppRoutes = () => {
   return (
@@ -40,6 +44,7 @@ const AppRoutes = () => {
       <Route path="/signup" element={<SignUpPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/update-password" element={<UpdatePasswordPage />} />
+      <Route path="/set-password" element={<SetPasswordPage />} />
       <Route path="/please-verify" element={<VerifyEmailPage />} />
       <Route path="/assessment" element={<InitialAssessment />} />
 
@@ -50,6 +55,7 @@ const AppRoutes = () => {
         <Route path="mood-history" element={<MoodHistoryPage />} />
         <Route path="therapists" element={<FindTherapistPage />} />
         <Route path="therapists/:therapistId" element={<TherapistProfilePage />} />
+        <Route path="book-appointment/:therapistId" element={<BookAppointmentPage />} />
         <Route path="resources" element={<ResourcesPage />} />
         <Route path="profile" element={<ProfilePage />} />
       </Route>
@@ -64,7 +70,7 @@ const AppRoutes = () => {
         <Route path="caseload" element={<CaseloadPage />} />
         <Route
           path="student/:studentId"
-          element={<Placeholder title="Student Progress & Details Page" />}
+          element={<StudentDetailView />}
         />
         <Route path="appointments" element={<AppointmentsPage />} />
         <Route path="chat" element={<Placeholder title="Live Chat Page" />} />
@@ -81,6 +87,7 @@ const AppRoutes = () => {
           element={<Placeholder title="Manage Students Page" />}
         />
         <Route path="therapists" element={<ManageTherapistsPage />} />
+        <Route path="change-requests" element={<ManageChangeRequestsPage />} />
         <Route
           path="content"
           element={<Placeholder title="Manage Content Page" />}

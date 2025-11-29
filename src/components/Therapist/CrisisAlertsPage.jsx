@@ -1,27 +1,10 @@
 import React, { useState } from 'react';
 import './CrisisAlertsPage.css';
 
-// Mock data for active alerts
-const mockAlerts = [
-  {
-    id: 'alert-001',
-    studentAlias: 'Anonymous Panda',
-    triggerType: 'High-Risk Keywords in Journal',
-    triggerContent: 'I just feel so hopeless and I don\'t see a way out. I feel like it will never get better and I just want it to end.',
-    timestamp: '2025-11-15T10:30:00Z',
-    status: 'Active',
-    emergencyContact: {
-        name: 'Alex Doe',
-        contact: '123-456-7890',
-        relationship: 'Student'
-    }
-  },
-  // Add another alert here to test the queue
-];
-
 const CrisisAlertsPage = () => {
-  const [alerts, setAlerts] = useState(mockAlerts);
-  const [selectedAlert, setSelectedAlert] = useState(alerts[0] || null);
+  // No dummy data - will fetch from backend when implemented
+  const [alerts, setAlerts] = useState([]);
+  const [selectedAlert, setSelectedAlert] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [contactInfoRevealed, setContactInfoRevealed] = useState(false);
 
@@ -34,6 +17,7 @@ const CrisisAlertsPage = () => {
   const handleResolveAlert = () => {
     if (selectedAlert) {
       // In a real app, this sends an API call to the backend
+      // For now, this is a placeholder - will be implemented when backend is ready
       alert(`Alert for ${selectedAlert.studentAlias} has been marked as resolved.`);
       const updatedAlerts = alerts.filter(a => a.id !== selectedAlert.id);
       setAlerts(updatedAlerts);
@@ -61,20 +45,26 @@ const CrisisAlertsPage = () => {
       {/* --- LEFT SIDEBAR: ALERT QUEUE --- */}
       <div className="alert-queue">
         <h3>Active Alerts ({alerts.length})</h3>
-        {alerts.map(alert => (
-          <div
-            key={alert.id}
-            className={`alert-item ${selectedAlert?.id === alert.id ? 'active' : ''}`}
-            onClick={() => {
-              setSelectedAlert(alert);
-              setContactInfoRevealed(false); // Reset reveal status when switching
-            }}
-          >
-            <p className="alias">{alert.studentAlias}</p>
-            <p className="trigger">{alert.triggerType}</p>
+        {alerts.length === 0 ? (
+          <div className="no-alerts-message">
+            <p>No active alerts.</p>
+            <p className="subtext">Crisis alerts will appear here when detected.</p>
           </div>
-        ))}
-        {alerts.length === 0 && <p className="no-alerts">No active alerts.</p>}
+        ) : (
+          alerts.map(alert => (
+            <div
+              key={alert.id}
+              className={`alert-item ${selectedAlert?.id === alert.id ? 'active' : ''}`}
+              onClick={() => {
+                setSelectedAlert(alert);
+                setContactInfoRevealed(false);
+              }}
+            >
+              <p className="alias">{alert.studentAlias}</p>
+              <p className="trigger">{alert.triggerType}</p>
+            </div>
+          ))
+        )}
       </div>
 
       {/* --- RIGHT CONTENT: ALERT DETAILS --- */}
@@ -110,10 +100,11 @@ const CrisisAlertsPage = () => {
             </div>
           </>
         ) : (
-            <div className="no-alert-selected">
-                <h2>All Clear</h2>
-                <p>There are no active alerts that require your attention.</p>
-            </div>
+          <div className="no-alert-selected">
+            <h2>All Clear</h2>
+            <p>There are no active alerts that require your attention.</p>
+            <p className="subtext">When crisis alerts are detected, they will appear in the sidebar and details will be shown here.</p>
+          </div>
         )}
       </div>
     </div>

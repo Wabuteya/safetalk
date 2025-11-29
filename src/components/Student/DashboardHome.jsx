@@ -1,32 +1,50 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useUser } from '../../contexts/UserContext';
 import { supabase } from '../../supabaseClient';
+import UpcomingAppointmentsWidget from './UpcomingAppointmentsWidget';
 
 const DashboardHome = () => {
-  const [userAlias, setUserAlias] = useState('Welcome');
+  const navigate = useNavigate();
+  const { userProfile, user } = useUser(); // Use cached user profile from context
+  const [journalCount, setJournalCount] = useState(0);
+  const [loadingJournalCount, setLoadingJournalCount] = useState(true);
 
-  useEffect(() => {
-    // Try to get alias from localStorage first (for quick display)
-    const storedAlias = localStorage.getItem('userAlias');
-    if (storedAlias) {
-      setUserAlias(storedAlias);
+  // Get alias from cached profile or localStorage fallback
+  const userAlias = useMemo(() => {
+    if (userProfile?.alias) {
+      localStorage.setItem('userAlias', userProfile.alias);
+      return userProfile.alias;
     }
+    return localStorage.getItem('userAlias') || 'Welcome';
+  }, [userProfile]);
 
-    // Also fetch from Supabase to ensure we have the latest
-    const fetchUserAlias = async () => {
+  // Fetch journal entry count
+  useEffect(() => {
+    const fetchJournalCount = async () => {
+      if (!user) {
+        setLoadingJournalCount(false);
+        return;
+      }
+
       try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user?.user_metadata?.alias) {
-          const alias = user.user_metadata.alias;
-          setUserAlias(alias);
-          localStorage.setItem('userAlias', alias);
+        const { data, error } = await supabase
+          .from('journal_entries')
+          .select('id')
+          .eq('student_id', user.id);
+
+        if (!error && data) {
+          setJournalCount(data.length);
         }
-      } catch (error) {
-        console.error('Error fetching user alias:', error);
+      } catch (err) {
+        console.error('Error fetching journal count:', err);
+      } finally {
+        setLoadingJournalCount(false);
       }
     };
 
-    fetchUserAlias();
-  }, []);
+    fetchJournalCount();
+  }, [user]);
 
   return (
     <div className="dashboard-home">
@@ -36,35 +54,40 @@ const DashboardHome = () => {
       </div>
 
       <div className="dashboard-grid">
-        <div className="widget-card mood-tracker">
-          <h3>How are you feeling?</h3>
-          <p>Quickly track your mood for the day.</p>
-          <div className="mood-options">
-            <span>😞</span>
-            <span>😕</span>
-            <span>😐</span>
-            <span>🙂</span>
-            <span>😄</span>
-          </div>
-        </div>
-
-        <div className="widget-card journal">
+        <div 
+          className="widget-card journal" 
+          onClick={() => navigate('/student-dashboard/journal')}
+        >
           <h3>My Journal</h3>
-          <p>Write down your thoughts. Your privacy is our priority.</p>
-          <button>Write a New Entry</button>
+          {loadingJournalCount ? (
+            <p>Loading...</p>
+          ) : (
+            <p>
+              {journalCount === 0 
+                ? 'Write down your thoughts. Your privacy is our priority.'
+                : `You have ${journalCount} ${journalCount === 1 ? 'entry' : 'entries'} in your journal.`
+              }
+            </p>
+          )}
+          <button onClick={(e) => {
+            e.stopPropagation();
+            navigate('/student-dashboard/journal');
+          }}>Write a New Entry</button>
         </div>
 
-        <div className="widget-card resources">
+        <div 
+          className="widget-card resources"
+          onClick={() => navigate('/student-dashboard/resources')}
+        >
           <h3>Motivational Resources</h3>
           <p>Explore articles and tools to support your wellness journey.</p>
-          <button>Explore Resources</button>
+          <button onClick={(e) => {
+            e.stopPropagation();
+            navigate('/student-dashboard/resources');
+          }}>Explore Resources</button>
         </div>
         
-        <div className="widget-card appointments">
-          <h3>Upcoming Appointments</h3>
-          <p>You have no upcoming appointments.</p>
-          <button>Book a Session</button>
-        </div>
+        <UpcomingAppointmentsWidget />
       </div>
     </div>
   );

@@ -57,105 +57,56 @@ const ManageTherapistsPage = () => {
     setSuccess('');
 
     try {
-      // Generate a temporary password (user will reset it via email)
-      const tempPassword = Math.random().toString(36).slice(-12) + 'A1!';
-      
-      // Create the user account with therapist role
-      // Supabase will automatically send the confirmation email
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email: newTherapist.email,
-        password: tempPassword,
-        options: {
-          data: {
-            role: 'therapist',
-            full_name: newTherapist.name,
-          },
-          // This tells Supabase where to send the user AFTER they click the email link
-          emailRedirectTo: `${window.location.origin}/therapist-dashboard/profile`
-        }
+      // --- THIS IS THE CORRECTED CALL ---
+      const { data, error } = await supabase.functions.invoke('invite-therapist', {
+        headers: {
+          'Content-Type': 'application/json', // This line is the fix
+        },
+        body: JSON.stringify({ // We must also stringify the body
+          email: newTherapist.email,
+          full_name: newTherapist.name 
+        }),
       });
 
-      if (signUpError) {
-        // If user already exists, send password reset email instead
-        if (signUpError.message.includes('already registered') || signUpError.message.includes('already been registered')) {
-          const { error: resetError } = await supabase.auth.resetPasswordForEmail(newTherapist.email, {
-            redirectTo: `${window.location.origin}/update-password`
-          });
-          
-          if (resetError) throw resetError;
-          setSuccess(`Password reset email sent to ${newTherapist.email}. They can use the link to set up their account.`);
-        } else {
-          throw signUpError;
-        }
-      } else {
-        // Create a profile entry in therapist_profiles table
-        if (data?.user) {
-          // Wait a moment to ensure the user is fully committed to auth.users
-          // This prevents foreign key constraint errors
-          await new Promise(resolve => setTimeout(resolve, 500));
-          
-          // Retry logic for creating the profile (in case of timing issues)
-          let profileError = null;
-          let retries = 3;
-          
-          while (retries > 0) {
-            const { error } = await supabase.from('therapist_profiles').upsert({
-              user_id: data.user.id,
-              full_name: newTherapist.name,
-              email: newTherapist.email,
-              is_live: false
-            }, {
-              onConflict: 'user_id'
-            });
-
-            if (!error) {
-              profileError = null;
-              break;
-            }
-
-            profileError = error;
-            
-            // If it's a foreign key error, wait and retry
-            if (error.code === '23503') {
-              retries--;
-              if (retries > 0) {
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                continue;
-              }
-            } else {
-              // For other errors, don't retry
-              break;
-            }
-          }
-
-          if (profileError) {
-            console.error('Error creating therapist profile:', profileError);
-            // If it's still a foreign key error after retries, the user might not be in auth.users yet
-            // This can happen if email confirmation is required - the user won't exist until they confirm
-            if (profileError.code === '23503') {
-              setSuccess(`Invitation email sent to ${newTherapist.email}. Note: Profile will be created automatically when they confirm their email.`);
-            } else {
-              // Don't throw - user was created, profile can be fixed later
-              setSuccess(`Invitation email sent to ${newTherapist.email}. Profile creation had an issue but can be fixed later.`);
-            }
-          } else {
-            setSuccess(`Invitation email sent to ${newTherapist.email}. They should check their inbox (and spam folder) to complete registration.`);
-          }
-        }
+      if (error) {
+        // When Edge Function returns non-2xx, the actual error message is in the response body
+        // The data object contains the error message from the Edge Function
+        console.error('Edge Function error response:', { data, error });
+        
+        // Extract error message from response body (data.error) or error object
+        const actualError = data?.error || error.message || error.error_description || 'Unknown error';
+        throw new Error(actualError);
       }
-
+      
+      // The Edge Function handles user creation and profile creation
       // Refresh the therapists list from database
       await fetchTherapists();
 
-      setIsModalOpen(false);
-      setNewTherapist({ name: '', email: '' });
+      setSuccess(data?.message || `Invitation successfully sent to ${newTherapist.email}!`);
+    setIsModalOpen(false);
+    setNewTherapist({ name: '', email: '' });
     } catch (error) {
       console.error('Error sending invitation:', error);
-      let errorMessage = error?.error_description || error?.message || 'Failed to send invitation. Please try again.';
+      console.error('Full error object:', error);
       
-      // Provide more helpful error messages
-      if (errorMessage.includes('email') || errorMessage.includes('confirmation')) {
-        errorMessage = `Error sending invitation email.\n\nSupabase Error: ${errorMessage}\n\nPlease check:\n1. Email confirmations are enabled in Supabase\n2. Site URL is set correctly\n3. Email templates are configured\n\nCheck browser console (F12) for detailed error.`;
+      // Extract error message from various possible locations
+      // When Edge Function returns 400, the error message is usually in error.message
+      let errorMessage = error?.message || error?.error_description || error?.error || 'Failed to send invitation. Please try again.';
+      
+      // Common Edge Function errors and their fixes
+      if (errorMessage.includes('non-2xx') || errorMessage.includes('Edge Function')) {
+        // Try to get the actual error from the response
+        // The actual error might be logged in console above
+        errorMessage = 'The invitation service encountered an error.\n\nCommon causes:\n1. Edge Function not deployed - Deploy it: npx supabase functions deploy invite-therapist\n2. Missing environment variables - Check SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY\n3. User already exists\n4. Email service not configured\n\nCheck the browser console above for the actual error message.';
+      }
+      
+      // Handle specific error messages from Edge Function
+      if (errorMessage.includes('already registered') || errorMessage.includes('already exists') || errorMessage.includes('User already registered')) {
+        errorMessage = `A user with email ${newTherapist.email} already exists.\n\nYou can:\n1. Use the "Reset Password" button in the therapists table\n2. Or they can use "Forgot Password" on the login page`;
+      } else if (errorMessage.includes('email') || errorMessage.includes('confirmation')) {
+        errorMessage = `Error sending invitation email.\n\nError: ${errorMessage}\n\nPlease check:\n1. Email confirmations are enabled in Supabase Dashboard\n2. Site URL is set correctly in Authentication settings\n3. Email templates are configured\n4. SMTP is properly set up (or using default Supabase email)`;
+      } else if (errorMessage.includes('environment') || errorMessage.includes('SUPABASE_URL') || errorMessage.includes('SERVICE_ROLE_KEY')) {
+        errorMessage = `Edge Function configuration error.\n\nError: ${errorMessage}\n\nPlease check:\n1. Go to Supabase Dashboard → Edge Functions → invite-therapist\n2. Verify environment variables are set:\n   - SUPABASE_URL\n   - SUPABASE_SERVICE_ROLE_KEY\n3. Redeploy the function if needed`;
       }
       
       setError(errorMessage);
@@ -319,36 +270,36 @@ const ManageTherapistsPage = () => {
             <p>No therapists found. Add your first therapist using the button above.</p>
           </div>
         ) : (
-          <table className="admin-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Date Added</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {therapists.map(therapist => (
-                <tr key={therapist.id}>
-                  <td>{therapist.name}</td>
-                  <td>{therapist.email}</td>
-                  <td>{therapist.dateAdded}</td>
-                  <td><span className={`status-badge status-${therapist.status.toLowerCase().replace(' ', '-')}`}>{therapist.status}</span></td>
-                  <td className="actions-cell">
+        <table className="admin-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Date Added</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {therapists.map(therapist => (
+              <tr key={therapist.id}>
+                <td>{therapist.name}</td>
+                <td>{therapist.email}</td>
+                <td>{therapist.dateAdded}</td>
+                <td><span className={`status-badge status-${therapist.status.toLowerCase().replace(' ', '-')}`}>{therapist.status}</span></td>
+                <td className="actions-cell">
                     <button 
                       className="action-btn edit" 
                       onClick={() => handleResetPassword(therapist.email)}
                     >
                       Reset Password
                     </button>
-                    <button className="action-btn delete">Deactivate</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  <button className="action-btn delete">Deactivate</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
         )}
       </div>
     </div>

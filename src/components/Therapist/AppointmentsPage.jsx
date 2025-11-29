@@ -1,46 +1,137 @@
-import React, { useState } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
+import { supabase } from '../../supabaseClient';
+import { useUser } from '../../contexts/UserContext';
+import AvailabilityManager from './AvailabilityManager';
 import './AppointmentsPage.css';
 
 const localizer = momentLocalizer(moment);
 
-// MOCK DATA: List of scheduled appointments
-const mockAppointments = [
-  {
-    id: 1,
-    title: 'Session with Anonymous Panda',
-    start: new Date(2025, 10, 18, 10, 0, 0), // Note: Month is 0-indexed (10 = November)
-    end: new Date(2025, 10, 18, 10, 50, 0),
-    studentAlias: 'Anonymous Panda',
-  },
-  {
-    id: 2,
-    title: 'Session with Clever Koala',
-    start: new Date(2025, 10, 19, 14, 0, 0),
-    end: new Date(2025, 10, 19, 14, 50, 0),
-    studentAlias: 'Clever Koala',
-  },
-];
-
-
 const AppointmentsPage = () => {
-  const [events, setEvents] = useState(mockAppointments);
+  const { user } = useUser(); // Use cached user from context
+  const [activeTab, setActiveTab] = useState('calendar'); // 'calendar' or 'availability'
+  const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  const handleSelectEvent = (event) => {
+  const handleSelectEvent = useCallback((event) => {
     setSelectedEvent(event);
-  };
+  }, []);
 
-  const handleCloseModal = () => {
+  const handleCloseModal = useCallback(() => {
     setSelectedEvent(null);
-  };
-  
-  const handleCancelAppointment = () => {
-    if (window.confirm('Are you sure you want to cancel this appointment?')) {
-        setEvents(events.filter(e => e.id !== selectedEvent.id));
-        handleCloseModal();
+  }, []);
+
+  const fetchAppointments = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError('');
+
+      if (!user) {
+        setError('Please log in to view appointments.');
+        setLoading(false);
+        return;
+      }
+
+      // Get today's date in YYYY-MM-DD format (local timezone)
+      const today = new Date();
+      const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
+      console.log('Fetching appointments for therapist:', user.id);
+      console.log('Today date string:', todayStr);
+
+      // Fetch appointments - include today and future dates
+      const { data: appointments, error: appointmentsError } = await supabase
+        .from('appointments')
+        .select('id, therapist_id, student_id, appointment_date, start_time, end_time, status, notes, student_notes')
+        .eq('therapist_id', user.id)
+        .in('status', ['scheduled', 'completed'])
+        .gte('appointment_date', todayStr)
+        .order('appointment_date', { ascending: true })
+        .order('start_time', { ascending: true });
+
+      console.log('Fetched appointments:', appointments);
+
+      if (appointmentsError) throw appointmentsError;
+
+      // Fetch student aliases only for students with appointments (more efficient)
+      const studentIds = [...new Set((appointments || []).map(apt => apt.student_id))];
+      const studentAliasesMap = {};
+      
+      if (studentIds.length > 0) {
+        const { data: studentProfiles, error: profilesError } = await supabase
+          .from('student_profiles')
+          .select('user_id, alias')
+          .in('user_id', studentIds);
+
+        if (!profilesError && studentProfiles) {
+          studentProfiles.forEach(profile => {
+            studentAliasesMap[profile.user_id] = profile.alias;
+          });
+        }
+      }
+
+      // Format appointments for calendar
+      const formattedEvents = (appointments || []).map(apt => {
+        const [year, month, day] = apt.appointment_date.split('-').map(Number);
+        const [startHours, startMinutes] = apt.start_time.split(':').map(Number);
+        const [endHours, endMinutes] = apt.end_time.split(':').map(Number);
+        const start = new Date(year, month - 1, day, startHours, startMinutes);
+        const end = new Date(year, month - 1, day, endHours, endMinutes);
+        const studentAlias = studentAliasesMap[apt.student_id] || 'Student';
+
+        return {
+          id: apt.id,
+          title: `Session with ${studentAlias}`,
+          start,
+          end,
+          studentAlias: studentAlias,
+          appointment: apt
+        };
+      });
+
+      setEvents(formattedEvents);
+    } catch (err) {
+      console.error('Error fetching appointments:', err);
+      setError(`Failed to load appointments: ${err.message || 'Unknown error'}.`);
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    fetchAppointments();
+  }, [fetchAppointments]);
+
+  // Refresh appointments when switching to calendar tab
+  useEffect(() => {
+    if (activeTab === 'calendar' && user) {
+      fetchAppointments();
+    }
+  }, [activeTab, user, fetchAppointments]);
+
+  const handleCancelAppointment = async () => {
+    if (!window.confirm('Are you sure you want to cancel this appointment?')) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('appointments')
+        .update({ status: 'cancelled' })
+        .eq('id', selectedEvent.appointment.id);
+
+      if (error) throw error;
+
+      await fetchAppointments();
+      handleCloseModal();
+      alert('Appointment cancelled successfully.');
+    } catch (err) {
+      console.error('Error cancelling appointment:', err);
+      alert('Failed to cancel appointment. Please try again.');
     }
   };
 
@@ -55,6 +146,9 @@ const AppointmentsPage = () => {
             <p><strong>Student:</strong> {selectedEvent.studentAlias}</p>
             <p><strong>Date:</strong> {moment(selectedEvent.start).format('MMMM Do, YYYY')}</p>
             <p><strong>Time:</strong> {moment(selectedEvent.start).format('h:mm A')} - {moment(selectedEvent.end).format('h:mm A')}</p>
+            {selectedEvent.appointment?.notes && (
+              <p><strong>Notes:</strong> {selectedEvent.appointment.notes}</p>
+            )}
             <div className="modal-actions">
               <button onClick={handleCloseModal} className="modal-btn cancel">Close</button>
               <button onClick={handleCancelAppointment} className="modal-btn delete">Cancel Appointment</button>
@@ -66,17 +160,51 @@ const AppointmentsPage = () => {
 
       <div className="page-header">
         <h1>My Appointments</h1>
+        <div className="tabs-container">
+          <button
+            className={`tab-btn ${activeTab === 'calendar' ? 'active' : ''}`}
+            onClick={() => setActiveTab('calendar')}
+          >
+            Calendar
+          </button>
+          <button
+            className={`tab-btn ${activeTab === 'availability' ? 'active' : ''}`}
+            onClick={() => setActiveTab('availability')}
+          >
+            Set Availability
+          </button>
+          {activeTab === 'calendar' && (
+            <button
+              onClick={fetchAppointments}
+              className="refresh-btn"
+              title="Refresh appointments"
+            >
+              ↻ Refresh
+            </button>
+          )}
+        </div>
       </div>
-      <div className="calendar-container">
-        <Calendar
-          localizer={localizer}
-          events={events}
-          startAccessor="start"
-          endAccessor="end"
-          style={{ height: '70vh' }}
-          onSelectEvent={handleSelectEvent}
-        />
-      </div>
+
+      {error && <div className="error-banner">{error}</div>}
+
+      {activeTab === 'calendar' && (
+        <div className="calendar-container">
+          {loading ? (
+            <div className="loading-container">Loading appointments...</div>
+          ) : (
+            <Calendar
+              localizer={localizer}
+              events={events}
+              startAccessor="start"
+              endAccessor="end"
+              style={{ height: '70vh' }}
+              onSelectEvent={handleSelectEvent}
+            />
+          )}
+        </div>
+      )}
+
+      {activeTab === 'availability' && <AvailabilityManager />}
     </div>
   );
 };

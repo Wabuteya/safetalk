@@ -188,7 +188,7 @@ const TherapistProfilePage = () => {
         <h2>Account & Security</h2>
          <div className="form-group">
             <label>Email Address</label>
-            <input type="email" value="e.reed@university.edu" disabled />
+            <input type="email" value={user?.email || ''} disabled />
         </div>
         {/* The change password form would go here, identical to the student's profile */}
         <button className="save-btn">Change Password</button>

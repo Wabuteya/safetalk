@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './Login.css';
 import { supabase } from '../../supabaseClient';
+import PasswordInput from '../PasswordInput';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -14,12 +15,14 @@ const Login = () => {
     setError('');
 
     try {
+      console.log('Attempting login...');
       const { data, error } = await supabase.auth.signInWithPassword({
         email: email,
         password: password,
       });
 
       if (error) {
+        console.error('Login error:', error);
         // Check if error is due to unconfirmed email
         if (error.message.includes('Email not confirmed') || error.message.includes('email_not_confirmed')) {
           setError('Please confirm your email address before logging in. Check your inbox for the confirmation link.');
@@ -28,37 +31,78 @@ const Login = () => {
         throw error;
       }
 
-      if (data.user) {
-        // Check if email is confirmed
-        if (!data.user.email_confirmed_at) {
-          setError('Please confirm your email address before logging in. Check your inbox for the confirmation link. If you didn\'t receive it, you can request a new one from the sign-up page.');
-          // Sign out the user since they shouldn't be logged in
-          await supabase.auth.signOut();
-          return;
-        }
+      if (!data || !data.user) {
+        console.error('No user data returned');
+        setError('Login failed: No user data received. Please try again.');
+        return;
+      }
 
-        const userRole = data.user.user_metadata?.role;
-        const userAlias = data.user.user_metadata?.alias;
+      const userRole = data.user.user_metadata?.role;
+      console.log('Login successful, user role:', userRole);
+      console.log('User ID:', data.user.id);
+      console.log('Full user data:', data.user);
 
-        if (userAlias) {
-          localStorage.setItem('userAlias', userAlias);
-        } else {
-          localStorage.removeItem('userAlias');
-        }
+      // Wait for the session to be fully established and UserContext to update
+      // This ensures the auth state change event fires before navigation
+      console.log('Waiting for session to be established...');
+      await new Promise(resolve => setTimeout(resolve, 500));
 
-        if (userRole === 'student') {
-          navigate('/student-dashboard');
-        } else if (userRole === 'therapist') {
-          navigate('/therapist-dashboard');
-        } else if (userRole === 'admin') {
-          navigate('/admin-dashboard');
-        } else {
-          // Handle no role - default to student dashboard
-          navigate('/student-dashboard');
-        }
+      // Verify session is established before navigating
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) {
+        console.error('Error getting session:', sessionError);
+      }
+      if (!session) {
+        console.error('Session not found after login');
+        setError('Login failed: Session not established. Please try again.');
+        return;
+      }
+
+      console.log('Session verified, user ID:', session.user.id);
+      console.log('Session user role:', session.user.user_metadata?.role);
+
+      // Fetch alias from student_profiles table (for students) - non-blocking
+      if (userRole === 'student') {
+        supabase
+          .from('student_profiles')
+          .select('alias')
+          .eq('user_id', data.user.id)
+          .single()
+          .then(({ data: profile, error: profileError }) => {
+            if (!profileError && profile?.alias) {
+              localStorage.setItem('userAlias', profile.alias);
+            } else if (data.user.user_metadata?.alias) {
+              localStorage.setItem('userAlias', data.user.user_metadata.alias);
+            }
+          })
+          .catch(() => {
+            // Silently fail - alias fetch is not critical for login
+            if (data.user.user_metadata?.alias) {
+              localStorage.setItem('userAlias', data.user.user_metadata.alias);
+            }
+          });
+      }
+
+      // Navigate using React Router (client-side navigation preserves session)
+      console.log('About to navigate. Role:', userRole);
+      
+      if (userRole === 'student') {
+        console.log('Navigating to /student-dashboard');
+        navigate('/student-dashboard', { replace: true });
+      } else if (userRole === 'therapist') {
+        console.log('Navigating to /therapist-dashboard');
+        navigate('/therapist-dashboard', { replace: true });
+      } else if (userRole === 'admin') {
+        console.log('Navigating to /admin-dashboard');
+        navigate('/admin-dashboard', { replace: true });
+      } else {
+        // Handle no role - default to student dashboard
+        console.log('No role found, defaulting to /student-dashboard');
+        navigate('/student-dashboard', { replace: true });
       }
     } catch (error) {
-      setError(error.error_description || error.message);
+      console.error('Login catch error:', error);
+      setError(error.error_description || error.message || 'Login failed. Please try again.');
     }
   };
 
@@ -126,8 +170,7 @@ const Login = () => {
 
           <label className="input-group">
             <span className="input-label">Password</span>
-            <input
-              type="password"
+            <PasswordInput
               name="password"
               placeholder="••••••••"
               value={password}

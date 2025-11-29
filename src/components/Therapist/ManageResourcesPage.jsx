@@ -51,7 +51,7 @@ const ManageResourcesPage = () => {
               </div>
               <div className="form-group">
                 <label>Image URL</label>
-                <input type="url" placeholder="e.g., https://via.placeholder.com/300x150" />
+                <input type="url" placeholder="e.g., https://example.com/image.jpg" />
               </div>
               <div className="form-grid">
                 <div className="form-group">

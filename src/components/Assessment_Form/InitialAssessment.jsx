@@ -63,6 +63,7 @@ const InitialAssessment = () => {
       const randomNoun = NOUNS[Math.floor(Math.random() * NOUNS.length)];
       const generatedAlias = `${randomAdjective} ${randomNoun}`;
 
+      // Update user metadata
       await supabase.auth.updateUser({
         data: { 
           role: 'student', 
@@ -70,7 +71,50 @@ const InitialAssessment = () => {
         }
       });
       
-      localStorage.setItem('userAlias', generatedAlias);
+      // Create or update student profile in database
+      try {
+        const { error: profileError } = await supabase
+          .from('student_profiles')
+          .upsert({
+            user_id: user.id,
+            alias: generatedAlias,
+            first_name: user.user_metadata?.first_name || user.user_metadata?.name?.split(' ')[0] || '',
+            last_name: user.user_metadata?.last_name || user.user_metadata?.name?.split(' ').slice(1).join(' ') || ''
+          }, {
+            onConflict: 'user_id'
+          });
+
+        if (profileError) {
+          console.error('Error creating student profile:', profileError);
+        } else {
+          localStorage.setItem('userAlias', generatedAlias);
+        }
+      } catch (profileErr) {
+        console.error('Error creating student profile:', profileErr);
+      }
+    } else {
+      // User already has role, but ensure profile exists in database
+      const existingAlias = user.user_metadata?.alias;
+      if (existingAlias) {
+        try {
+          const { error: profileError } = await supabase
+            .from('student_profiles')
+            .upsert({
+              user_id: user.id,
+              alias: existingAlias,
+              first_name: user.user_metadata?.first_name || '',
+              last_name: user.user_metadata?.last_name || ''
+            }, {
+              onConflict: 'user_id'
+            });
+
+          if (!profileError) {
+            localStorage.setItem('userAlias', existingAlias);
+          }
+        } catch (profileErr) {
+          console.error('Error syncing student profile:', profileErr);
+        }
+      }
     }
   };
 

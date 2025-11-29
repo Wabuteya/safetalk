@@ -102,18 +102,42 @@ const SignUpPage = () => {
         setLoading(false);
         return;
       }
-      
-      // Check if signup was successful
-      // Only proceed if user was created AND email confirmation was sent
-      if (data?.user) {
-        // Check if email confirmation is required and was sent
-        // If email confirmation is enabled, user.email_confirmed_at will be null until confirmed
-        // The session will also be null if confirmation is required
+
+      // If signup successful, create student profile in database
+      if (data.user) {
+        try {
+          const { error: profileError } = await supabase
+            .from('student_profiles')
+            .insert({
+              user_id: data.user.id,
+              alias: generatedAlias,
+              first_name: formData.firstName,
+              last_name: formData.lastName,
+              contact: formData.contact,
+              gender: formData.gender
+            });
+
+          if (profileError) {
+            console.error('Error creating student profile:', profileError);
+            // Don't block signup if profile creation fails - we can retry later
+            // But log it for debugging
+          } else {
+            // Store alias in localStorage for immediate use
+            localStorage.setItem('userAlias', generatedAlias);
+          }
+        } catch (profileErr) {
+          console.error('Error creating student profile:', profileErr);
+          // Continue anyway - profile can be created later
+        }
+
+        // Check if email confirmation is required
         if (data.session === null && data.user) {
           // Email confirmation required - navigate to verification page
+          setLoading(false); // Stop loading before navigation
           navigate('/please-verify');
         } else if (data.session) {
           // Email confirmation not required or already confirmed - go to assessment
+          setLoading(false); // Stop loading before navigation
           navigate('/assessment');
         } else {
           // Edge case - user created but unclear state

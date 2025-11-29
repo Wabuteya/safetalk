@@ -56,10 +56,30 @@
     background-color: #007BFF;
     color: white;
   }
+
+  .chat-btn.primary {
+    background-color: #007BFF;
+    color: white;
+  }
+
+  .chat-btn.primary:hover {
+    background-color: #0056b3;
+  }
   
   .book-btn {
     background-color: #f0f0f0;
     color: #333;
+  }
+
+  .book-btn:hover {
+    background-color: #e0e0e0;
+  }
+
+  .book-btn.disabled {
+    background-color: #e9ecef;
+    color: #6c757d;
+    cursor: not-allowed;
+    opacity: 0.6;
   }
   
   .profile-details {
@@ -103,3 +123,19 @@
       grid-template-columns: 1fr;
     }
   }
+
+/* --- ADD THIS TO THE BOTTOM of TherapistProfilePage.css --- */
+
+/* Make the primary button more obvious */
+.profile-actions .chat-btn.primary {
+  background-color: #4F8EC5;
+  color: white;
+}
+
+/* Style for disabled buttons */
+.profile-actions .book-btn.disabled {
+  background-color: #e0e0e0;
+  color: #a0a0a0;
+  cursor: not-allowed;
+  border: 1px solid #ccc;
+}

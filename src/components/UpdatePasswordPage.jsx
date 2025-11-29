@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import './UpdatePasswordPage.css'; // Dedicated CSS file
+import PasswordInput from './PasswordInput';
 
 const UpdatePasswordPage = () => {
     const navigate = useNavigate();
@@ -10,6 +11,112 @@ const UpdatePasswordPage = () => {
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [verifyingSession, setVerifyingSession] = useState(true);
+
+    // Check for password reset token in URL and establish session
+    useEffect(() => {
+        let mounted = true;
+        let authListener = null;
+        let retryCount = 0;
+        const maxRetries = 5;
+
+        const verifySession = async () => {
+            try {
+                // Check if there's a hash in the URL (password reset tokens come in hash fragments)
+                const hashParams = new URLSearchParams(window.location.hash.substring(1));
+                const accessToken = hashParams.get('access_token');
+                const type = hashParams.get('type');
+
+                // Set up auth state listener to catch when Supabase processes the recovery token
+                authListener = supabase.auth.onAuthStateChange(async (event, session) => {
+                    console.log('Auth state change:', event, session ? 'Session exists' : 'No session');
+                    if (event === 'PASSWORD_RECOVERY' || (event === 'SIGNED_IN' && session)) {
+                        if (mounted) {
+                            setVerifyingSession(false);
+                        }
+                    }
+                });
+
+                // If we have a recovery token in the URL, Supabase will process it automatically
+                if (type === 'recovery' && accessToken) {
+                    // Supabase automatically processes hash fragments on page load
+                    // We need to wait and check for the session with retries
+                    const checkSessionWithRetry = async () => {
+                        const { data: { session }, error } = await supabase.auth.getSession();
+                        
+                        if (session) {
+                            console.log('Session established successfully');
+                            if (mounted) {
+                                setVerifyingSession(false);
+                            }
+                            return;
+                        }
+
+                        if (error) {
+                            console.error('Session error:', error);
+                            if (mounted) {
+                                setError('Invalid or expired password reset link. Please request a new one.');
+                                setVerifyingSession(false);
+                            }
+                            return;
+                        }
+
+                        // Retry if no session yet
+                        retryCount++;
+                        if (retryCount < maxRetries && mounted) {
+                            setTimeout(checkSessionWithRetry, 500);
+                        } else if (mounted) {
+                            setError('Failed to verify your password reset link. Please request a new one.');
+                            setVerifyingSession(false);
+                        }
+                    };
+
+                    // Start checking after a brief delay to let Supabase process the hash
+                    setTimeout(checkSessionWithRetry, 500);
+                } else {
+                    // Check if we already have a session (user might have navigated here directly)
+                    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+                    if (sessionError) {
+                        console.error('Session error:', sessionError);
+                        if (mounted) {
+                            setError('Invalid or expired password reset link. Please request a new one.');
+                            setVerifyingSession(false);
+                        }
+                        return;
+                    }
+
+                    if (!session) {
+                        if (mounted) {
+                            setError('No active session found. Please click the link from your password reset email.');
+                            setVerifyingSession(false);
+                        }
+                        return;
+                    }
+
+                    if (mounted) {
+                        setVerifyingSession(false);
+                    }
+                }
+            } catch (err) {
+                console.error('Error verifying session:', err);
+                if (mounted) {
+                    setError('Failed to verify your password reset link. Please try again.');
+                    setVerifyingSession(false);
+                }
+            }
+        };
+
+        verifySession();
+
+        // Cleanup
+        return () => {
+            mounted = false;
+            if (authListener) {
+                authListener.data.subscription.unsubscribe();
+            }
+        };
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -31,6 +138,13 @@ const UpdatePasswordPage = () => {
         setLoading(true);
 
         try {
+            // First, verify we have a session before attempting to update password
+            const { data: { session: currentSession }, error: sessionCheckError } = await supabase.auth.getSession();
+            
+            if (sessionCheckError || !currentSession) {
+                throw new Error('No active session found. Please click the link from your password reset email again.');
+            }
+
             // Add timeout to prevent hanging
             const timeoutId = setTimeout(() => {
                 setError('Request timed out. Please check your internet connection and try again.');
@@ -70,6 +184,19 @@ const UpdatePasswordPage = () => {
         }
     };
 
+    if (verifyingSession) {
+        return (
+            <div className="update-password-layout">
+                <div className="update-password-card">
+                    <div style={{ textAlign: 'center', padding: '2rem' }}>
+                        <div className="up-spinner" style={{ margin: '0 auto 1rem', width: '32px', height: '32px', borderWidth: '3px' }}></div>
+                        <p>Verifying your password reset link...</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="update-password-layout">
             <div className="update-password-card">
@@ -82,8 +209,7 @@ const UpdatePasswordPage = () => {
                 <form onSubmit={handleSubmit} className="up-form">
                     <div className="up-form-group">
                         <label htmlFor="password" className="up-label">New Password</label>
-                        <input 
-                            type="password" 
+                        <PasswordInput 
                             id="password" 
                             value={password} 
                             onChange={(e) => {
@@ -104,8 +230,7 @@ const UpdatePasswordPage = () => {
                     
                     <div className="up-form-group">
                         <label htmlFor="confirmPassword" className="up-label">Confirm New Password</label>
-                        <input 
-                            type="password" 
+                        <PasswordInput 
                             id="confirmPassword" 
                             value={confirmPassword} 
                             onChange={(e) => {

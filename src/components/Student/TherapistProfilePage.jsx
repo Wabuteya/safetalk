@@ -123,7 +123,11 @@ const TherapistProfilePage = () => {
   };
   
   const handleStartChat = () => {
-    alert("Navigating to the chat interface... (To be built)");
+    if (!isLinked) {
+      alert('You must be linked to this therapist to start a chat. Please select this therapist first.');
+      return;
+    }
+    navigate(`/student-dashboard/chat/${therapistId}`);
   };
 
   const handleBookAppointment = () => {

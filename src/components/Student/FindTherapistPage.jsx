@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FaComments, FaCalendar } from 'react-icons/fa';
 import TherapistCard from './TherapistCard.jsx';
 import { supabase } from '../../supabaseClient';
 import { useUser } from '../../contexts/UserContext';
@@ -300,7 +301,7 @@ const FindTherapistPage = () => {
   // If the user has a linked therapist, show the "My Therapist" view (NO browsing allowed)
   if (linkedTherapist) {
     const handleStartChat = () => {
-      alert(`Starting secure chat with ${linkedTherapist.name}...\n(This feature will be implemented soon)`);
+      navigate(`/student-dashboard/chat/${linkedTherapist.id}`);
     };
 
     const handleBookAppointment = () => {
@@ -360,13 +361,13 @@ const FindTherapistPage = () => {
                 className="action-btn chat-btn" 
                 onClick={handleStartChat}
               >
-                💬 Start a Chat
+                <FaComments /> Chat
               </button>
               <button 
                 className="action-btn appointment-btn" 
                 onClick={handleBookAppointment}
               >
-                📅 Book Appointment
+                <FaCalendar /> Book Appointment
               </button>
             </div>
           </div>

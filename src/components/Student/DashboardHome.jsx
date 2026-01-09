@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useUser } from '../../contexts/UserContext';
 import { supabase } from '../../supabaseClient';
 import UpcomingAppointmentsWidget from './UpcomingAppointmentsWidget';
+import MessageOfTheDay from './MessageOfTheDay';
 
 const DashboardHome = () => {
   const navigate = useNavigate();
@@ -53,6 +54,8 @@ const DashboardHome = () => {
         <p>Your safe space is ready. What would you like to do today?</p>
       </div>
 
+      <MessageOfTheDay />
+
       <div className="dashboard-grid">
         <div 
           className="widget-card journal" 
@@ -79,7 +82,7 @@ const DashboardHome = () => {
           className="widget-card resources"
           onClick={() => navigate('/student-dashboard/resources')}
         >
-          <h3>Motivational Resources</h3>
+          <h3>Support Resources</h3>
           <p>Explore articles and tools to support your wellness journey.</p>
           <button onClick={(e) => {
             e.stopPropagation();

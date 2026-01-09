@@ -107,7 +107,7 @@ const SideNav = () => {
         <li>
           <NavLink to="/student-dashboard/resources">
             <FaLightbulb className="nav-icon" />
-            <span>Motivational Resources</span>
+            <span>Support Resources</span>
           </NavLink>
         </li>
         <li className="nav-section-heading">ACCOUNT</li>

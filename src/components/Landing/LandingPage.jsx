@@ -22,10 +22,10 @@ const LandingPage = () => {
           </ul>
           <div className="auth-buttons">
             <button className="login-btn" onClick={() => navigate('/login')}>
-              Login
+              Sign In
             </button>
             <button className="signup-btn" onClick={() => navigate('/signup')}>
-              Sign Up
+              Create Account
             </button>
           </div>
         </nav>
@@ -38,8 +38,8 @@ const LandingPage = () => {
             <p>
               Connecting university students with therapists for confidential and compassionate support.
             </p>
-            <button className="cta-button" onClick={() => navigate('/signup')}>
-              Get Started
+            <button className="cta-button" onClick={() => navigate('/resources')}>
+              Explore Support Resources
             </button>
           </div>
         </section>

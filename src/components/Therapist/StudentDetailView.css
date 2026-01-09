@@ -256,6 +256,33 @@
   color: #383d41;
 }
 
+/* Chat Tab */
+.chat-tab {
+  height: calc(100vh - 300px);
+  min-height: 500px;
+}
+
+.chat-tab .chat-screen {
+  height: 100%;
+  border-radius: 8px;
+}
+
+.create-conversation-btn {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: background-color 0.2s ease;
+}
+
+.create-conversation-btn:hover {
+  background-color: #0056b3;
+}
+
 /* Journals Tab */
 .journals-tab {
   display: flex;

@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
 import { useUser } from '../../contexts/UserContext';
 import TherapistNotes from './TherapistNotes';
+import ChatScreen from '../Chat/ChatScreen';
 import './StudentDetailView.css';
 
 // Appointments List Component for Student Detail View
@@ -209,12 +210,14 @@ const AppointmentsList = ({ studentId, studentAlias, onAppointmentCountChange })
 const StudentDetailView = () => {
   const { studentId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useUser();
   const [activeTab, setActiveTab] = useState('overview');
   const [student, setStudent] = useState(null);
   const [sharedJournals, setSharedJournals] = useState([]);
   const [appointmentCount, setAppointmentCount] = useState(0);
   const [noteCount, setNoteCount] = useState(0);
+  const [conversationId, setConversationId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -229,8 +232,8 @@ const StudentDetailView = () => {
       setLoading(true);
       setError('');
 
-        // Verify relationship and fetch student profile + journals + appointment count + notes count in parallel
-        const [relationshipResult, profileResult, journalsResult, appointmentsResult, notesResult] = await Promise.all([
+        // Verify relationship and fetch student profile + journals + appointment count + notes count + conversation in parallel
+        const [relationshipResult, profileResult, journalsResult, appointmentsResult, notesResult, conversationResult] = await Promise.all([
           supabase
             .from('therapist_student_relations')
             .select('therapist_id') // Only need therapist_id for verification
@@ -258,7 +261,13 @@ const StudentDetailView = () => {
             .from('therapist_notes')
             .select('id') // Only need count
             .eq('therapist_id', user.id)
+            .eq('student_id', studentId),
+          supabase
+            .from('conversations')
+            .select('id')
+            .eq('therapist_id', user.id)
             .eq('student_id', studentId)
+            .maybeSingle()
         ]);
 
         const { data: relationship, error: relError } = relationshipResult;
@@ -266,6 +275,7 @@ const StudentDetailView = () => {
         const { data: journals, error: journalsError } = journalsResult;
         const { data: appointments, error: appointmentsError } = appointmentsResult;
         const { data: notes, error: notesError } = notesResult;
+        const { data: conversation, error: conversationError } = conversationResult;
 
         if (relError || !relationship) {
           setError('Student not found in your caseload.');
@@ -307,6 +317,12 @@ const StudentDetailView = () => {
           setNoteCount(notes?.length || 0);
         }
 
+        if (conversationError && conversationError.code !== 'PGRST116') {
+          console.error('Error fetching conversation:', conversationError);
+        } else {
+          setConversationId(conversation?.id || null);
+        }
+
       } catch (err) {
         console.error('Error fetching student data:', err);
         setError(`Failed to load student data: ${err.message || 'Unknown error'}.`);
@@ -320,6 +336,15 @@ const StudentDetailView = () => {
       fetchStudentData();
     }
   }, [studentId, user, fetchStudentData]);
+
+  // Open chat tab if requested from navigation state
+  useEffect(() => {
+    if (location.state?.openChatTab) {
+      setActiveTab('chat');
+      // Clear the state to prevent reopening on re-render
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
@@ -455,11 +480,73 @@ const StudentDetailView = () => {
 
         {activeTab === 'chat' && (
           <div className="chat-tab">
-            <div className="placeholder-content">
-              <div className="placeholder-icon">💬</div>
-              <h2>Private Messaging</h2>
-              <p>Chat functionality will be implemented here.</p>
-            </div>
+            {conversationId ? (
+              <ChatScreen
+                conversationId={conversationId}
+                otherUserId={studentId}
+                otherUserName={student?.alias || 'Student'}
+                userRole="therapist"
+                showBackButton={false}
+              />
+            ) : (
+              <div className="empty-state">
+                <div className="empty-icon">💬</div>
+                <h2>No conversation started yet</h2>
+                <p>The conversation will be created automatically when you send the first message.</p>
+                <button
+                  className="create-conversation-btn"
+                  onClick={async () => {
+                    try {
+                      // Try RPC function first (if available in schema)
+                      const { data: rpcData, error: rpcError } = await supabase
+                        .rpc('get_or_create_conversation', {
+                          p_student_id: studentId,
+                          p_therapist_id: user.id
+                        });
+
+                      if (!rpcError && rpcData) {
+                        setConversationId(rpcData);
+                        return;
+                      }
+
+                      // Fallback to direct insert
+                      const { data, error } = await supabase
+                        .from('conversations')
+                        .insert({
+                          student_id: studentId,
+                          therapist_id: user.id
+                        })
+                        .select()
+                        .single();
+
+                      if (error) {
+                        // If conflict (conversation already exists), fetch it
+                        if (error.code === '23505' || error.status === 409) {
+                          const { data: existing } = await supabase
+                            .from('conversations')
+                            .select('id')
+                            .eq('student_id', studentId)
+                            .eq('therapist_id', user.id)
+                            .single();
+                          if (existing) {
+                            setConversationId(existing.id);
+                          }
+                        } else {
+                          throw error;
+                        }
+                      } else if (data) {
+                        setConversationId(data.id);
+                      }
+                    } catch (err) {
+                      console.error('Error creating conversation:', err);
+                      alert('Failed to create conversation. Please try again.');
+                    }
+                  }}
+                >
+                  Start Conversation
+                </button>
+              </div>
+            )}
           </div>
         )}
 

@@ -43,9 +43,48 @@ const Login = () => {
       console.log('Full user data:', data.user);
 
       // Wait for the session to be fully established and UserContext to update
-      // This ensures the auth state change event fires before navigation
+      // Chrome needs more time for session storage to persist
       console.log('Waiting for session to be established...');
-      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Check if auth state change already fired (it might fire immediately)
+      // If not, wait for it with a shorter timeout
+      let authStateChanged = false;
+      const authStatePromise = new Promise((resolve) => {
+        // Check immediately if session is already available
+        supabase.auth.getSession().then(({ data: { session } }) => {
+          if (session?.user && session.user.id === data.user.id) {
+            console.log('Session already available, auth state likely already changed');
+            authStateChanged = true;
+            resolve();
+            return;
+          }
+        });
+        
+        // Set up listener for future auth state changes
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+          if (event === 'SIGNED_IN' && session?.user && session.user.id === data.user.id) {
+            console.log('Auth state change detected: SIGNED_IN');
+            authStateChanged = true;
+            subscription.unsubscribe();
+            resolve();
+          }
+        });
+        
+        // Shorter timeout since we check immediately
+        setTimeout(() => {
+          if (!authStateChanged) {
+            console.log('Auth state change timeout, proceeding anyway');
+            subscription.unsubscribe();
+            resolve();
+          }
+        }, 1000);
+      });
+      
+      // Wait for auth state and storage to persist (Chrome needs this)
+      await Promise.all([
+        authStatePromise,
+        new Promise(resolve => setTimeout(resolve, 600))
+      ]);
 
       // Verify session is established before navigating
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -60,6 +99,9 @@ const Login = () => {
 
       console.log('Session verified, user ID:', session.user.id);
       console.log('Session user role:', session.user.user_metadata?.role);
+      
+      // Additional wait for Chrome to fully persist session
+      await new Promise(resolve => setTimeout(resolve, 300));
 
       // Fetch alias from student_profiles table (for students) - non-blocking
       if (userRole === 'student') {
@@ -86,20 +128,30 @@ const Login = () => {
       // Navigate using React Router (client-side navigation preserves session)
       console.log('About to navigate. Role:', userRole);
       
+      // Determine target route
+      let targetRoute = '/student-dashboard';
       if (userRole === 'student') {
-        console.log('Navigating to /student-dashboard');
-        navigate('/student-dashboard', { replace: true });
+        targetRoute = '/student-dashboard';
       } else if (userRole === 'therapist') {
-        console.log('Navigating to /therapist-dashboard');
-        navigate('/therapist-dashboard', { replace: true });
+        targetRoute = '/therapist-dashboard';
       } else if (userRole === 'admin') {
-        console.log('Navigating to /admin-dashboard');
-        navigate('/admin-dashboard', { replace: true });
-      } else {
-        // Handle no role - default to student dashboard
-        console.log('No role found, defaulting to /student-dashboard');
-        navigate('/student-dashboard', { replace: true });
+        targetRoute = '/admin-dashboard';
       }
+      
+      console.log('Navigating to:', targetRoute);
+      
+      // Try React Router navigation first
+      navigate(targetRoute, { replace: true });
+      
+      // Fallback for Chrome: Use window.location if navigate doesn't work after a delay
+      // This ensures navigation happens even if React Router has issues
+      setTimeout(() => {
+        // Check if we're still on login page (navigation didn't work)
+        if (window.location.pathname === '/login') {
+          console.log('Navigation fallback: Using window.location');
+          window.location.href = targetRoute;
+        }
+      }, 1000);
     } catch (error) {
       console.error('Login catch error:', error);
       setError(error.error_description || error.message || 'Login failed. Please try again.');

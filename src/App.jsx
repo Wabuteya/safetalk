@@ -34,12 +34,17 @@ import VerifyEmailPage from './VerifyEmailPage';
 import ForgotPasswordPage from './components/ForgotPasswordPage';
 import UpdatePasswordPage from './components/UpdatePasswordPage';
 import SetPasswordPage from './components/SetPasswordPage';
+import PublicResourcesPage from './components/PublicResourcesPage';
+import ChatActivityHub from './components/Chat/ChatActivityHub';
+import StudentChatScreen from './components/Chat/StudentChatScreen';
+import ResourceManagement from './components/Resources/ResourceManagement';
 
 const AppRoutes = () => {
   return (
     <Routes>
       {/* Auth Routes */}
       <Route path="/" element={<LandingPage />} />
+      <Route path="/resources" element={<PublicResourcesPage />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<SignUpPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
@@ -55,6 +60,7 @@ const AppRoutes = () => {
         <Route path="mood-history" element={<MoodHistoryPage />} />
         <Route path="therapists" element={<FindTherapistPage />} />
         <Route path="therapists/:therapistId" element={<TherapistProfilePage />} />
+        <Route path="chat/:therapistId" element={<StudentChatScreen />} />
         <Route path="book-appointment/:therapistId" element={<BookAppointmentPage />} />
         <Route path="resources" element={<ResourcesPage />} />
         <Route path="profile" element={<ProfilePage />} />
@@ -73,7 +79,7 @@ const AppRoutes = () => {
           element={<StudentDetailView />}
         />
         <Route path="appointments" element={<AppointmentsPage />} />
-        <Route path="chat" element={<Placeholder title="Live Chat Page" />} />
+        <Route path="live-chat" element={<ChatActivityHub />} />
         <Route path="resources" element={<ManageResourcesPage />} />
         <Route path="alerts" element={<CrisisAlertsPage />} />
         <Route path="profile" element={<TherapistProfilePageTherapist />} />
@@ -88,10 +94,7 @@ const AppRoutes = () => {
         />
         <Route path="therapists" element={<ManageTherapistsPage />} />
         <Route path="change-requests" element={<ManageChangeRequestsPage />} />
-        <Route
-          path="content"
-          element={<Placeholder title="Manage Content Page" />}
-        />
+        <Route path="content" element={<ResourceManagement userRole="admin" />} />
         <Route
           path="health"
           element={<Placeholder title="System Health Page" />}

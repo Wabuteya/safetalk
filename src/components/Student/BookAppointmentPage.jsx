@@ -216,14 +216,14 @@ const BookAppointmentPage = () => {
     if (date) {
       setLoadingTimeSlots(true);
       try {
-        const dayOfWeek = new Date(date).getDay();
+      const dayOfWeek = new Date(date).getDay();
         const slots = await getAvailableTimeSlots(dayOfWeek, date);
-        setAvailableTimeSlots(slots);
+      setAvailableTimeSlots(slots);
       } catch (err) {
         console.error('Error loading time slots:', err);
         setError('Failed to load available time slots. Please try again.');
       } finally {
-        setLoadingTimeSlots(false);
+      setLoadingTimeSlots(false);
       }
     }
   }, [getAvailableTimeSlots]);

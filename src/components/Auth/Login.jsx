@@ -50,31 +50,66 @@ const Login = () => {
       // If not, wait for it with a shorter timeout
       let authStateChanged = false;
       const authStatePromise = new Promise((resolve) => {
-        // Check immediately if session is already available
-        supabase.auth.getSession().then(({ data: { session } }) => {
-          if (session?.user && session.user.id === data.user.id) {
-            console.log('Session already available, auth state likely already changed');
-            authStateChanged = true;
-            resolve();
-            return;
-          }
-        });
+        // Store subscription reference to avoid race condition
+        // The callback can fire synchronously, so we need to handle this carefully
+        let subscriptionRef = null;
         
-        // Set up listener for future auth state changes
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+        // Set up listener for auth state changes
+        // Store the result first, then extract subscription to avoid race condition
+        const authStateChangeResult = supabase.auth.onAuthStateChange((event, session) => {
           if (event === 'SIGNED_IN' && session?.user && session.user.id === data.user.id) {
             console.log('Auth state change detected: SIGNED_IN');
             authStateChanged = true;
-            subscription.unsubscribe();
+            // Use subscriptionRef which is set immediately after this function call
+            // Wrap in try-catch to handle edge cases where subscription might not be available
+            if (subscriptionRef) {
+              try {
+                subscriptionRef.unsubscribe();
+              } catch (err) {
+                console.warn('Error unsubscribing from auth state change:', err);
+              }
+            }
             resolve();
           }
         });
+        
+        // Extract and store subscription reference immediately after onAuthStateChange call
+        // This must happen right after the call to ensure it's available if callback fires synchronously
+        subscriptionRef = authStateChangeResult?.data?.subscription || null;
+        
+        // Check immediately if session is already available
+        supabase.auth.getSession()
+          .then(({ data: { session }, error }) => {
+            if (error) {
+              console.error('Error getting session:', error);
+              // Continue anyway - don't block login flow
+              return;
+            }
+            if (session?.user && session.user.id === data.user.id) {
+              console.log('Session already available, auth state likely already changed');
+              authStateChanged = true;
+              // Unsubscribe if subscription is available
+              if (subscriptionRef) {
+                subscriptionRef.unsubscribe();
+              }
+              resolve();
+              return;
+            }
+          })
+          .catch((err) => {
+            console.error('Error in getSession promise:', err);
+            // Continue anyway - don't block login flow
+            // The timeout will handle proceeding
+          });
         
         // Shorter timeout since we check immediately
         setTimeout(() => {
           if (!authStateChanged) {
             console.log('Auth state change timeout, proceeding anyway');
-            subscription.unsubscribe();
+            // Unsubscribe if subscription is available
+            if (subscriptionRef) {
+              subscriptionRef.unsubscribe();
+            }
             resolve();
           }
         }, 1000);

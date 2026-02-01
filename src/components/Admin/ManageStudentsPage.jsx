@@ -54,11 +54,27 @@ const ManageStudentsPage = () => {
           .eq('status', 'pending')
       ]);
 
-      if (profilesResult.error) throw profilesResult.error;
+      // Check all three results for errors
+      if (profilesResult.error) {
+        console.error('Error fetching student profiles:', profilesResult.error);
+        throw profilesResult.error;
+      }
+
+      if (relationsResult.error) {
+        console.error('Error fetching therapist-student relations:', relationsResult.error);
+        // Log error but continue with empty relations - students will show as unassigned
+        // This allows partial data display rather than complete failure
+      }
+
+      if (changeRequestsResult.error) {
+        console.error('Error fetching change requests:', changeRequestsResult.error);
+        // Log error but continue with empty change requests - students won't show pending requests
+        // This allows partial data display rather than complete failure
+      }
 
       const profiles = profilesResult.data || [];
-      const relations = relationsResult.data || [];
-      const pendingRequests = changeRequestsResult.data || [];
+      const relations = relationsResult.error ? [] : (relationsResult.data || []);
+      const pendingRequests = changeRequestsResult.error ? [] : (changeRequestsResult.data || []);
 
       // Create a map of student_id -> therapist_id
       const assignmentMap = new Map();

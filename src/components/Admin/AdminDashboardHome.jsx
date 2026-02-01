@@ -74,10 +74,14 @@ const AdminDashboardHome = () => {
         if (therapistsResult.error) {
           console.error('Error fetching active therapists:', therapistsResult.error);
           // Fallback: try counting all therapists
-          if (allTherapistsResult.data) {
+          if (!allTherapistsResult.error && allTherapistsResult.data) {
             const activeCount = allTherapistsResult.data.filter(t => t.is_live === true).length;
             console.log(`Found ${activeCount} active therapists (from all therapists)`);
             setTherapistsCount(activeCount);
+          } else {
+            console.error('Error fetching all therapists for fallback:', allTherapistsResult.error);
+            // Set to 0 if both queries failed
+            setTherapistsCount(0);
           }
         } else {
           const count = therapistsResult.data?.length || 0;

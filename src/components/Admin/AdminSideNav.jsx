@@ -5,8 +5,7 @@ import {
   FaUserMd,
   FaRegNewspaper,
   FaHeartbeat,
-  FaSignOutAlt,
-  FaExchangeAlt
+  FaSignOutAlt
 } from 'react-icons/fa';
 import { supabase } from '../../supabaseClient';
 
@@ -63,12 +62,6 @@ const AdminSideNav = () => {
           <NavLink to="/admin-dashboard/therapists">
             <FaUserMd className="nav-icon" />
             <span>Manage Therapists</span>
-          </NavLink>
-        </li>
-        <li>
-          <NavLink to="/admin-dashboard/change-requests">
-            <FaExchangeAlt className="nav-icon" />
-            <span>Change Requests</span>
           </NavLink>
         </li>
         <li className="nav-section-heading">SYSTEM</li>

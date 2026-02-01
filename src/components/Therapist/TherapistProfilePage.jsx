@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
+import { uploadTherapistPhoto } from '../../utils/imageUpload';
 // We can reuse the profile page CSS since the structure is similar
 import '../Student/ProfilePage.css';
 
@@ -9,12 +10,16 @@ const TherapistProfilePage = () => {
     title: '',
     bio: '',
     image_url: '',
+    profile_photo_url: '',
     specialties: '', // This will be a string for the input, but saved as array
   });
 
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [photoPreview, setPhotoPreview] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
 
   // Fetch the current user and their existing profile data on page load
   useEffect(() => {
@@ -35,12 +40,22 @@ const TherapistProfilePage = () => {
 
         if (profile) {
           // If a profile exists, populate the form
+          // Ensure all values are strings, not null, to avoid React warnings
           setProfileData({
-            ...profile,
+            full_name: profile.full_name || '',
+            title: profile.title || '',
+            bio: profile.bio || '',
+            image_url: profile.image_url || '',
+            profile_photo_url: profile.profile_photo_url || '',
             specialties: Array.isArray(profile.specialties) 
               ? profile.specialties.join(', ') 
-              : profile.specialties || ''
+              : (profile.specialties || '')
           });
+          
+          // Set photo preview if profile_photo_url exists
+          if (profile.profile_photo_url) {
+            setPhotoPreview(profile.profile_photo_url);
+          }
         }
       }
 
@@ -52,6 +67,44 @@ const TherapistProfilePage = () => {
 
   const handleProfileChange = (e) => {
     setProfileData({ ...profileData, [e.target.name]: e.target.value });
+  };
+
+  const handlePhotoChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Create preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPhotoPreview(reader.result);
+    };
+    reader.readAsDataURL(file);
+    setSelectedFile(file);
+  };
+
+  const handlePhotoUpload = async () => {
+    if (!selectedFile || !user) {
+      alert('Please select a photo to upload');
+      return;
+    }
+
+    setUploadingPhoto(true);
+    try {
+      const result = await uploadTherapistPhoto(selectedFile, user.id);
+      
+      if (result.success) {
+        setProfileData({ ...profileData, profile_photo_url: result.url });
+        alert('Photo uploaded successfully! Don\'t forget to save your profile.');
+        setSelectedFile(null);
+      } else {
+        alert(result.error || 'Failed to upload photo');
+      }
+    } catch (error) {
+      console.error('Error uploading photo:', error);
+      alert('An error occurred while uploading the photo');
+    } finally {
+      setUploadingPhoto(false);
+    }
   };
 
   const handleProfileSubmit = async (e) => {
@@ -72,6 +125,7 @@ const TherapistProfilePage = () => {
           title: profileData.title,
           bio: profileData.bio,
           image_url: profileData.image_url,
+          profile_photo_url: profileData.profile_photo_url,
           specialties: profileData.specialties
             .split(',')
             .map(s => s.trim())
@@ -142,7 +196,68 @@ const TherapistProfilePage = () => {
             />
           </div>
           <div className="form-group">
-            <label htmlFor="image_url">Photo URL</label>
+            <label htmlFor="profile_photo">Profile Photo</label>
+            <div style={{ marginBottom: '1rem' }}>
+              {photoPreview && (
+                <div style={{ 
+                  marginBottom: '1rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '1rem'
+                }}>
+                  <img 
+                    src={photoPreview} 
+                    alt="Profile preview" 
+                    style={{
+                      width: '120px',
+                      height: '120px',
+                      objectFit: 'cover',
+                      borderRadius: '50%',
+                      border: '2px solid #ddd'
+                    }}
+                  />
+                  <div>
+                    <p style={{ margin: 0, fontSize: '0.9rem', color: '#666' }}>
+                      {selectedFile ? 'New photo selected' : 'Current photo'}
+                    </p>
+                    {selectedFile && (
+                      <button
+                        type="button"
+                        onClick={handlePhotoUpload}
+                        disabled={uploadingPhoto}
+                        style={{
+                          marginTop: '0.5rem',
+                          padding: '0.5rem 1rem',
+                          backgroundColor: '#007BFF',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '0.25rem',
+                          cursor: uploadingPhoto ? 'not-allowed' : 'pointer',
+                          fontSize: '0.9rem'
+                        }}
+                      >
+                        {uploadingPhoto ? 'Uploading...' : 'Upload Photo'}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+              <input 
+                type="file" 
+                id="profile_photo" 
+                name="profile_photo" 
+                accept="image/jpeg,image/jpg,image/png"
+                onChange={handlePhotoChange}
+                style={{ marginBottom: '0.5rem' }}
+              />
+              <small style={{ display: 'block', color: '#666' }}>
+                Upload a JPG or PNG image (max 5MB). This will replace your current photo.
+              </small>
+            </div>
+            {/* Keep image_url for backward compatibility / external URLs */}
+            <label htmlFor="image_url" style={{ marginTop: '1rem', display: 'block' }}>
+              Photo URL (Alternative - for external images)
+            </label>
             <input 
               type="url" 
               id="image_url" 
@@ -151,7 +266,9 @@ const TherapistProfilePage = () => {
               onChange={handleProfileChange}
               placeholder="https://example.com/your-photo.jpg"
             />
-            <small>Enter a URL to your professional photo</small>
+            <small style={{ display: 'block', color: '#666', marginTop: '0.25rem' }}>
+              Optional: Enter a URL to an external image (if not using file upload above)
+            </small>
           </div>
           <div className="form-group">
             <label htmlFor="bio">Biography</label>

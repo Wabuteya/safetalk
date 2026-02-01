@@ -27,7 +27,7 @@ import TherapistProfilePageTherapist from './components/Therapist/TherapistProfi
 import AdminDashboard from './components/Admin/AdminDashboard';
 import AdminDashboardHome from './components/Admin/AdminDashboardHome';
 import ManageTherapistsPage from './components/Admin/ManageTherapistsPage';
-import ManageChangeRequestsPage from './components/Admin/ManageChangeRequestsPage';
+import ManageStudentsPage from './components/Admin/ManageStudentsPage';
 import SignUpPage from './components/SignUp/SignUpPage';
 import InitialAssessment from './components/Assessment_Form/InitialAssessment';
 import VerifyEmailPage from './VerifyEmailPage';
@@ -88,12 +88,8 @@ const AppRoutes = () => {
       {/* Admin Dashboard Nested Routes */}
       <Route path="/admin-dashboard" element={<AdminDashboard />}>
         <Route index element={<AdminDashboardHome />} />
-        <Route
-          path="users"
-          element={<Placeholder title="Manage Students Page" />}
-        />
+        <Route path="users" element={<ManageStudentsPage />} />
         <Route path="therapists" element={<ManageTherapistsPage />} />
-        <Route path="change-requests" element={<ManageChangeRequestsPage />} />
         <Route path="content" element={<ResourceManagement userRole="admin" />} />
         <Route
           path="health"

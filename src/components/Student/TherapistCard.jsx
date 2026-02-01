@@ -1,10 +1,14 @@
 import { Link, useNavigate } from 'react-router-dom';
+import { DefaultAvatar, getTherapistPhotoUrl } from '../../utils/defaultAvatar';
 import './FindTherapistPage.css';
 import '../Therapist/StatusSelector.css'; // Import status styles
 
 // The component now accepts a new prop: 'showStatus' and 'isMyTherapist'
 const TherapistCard = ({ therapist, showStatus = false, isMyTherapist = false }) => {
   const navigate = useNavigate();
+  
+  // Get photo URL with fallback
+  const photoUrl = getTherapistPhotoUrl(therapist.profilePhotoUrl, therapist.imageUrl);
 
   const handleStartChat = () => {
     // Navigate to chat or show alert for now
@@ -19,20 +23,23 @@ const TherapistCard = ({ therapist, showStatus = false, isMyTherapist = false })
 
   return (
     <div className={`therapist-card ${isMyTherapist ? 'my-therapist-card' : ''}`}>
-      {/* Profile Photo - Always show if available */}
-      {therapist.imageUrl ? (
+      {/* Profile Photo - Always show with fallback */}
+      {photoUrl ? (
         <img 
-          src={therapist.imageUrl} 
+          src={photoUrl} 
           alt={`${therapist.name}`} 
           className="therapist-photo"
           onError={(e) => {
-            // Hide image if it fails to load
+            // Hide image if it fails to load and show default avatar
             e.target.style.display = 'none';
+            const placeholder = e.target.nextElementSibling;
+            if (placeholder) placeholder.style.display = 'flex';
           }}
         />
-      ) : (
-        <div className="therapist-photo-placeholder">
-          <span className="photo-placeholder-icon">👤</span>
+      ) : null}
+      {!photoUrl && (
+        <div className="therapist-photo-placeholder" style={{ display: photoUrl ? 'none' : 'flex' }}>
+          <DefaultAvatar size={120} />
         </div>
       )}
       

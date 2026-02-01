@@ -27,8 +27,8 @@ const ResourceManagement = ({ userRole }) => {
     if (!user) return;
 
     // Verify user role matches expected role
-    const userRole = user.user_metadata?.role;
-    if (userRole !== userRole && userRole !== 'admin') {
+    const actualUserRole = user.user_metadata?.role;
+    if (actualUserRole !== userRole && actualUserRole !== 'admin') {
       setError('Unauthorized access. Please log in with the correct account type.');
       setLoading(false);
       return;
@@ -64,7 +64,7 @@ const ResourceManagement = ({ userRole }) => {
         data = [...(adminResult.data || []), ...(therapistResult.data || [])];
         // Sort by created_at descending
         data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-      } else {
+      } else if (userRole === 'admin') {
         // Admins see all resources
         const result = await supabase
           .from('resources')
@@ -72,10 +72,11 @@ const ResourceManagement = ({ userRole }) => {
           .order('created_at', { ascending: false });
         
         if (result.error) throw result.error;
-        data = result.data;
+        data = result.data || [];
+      } else {
+        data = [];
       }
 
-      if (fetchError) throw fetchError;
       setResources(data || []);
     } catch (err) {
       console.error('Error fetching resources:', err);

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
+import { DefaultAvatar, getTherapistPhotoUrl } from '../../utils/defaultAvatar';
 import './TherapistProfilePage.css';
 
 const TherapistProfilePage = () => {
@@ -52,7 +53,8 @@ const TherapistProfilePage = () => {
                 ? profileData.specialties.split(',').map(s => s.trim()).filter(s => s)
                 : []),
           bio: profileData.bio || 'No bio available.',
-          image_url: profileData.image_url || null
+          image_url: profileData.image_url || null,
+          profile_photo_url: profileData.profile_photo_url || null
         });
 
         // 2. Fetch the current student's user object
@@ -173,16 +175,26 @@ const TherapistProfilePage = () => {
         &larr; Back
       </Link>
       <div className="profile-header">
-        {therapist.image_url && (
-          <img 
-            src={therapist.image_url} 
-            alt={therapist.full_name} 
-            className="profile-photo"
-            onError={(e) => {
-              // Hide image if it fails to load
-              e.target.style.display = 'none';
-            }}
-          />
+        {(() => {
+          const photoUrl = getTherapistPhotoUrl(therapist.profile_photo_url, therapist.image_url);
+          return photoUrl ? (
+            <img 
+              src={photoUrl} 
+              alt={therapist.full_name} 
+              className="profile-photo"
+              onError={(e) => {
+                // Hide image if it fails to load and show default avatar
+                e.target.style.display = 'none';
+                const placeholder = e.target.nextElementSibling;
+                if (placeholder) placeholder.style.display = 'flex';
+              }}
+            />
+          ) : null;
+        })()}
+        {!getTherapistPhotoUrl(therapist.profile_photo_url, therapist.image_url) && (
+          <div className="profile-photo-placeholder" style={{ display: 'flex' }}>
+            <DefaultAvatar size={150} />
+          </div>
         )}
         <div className="profile-header-info">
           <h1>{therapist.full_name}</h1>

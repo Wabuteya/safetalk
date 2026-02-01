@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
+import { DefaultAvatar, getTherapistPhotoUrl } from '../../utils/defaultAvatar';
 
 const TherapistDashboardHome = () => {
   const [therapistName, setTherapistName] = useState('Therapist');
+  const [therapistPhotoUrl, setTherapistPhotoUrl] = useState(null);
   const [loading, setLoading] = useState(true);
   const [appointmentsCount, setAppointmentsCount] = useState(0);
   const [caseloadCount, setCaseloadCount] = useState(0);
@@ -23,7 +25,7 @@ const TherapistDashboardHome = () => {
         // Fetch therapist profile from database
         const { data: profile } = await supabase
           .from('therapist_profiles')
-          .select('full_name, title')
+          .select('full_name, title, profile_photo_url, image_url')
           .eq('user_id', user.id)
           .single();
 
@@ -34,6 +36,10 @@ const TherapistDashboardHome = () => {
             ? `${profile.title} ${firstName}`
             : firstName;
           setTherapistName(displayName);
+          
+          // Set photo URL with fallback
+          const photoUrl = getTherapistPhotoUrl(profile.profile_photo_url, profile.image_url);
+          setTherapistPhotoUrl(photoUrl);
         } else {
           // Fallback to user metadata if profile doesn't exist yet
           const metadataName = user.user_metadata?.full_name;
@@ -97,8 +103,35 @@ const TherapistDashboardHome = () => {
 
   return (
     <div className="therapist-home">
-      <h1>Dashboard</h1>
-      <p>Welcome back, {therapistName}. Here is your summary for today.</p>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '2rem' }}>
+        {therapistPhotoUrl ? (
+          <img 
+            src={therapistPhotoUrl} 
+            alt={therapistName} 
+            style={{
+              width: '80px',
+              height: '80px',
+              borderRadius: '50%',
+              objectFit: 'cover',
+              border: '2px solid #ddd'
+            }}
+            onError={(e) => {
+              e.target.style.display = 'none';
+              const placeholder = e.target.nextElementSibling;
+              if (placeholder) placeholder.style.display = 'flex';
+            }}
+          />
+        ) : null}
+        {!therapistPhotoUrl && (
+          <div style={{ display: therapistPhotoUrl ? 'none' : 'flex' }}>
+            <DefaultAvatar size={80} />
+          </div>
+        )}
+        <div>
+          <h1 style={{ margin: 0 }}>Dashboard</h1>
+          <p style={{ margin: '0.5rem 0 0 0' }}>Welcome back, {therapistName}. Here is your summary for today.</p>
+        </div>
+      </div>
 
       <div className="dashboard-grid">
         <div className="widget-card">

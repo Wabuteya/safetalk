@@ -1,0 +1,410 @@
+import React, { useState, useEffect, useCallback } from 'react';
+import { supabase } from '../../supabaseClient';
+import { useUser } from '../../contexts/UserContext';
+import { FaPlus, FaEdit, FaTrash, FaExternalLinkAlt } from 'react-icons/fa';
+import './ResourceManagement.css';
+
+/**
+ * ResourceManagement Component
+ * Allows admins and therapists to create, edit, and delete resources
+ */
+const ResourceManagement = ({ userRole }) => {
+  const { user } = useUser();
+  const [resources, setResources] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingResource, setEditingResource] = useState(null);
+  const [formData, setFormData] = useState({
+    title: '',
+    content: '',
+    link: '',
+    tags: '',
+    visibility_scope: userRole === 'admin' ? 'system' : 'therapist_all'
+  });
+
+  const fetchResources = useCallback(async () => {
+    if (!user) return;
+
+    // Verify user role matches expected role
+    const actualUserRole = user.user_metadata?.role;
+    if (actualUserRole !== userRole && actualUserRole !== 'admin') {
+      setError('Unauthorized access. Please log in with the correct account type.');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError('');
+
+      let data, fetchError;
+
+      // Admins see all resources, therapists see their own + admin resources
+      if (userRole === 'therapist') {
+        // Fetch admin resources and therapist's own resources separately, then combine
+        const [adminResult, therapistResult] = await Promise.all([
+          supabase
+            .from('resources')
+            .select('*')
+            .eq('created_by_role', 'admin')
+            .order('created_at', { ascending: false }),
+          supabase
+            .from('resources')
+            .select('*')
+            .eq('created_by_role', 'therapist')
+            .eq('therapist_id', user.id)
+            .order('created_at', { ascending: false })
+        ]);
+
+        if (adminResult.error) throw adminResult.error;
+        if (therapistResult.error) throw therapistResult.error;
+
+        // Combine results
+        data = [...(adminResult.data || []), ...(therapistResult.data || [])];
+        // Sort by created_at descending
+        data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      } else if (userRole === 'admin') {
+        // Admins see all resources
+        const result = await supabase
+          .from('resources')
+          .select('*')
+          .order('created_at', { ascending: false });
+        
+        if (result.error) throw result.error;
+        data = result.data || [];
+      } else {
+        data = [];
+      }
+
+      setResources(data || []);
+    } catch (err) {
+      console.error('Error fetching resources:', err);
+      setError('Failed to load resources. Please refresh the page.');
+    } finally {
+      setLoading(false);
+    }
+  }, [user, userRole]);
+
+  useEffect(() => {
+    fetchResources();
+  }, [fetchResources]);
+
+  const handleOpenModal = (resource = null) => {
+    if (resource) {
+      setEditingResource(resource);
+      setFormData({
+        title: resource.title || '',
+        content: resource.content || '',
+        link: resource.link || '',
+        tags: (resource.tags || []).join(', '),
+        visibility_scope: resource.visibility_scope || (userRole === 'admin' ? 'system' : 'therapist_all')
+      });
+    } else {
+      setEditingResource(null);
+      setFormData({
+        title: '',
+        content: '',
+        link: '',
+        tags: '',
+        visibility_scope: userRole === 'admin' ? 'system' : 'therapist_all'
+      });
+    }
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setEditingResource(null);
+    setFormData({
+      title: '',
+      content: '',
+      link: '',
+      tags: '',
+      visibility_scope: userRole === 'admin' ? 'system' : 'therapist_all'
+    });
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!user) return;
+
+    // Verify user role
+    const actualUserRole = user.user_metadata?.role;
+    if (actualUserRole !== userRole && actualUserRole !== 'admin') {
+      alert('Unauthorized: Only admins and therapists can create resources.');
+      return;
+    }
+
+    try {
+      // Validate: at least one of content or link must be provided
+      if (!formData.content.trim() && !formData.link.trim()) {
+        alert('Please provide either content or a link.');
+        return;
+      }
+
+      // Parse tags (comma-separated string to array)
+      const tagsArray = formData.tags
+        .split(',')
+        .map(tag => tag.trim())
+        .filter(tag => tag.length > 0);
+
+      const resourceData = {
+        title: formData.title.trim(),
+        content: formData.content.trim() || null,
+        link: formData.link.trim() || null,
+        tags: tagsArray,
+        created_by_role: userRole,
+        visibility_scope: formData.visibility_scope,
+        therapist_id: userRole === 'therapist' ? user.id : null
+      };
+
+      if (editingResource) {
+        // Update existing resource
+        const { error: updateError } = await supabase
+          .from('resources')
+          .update(resourceData)
+          .eq('id', editingResource.id);
+
+        if (updateError) throw updateError;
+      } else {
+        // Create new resource
+        const { error: insertError } = await supabase
+          .from('resources')
+          .insert(resourceData);
+
+        if (insertError) throw insertError;
+      }
+
+      handleCloseModal();
+      fetchResources();
+    } catch (err) {
+      console.error('Error saving resource:', err);
+      alert(`Failed to save resource: ${err.message || 'Unknown error'}`);
+    }
+  };
+
+  const handleDelete = async (resourceId) => {
+    if (!confirm('Are you sure you want to delete this resource? This action cannot be undone.')) {
+      return;
+    }
+
+    if (!user) return;
+
+    // Verify user role
+    const actualUserRole = user.user_metadata?.role;
+    if (actualUserRole !== userRole && actualUserRole !== 'admin') {
+      alert('Unauthorized: Only admins and therapists can delete resources.');
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('resources')
+        .delete()
+        .eq('id', resourceId);
+
+      if (error) throw error;
+      fetchResources();
+    } catch (err) {
+      console.error('Error deleting resource:', err);
+      alert(`Failed to delete resource: ${err.message || 'Unknown error'}`);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="resource-management-container">
+        <div className="loading-state">Loading resources...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="resource-management-container">
+      <div className="page-header">
+        <h1>Manage Resources</h1>
+        <button className="add-resource-btn" onClick={() => handleOpenModal()}>
+          <FaPlus /> Add New Resource
+        </button>
+      </div>
+
+      {error && (
+        <div className="error-banner">{error}</div>
+      )}
+
+      {resources.length === 0 ? (
+        <div className="empty-state">
+          <div className="empty-icon">📚</div>
+          <h2>No Resources Yet</h2>
+          <p>Start by adding your first resource to help students.</p>
+        </div>
+      ) : (
+        <div className="resources-table-container">
+          <table className="resources-table">
+            <thead>
+              <tr>
+                <th>Title</th>
+                <th>Type</th>
+                <th>Visibility</th>
+                <th>Tags</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {resources.map(resource => (
+                <tr key={resource.id}>
+                  <td className="title-cell">{resource.title}</td>
+                  <td>
+                    <span className={`type-badge ${resource.link ? 'link' : 'content'}`}>
+                      {resource.link ? 'Link' : 'Content'}
+                    </span>
+                  </td>
+                  <td>
+                    <span className="visibility-badge">
+                      {resource.visibility_scope === 'system' && 'System (All Students)'}
+                      {resource.visibility_scope === 'therapist_all' && 'All Students'}
+                      {resource.visibility_scope === 'therapist_attached' && 'Attached Students Only'}
+                    </span>
+                  </td>
+                  <td>
+                    <div className="tags-container">
+                      {resource.tags && resource.tags.length > 0 ? (
+                        resource.tags.map((tag, idx) => (
+                          <span key={idx} className="tag">{tag}</span>
+                        ))
+                      ) : (
+                        <span className="no-tags">No tags</span>
+                      )}
+                    </div>
+                  </td>
+                  <td>{new Date(resource.created_at).toLocaleDateString()}</td>
+                  <td className="actions-cell">
+                    <button
+                      className="action-btn edit-btn"
+                      onClick={() => handleOpenModal(resource)}
+                      title="Edit"
+                    >
+                      <FaEdit />
+                    </button>
+                    <button
+                      className="action-btn delete-btn"
+                      onClick={() => handleDelete(resource.id)}
+                      title="Delete"
+                    >
+                      <FaTrash />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Add/Edit Modal */}
+      {isModalOpen && (
+        <div className="modal-backdrop" onClick={handleCloseModal}>
+          <div className="modal-content resource-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>{editingResource ? 'Edit Resource' : 'Add New Resource'}</h2>
+              <button className="close-btn" onClick={handleCloseModal}>×</button>
+            </div>
+
+            <form onSubmit={handleSubmit}>
+              <div className="form-group">
+                <label htmlFor="title">Title *</label>
+                <input
+                  type="text"
+                  id="title"
+                  name="title"
+                  value={formData.title}
+                  onChange={handleInputChange}
+                  required
+                  placeholder="e.g., Managing Exam Stress"
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="content">Content</label>
+                <textarea
+                  id="content"
+                  name="content"
+                  value={formData.content}
+                  onChange={handleInputChange}
+                  rows="6"
+                  placeholder="Enter resource content here, or provide a link below..."
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="link">Link/URL</label>
+                <input
+                  type="url"
+                  id="link"
+                  name="link"
+                  value={formData.link}
+                  onChange={handleInputChange}
+                  placeholder="https://example.com/article"
+                />
+                <small className="form-hint">Provide either content or a link (or both)</small>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="tags">Tags (comma-separated)</label>
+                <input
+                  type="text"
+                  id="tags"
+                  name="tags"
+                  value={formData.tags}
+                  onChange={handleInputChange}
+                  placeholder="e.g., stress, anxiety, academics, sleep"
+                />
+                <small className="form-hint">Separate multiple tags with commas</small>
+              </div>
+
+              {userRole === 'therapist' && (
+                <div className="form-group">
+                  <label htmlFor="visibility_scope">Visibility *</label>
+                  <select
+                    id="visibility_scope"
+                    name="visibility_scope"
+                    value={formData.visibility_scope}
+                    onChange={handleInputChange}
+                    required
+                  >
+                    <option value="therapist_all">Available to All Students</option>
+                    <option value="therapist_attached">Available Only to Attached Students</option>
+                  </select>
+                  <small className="form-hint">
+                    {formData.visibility_scope === 'therapist_all'
+                      ? 'This resource will be visible to all students in the system'
+                      : 'This resource will only be visible to students linked to you'}
+                  </small>
+                </div>
+              )}
+
+              <div className="modal-actions">
+                <button type="button" onClick={handleCloseModal} className="btn-secondary">
+                  Cancel
+                </button>
+                <button type="submit" className="btn-primary">
+                  {editingResource ? 'Update Resource' : 'Create Resource'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default ResourceManagement;
+

@@ -5,18 +5,33 @@ import { supabase } from '../../supabaseClient';
 import './TherapistDashboard.css';
 
 // --- NEW HELPER FUNCTION ---
-const updateUserStatus = async (userId, status) => {
+const updateUserStatus = async (userId, status, silent = false) => {
     if (!userId) return;
 
-    const { error } = await supabase
-        .from('therapist_profiles')
-        .update({ status: status })
-        .eq('user_id', userId);
-    
-    if (error) {
-        console.error('Error updating user status:', error);
-    } else {
-        console.log(`Status updated to: ${status}`);
+    try {
+        const { error } = await supabase
+            .from('therapist_profiles')
+            .update({ status: status })
+            .eq('user_id', userId);
+        
+        if (error) {
+            // Only log errors if not silent (silent mode for logout/unmount scenarios)
+            if (!silent) {
+                console.error('Error updating user status:', error);
+            }
+            return false;
+        } else {
+            if (!silent) {
+                console.log(`Status updated to: ${status}`);
+            }
+            return true;
+        }
+    } catch (err) {
+        // Silently handle errors during logout/unmount (session may already be invalid)
+        if (!silent) {
+            console.error('Error updating user status:', err);
+        }
+        return false;
     }
 };
 
@@ -127,7 +142,8 @@ const TherapistDashboard = () => {
         // --- TAB CLOSE/LOGOUT LOGIC (AUTO-OFFLINE) ---
         const handleBeforeUnload = () => {
             // This is a 'best-effort' attempt. Some browsers may block it.
-            updateUserStatus(user.id, 'offline');
+            // Use silent mode to avoid errors during logout
+            updateUserStatus(user.id, 'offline', true);
         };
 
         window.addEventListener('beforeunload', handleBeforeUnload);
@@ -141,6 +157,7 @@ const TherapistDashboard = () => {
             window.removeEventListener('beforeunload', handleBeforeUnload);
             // Note: We don't set offline here to avoid conflicts with beforeunload
             // The beforeunload handler will handle tab close, and logout should be handled separately
+            // If we need to set offline on unmount, use silent mode to avoid errors
         };
     }, [user]); // This effect depends on the user object
 

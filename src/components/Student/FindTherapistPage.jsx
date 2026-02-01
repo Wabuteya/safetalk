@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FaComments, FaCalendar } from 'react-icons/fa';
 import TherapistCard from './TherapistCard.jsx';
 import { supabase } from '../../supabaseClient';
 import { useUser } from '../../contexts/UserContext';
+import { DefaultAvatar, getTherapistPhotoUrl } from '../../utils/defaultAvatar';
 import './FindTherapistPage.css';
 import '../Therapist/StatusSelector.css'; // Import for status dot colors
 
@@ -52,7 +54,7 @@ const FindTherapistPage = () => {
           // Step 2: If a link exists, fetch THAT therapist's profile
           const { data: therapistProfile, error: profileError } = await supabase
             .from('therapist_profiles')
-            .select('user_id, full_name, title, specialties, bio, image_url, status') // Only select needed fields
+            .select('user_id, full_name, title, specialties, bio, image_url, profile_photo_url, status') // Only select needed fields
             .eq('user_id', relationship.therapist_id)
             .eq('is_live', true)
             .single();
@@ -73,6 +75,7 @@ const FindTherapistPage = () => {
                     : []),
               bio: therapistProfile.bio || 'No bio available.',
               imageUrl: therapistProfile.image_url || '',
+              profilePhotoUrl: therapistProfile.profile_photo_url || '',
               status: therapistProfile.status || 'offline'
             };
             setLinkedTherapist(formattedTherapist);
@@ -85,7 +88,7 @@ const FindTherapistPage = () => {
         // Use parallel query if we also need to check relationships
         const { data: allProfiles, error: allError } = await supabase
           .from('therapist_profiles')
-          .select('user_id, full_name, title, specialties, bio, image_url') // Only select needed fields
+          .select('user_id, full_name, title, specialties, bio, image_url, profile_photo_url') // Only select needed fields
           .eq('is_live', true)
           .order('full_name', { ascending: true });
 
@@ -103,7 +106,8 @@ const FindTherapistPage = () => {
                   ? profile.specialties.split(',').map(s => s.trim()).filter(s => s)
                   : []),
             bio: profile.bio || 'No bio available.',
-            imageUrl: profile.image_url || ''
+            imageUrl: profile.image_url || '',
+            profilePhotoUrl: profile.profile_photo_url || ''
           }));
           setAllTherapists(formattedData);
         }
@@ -300,7 +304,7 @@ const FindTherapistPage = () => {
   // If the user has a linked therapist, show the "My Therapist" view (NO browsing allowed)
   if (linkedTherapist) {
     const handleStartChat = () => {
-      alert(`Starting secure chat with ${linkedTherapist.name}...\n(This feature will be implemented soon)`);
+      navigate(`/student-dashboard/chat/${linkedTherapist.id}`);
     };
 
     const handleBookAppointment = () => {
@@ -321,18 +325,24 @@ const FindTherapistPage = () => {
         </div>
 
         <div className="profile-header">
-          {linkedTherapist.imageUrl ? (
-            <img 
-              src={linkedTherapist.imageUrl} 
-              alt={linkedTherapist.name} 
-              className="profile-photo"
-              onError={(e) => {
-                e.target.style.display = 'none';
-              }}
-            />
-          ) : (
-            <div className="profile-photo-placeholder">
-              <span className="photo-placeholder-icon">👤</span>
+          {(() => {
+            const photoUrl = getTherapistPhotoUrl(linkedTherapist.profilePhotoUrl, linkedTherapist.imageUrl);
+            return photoUrl ? (
+              <img 
+                src={photoUrl} 
+                alt={linkedTherapist.name} 
+                className="profile-photo"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  const placeholder = e.target.nextElementSibling;
+                  if (placeholder) placeholder.style.display = 'flex';
+                }}
+              />
+            ) : null;
+          })()}
+          {!getTherapistPhotoUrl(linkedTherapist.profilePhotoUrl, linkedTherapist.imageUrl) && (
+            <div className="profile-photo-placeholder" style={{ display: 'flex' }}>
+              <DefaultAvatar size={150} />
             </div>
           )}
           
@@ -360,13 +370,13 @@ const FindTherapistPage = () => {
                 className="action-btn chat-btn" 
                 onClick={handleStartChat}
               >
-                💬 Start a Chat
+                <FaComments /> Chat
               </button>
               <button 
                 className="action-btn appointment-btn" 
                 onClick={handleBookAppointment}
               >
-                📅 Book Appointment
+                <FaCalendar /> Book Appointment
               </button>
             </div>
           </div>

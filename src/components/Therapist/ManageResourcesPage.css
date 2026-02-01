@@ -1,3 +1,8 @@
+.manage-resources-layout {
+  position: relative;
+  min-height: 100vh;
+}
+
 .manage-resources-layout .page-header {
     display: flex;
     justify-content: space-between;

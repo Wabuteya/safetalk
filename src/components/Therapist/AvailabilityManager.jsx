@@ -133,13 +133,13 @@ const AvailabilityManager = () => {
       for (const dayOfWeek in availability) {
         const slots = availability[dayOfWeek];
         for (const slot of slots) {
-          slotsToInsert.push({
-            therapist_id: user.id,
-            day_of_week: parseInt(dayOfWeek),
-            start_time: slot.start_time,
-            end_time: slot.end_time,
-            is_available: true
-          });
+            slotsToInsert.push({
+              therapist_id: user.id,
+              day_of_week: parseInt(dayOfWeek),
+              start_time: slot.start_time,
+              end_time: slot.end_time,
+              is_available: true
+            });
         }
       }
 

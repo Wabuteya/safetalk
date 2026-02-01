@@ -58,23 +58,34 @@ const TherapistSideNav = () => {
 
   const handleLogout = async () => {
     try {
-      // Set status to offline before logging out
+      // Set status to offline before logging out (best effort, don't block logout if it fails)
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
-          await supabase
+          // Use a timeout to prevent blocking logout
+          const statusUpdatePromise = supabase
             .from('therapist_profiles')
             .update({ status: 'offline' })
             .eq('user_id', user.id);
+          
+          // Race against a timeout - don't wait more than 1 second
+          await Promise.race([
+            statusUpdatePromise,
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 1000))
+          ]).catch(() => {
+            // Silently ignore timeout or errors - logout should proceed regardless
+          });
         }
       } catch (error) {
-        console.error('Error setting status to offline on logout:', error);
+        // Silently ignore errors - logout should proceed regardless
+        // Errors are expected if session is already invalidated
       }
       
       // Clear user session
       const { error: signOutError } = await supabase.auth.signOut();
       
       if (signOutError) {
+        // Log but don't block logout
         console.error('Error signing out:', signOutError);
       }
       
@@ -84,7 +95,6 @@ const TherapistSideNav = () => {
       // Force navigation to home page (full page reload)
       window.location.href = '/';
     } catch (err) {
-      console.error('Logout error:', err);
       // Force navigation even if there's an error
       localStorage.removeItem('userAlias');
       window.location.href = '/';
@@ -123,7 +133,7 @@ const TherapistSideNav = () => {
           </NavLink>
         </li>
         <li>
-          <NavLink to="/therapist-dashboard/chat">
+          <NavLink to="/therapist-dashboard/live-chat">
             <FaComments className="nav-icon" />
             <span>Live Chat</span>
           </NavLink>

@@ -96,7 +96,7 @@
     text-align: center;
     margin-top: 0.5rem;
   }
-
+  
   .appointment-indicator {
     background-color: #F3E5F5;
     color: #7B1FA2;
@@ -119,8 +119,51 @@
     margin-top: 0.5rem;
   }
   
+  .student-card-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+
+  .chat-btn-card {
+    flex: 1;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 0.75rem;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    position: relative;
+  }
+
+  .chat-btn-card svg {
+    font-size: 1rem;
+  }
+  
+  .chat-btn-card:hover {
+    background-color: #0056b3;
+    transform: translateY(-1px);
+  }
+
+  .unread-badge-small {
+    background-color: #ff4444;
+    color: white;
+    border-radius: 10px;
+    padding: 0.15rem 0.4rem;
+    font-size: 0.7rem;
+    font-weight: bold;
+    min-width: 18px;
+    text-align: center;
+  }
+  
   .view-progress-btn {
-    display: block;
+    flex: 1;
     text-align: center;
     background-color: #7B1FA2;
     color: white;
@@ -128,8 +171,10 @@
     padding: 0.75rem;
     border-radius: 5px;
     font-weight: bold;
-    margin-top: 1rem;
     transition: background-color 0.2s ease, transform 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   
   .view-progress-btn:hover {

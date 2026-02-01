@@ -37,6 +37,9 @@
   .entry-list {
     overflow-y: auto;
     flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch; /* Allow items to fill width but not stretch height */
   }
   
 .entry-item {
@@ -46,6 +49,9 @@
     border-radius: 10px;
     cursor: pointer;
     transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+    height: fit-content; /* Let cards size based on content */
+    flex-shrink: 0; /* Prevent cards from shrinking */
+    align-self: stretch; /* Fill width but maintain own height */
   }
   
 .entry-item:hover {

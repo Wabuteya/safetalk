@@ -54,22 +54,51 @@ const JournalPage = () => {
           return;
         }
 
-        // Fetch therapist relationship and journal entries in parallel
+        console.log('JournalPage: Starting data fetch...');
+        const fetchStartTime = performance.now();
+
+        // Verify user session is still valid before making requests
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError || !session) {
+          throw new Error('Session expired. Please log in again.');
+        }
+
+        // Fetch therapist relationship and journal entries in parallel with timeout
+        const fetchWithTimeout = async (queryPromise, timeoutMs = 10000) => {
+          return Promise.race([
+            queryPromise,
+            new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('Request timeout: Please check your internet connection.')), timeoutMs)
+            )
+          ]);
+        };
+
         const [relationshipResult, entriesResult] = await Promise.all([
-          supabase
-            .from('therapist_student_relations')
-            .select('therapist_id')
-            .eq('student_id', user.id)
-            .maybeSingle(),
-          supabase
-            .from('journal_entries')
-            .select('id, entry_date, content, is_shared_with_therapist, shared_at, created_at, updated_at') // Only select needed fields
-            .eq('student_id', user.id)
-            .order('entry_date', { ascending: false })
-            .order('created_at', { ascending: false })
+          fetchWithTimeout(
+            supabase
+              .from('therapist_student_relations')
+              .select('therapist_id')
+              .eq('student_id', user.id)
+              .maybeSingle()
+          ),
+          fetchWithTimeout(
+            supabase
+              .from('journal_entries')
+              .select('id, entry_date, content, is_shared_with_therapist, shared_at, created_at, updated_at') // Only select needed fields
+              .eq('student_id', user.id)
+              .order('created_at', { ascending: false }) // Single order by most recent
+              .limit(100) // Limit to most recent 100 entries for performance
+          )
         ]).catch((err) => {
-          // Handle network errors
+          // Handle network errors with more specific messages
           console.error('Network error fetching data:', err);
+          if (err.message?.includes('timeout') || err.message?.includes('Timeout')) {
+            throw new Error('Request timed out. Please check your internet connection and try again.');
+          } else if (err.message?.includes('Load failed') || err.message?.includes('fetch') || err.message?.includes('network')) {
+            throw new Error('Network error: Unable to connect to the server. Please check your internet connection and try again.');
+          } else if (err.message?.includes('access control') || err.message?.includes('CORS')) {
+            throw new Error('Connection error: Please refresh the page and try again.');
+          }
           throw new Error('Network error: Please check your internet connection and try again.');
         });
 
@@ -90,19 +119,27 @@ const JournalPage = () => {
           throw entriesError;
         }
 
-        // Format entries for display
-        const formattedEntries = (entriesData || []).map(entry => ({
-          id: entry.id,
-          date: entry.entry_date,
-          content: entry.content,
-          isShared: entry.is_shared_with_therapist,
-          sharedAt: entry.shared_at,
-          createdAt: entry.created_at,
-          updatedAt: entry.updated_at,
-          hasHighRiskSentiment: checkHighRiskSentiment(entry.content)
-        }));
+        // Format entries for display (optimize sentiment check - only check if content is short enough)
+        const formattedEntries = (entriesData || []).map(entry => {
+          // Only check sentiment for entries with content (skip empty/null)
+          const hasHighRisk = entry.content ? checkHighRiskSentiment(entry.content) : false;
+          
+          return {
+            id: entry.id,
+            date: entry.entry_date,
+            content: entry.content,
+            isShared: entry.is_shared_with_therapist,
+            sharedAt: entry.shared_at,
+            createdAt: entry.created_at,
+            updatedAt: entry.updated_at,
+            hasHighRiskSentiment: hasHighRisk
+          };
+        });
 
         setEntries(formattedEntries);
+        
+        const fetchEndTime = performance.now();
+        console.log(`JournalPage: Data fetch completed in ${(fetchEndTime - fetchStartTime).toFixed(2)}ms`);
       } catch (err) {
         console.error('Error fetching journal entries:', err);
         
@@ -361,20 +398,48 @@ const JournalPage = () => {
           setLoading(true);
           setError('');
 
-          // Fetch therapist relationship and journal entries in parallel
+          // Verify user session is still valid before making requests
+          const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+          if (sessionError || !session) {
+            throw new Error('Session expired. Please log in again.');
+          }
+
+          // Fetch therapist relationship and journal entries in parallel with timeout
+          const fetchWithTimeout = async (queryPromise, timeoutMs = 10000) => {
+            return Promise.race([
+              queryPromise,
+              new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Request timeout: Please check your internet connection.')), timeoutMs)
+              )
+            ]);
+          };
+
           const [relationshipResult, entriesResult] = await Promise.all([
-            supabase
-              .from('therapist_student_relations')
-              .select('therapist_id')
-              .eq('student_id', user.id)
-              .maybeSingle(),
-            supabase
-              .from('journal_entries')
-              .select('id, entry_date, content, is_shared_with_therapist, shared_at, created_at, updated_at')
-              .eq('student_id', user.id)
-              .order('entry_date', { ascending: false })
-              .order('created_at', { ascending: false })
+            fetchWithTimeout(
+              supabase
+                .from('therapist_student_relations')
+                .select('therapist_id')
+                .eq('student_id', user.id)
+                .maybeSingle()
+            ),
+            fetchWithTimeout(
+              supabase
+                .from('journal_entries')
+                .select('id, entry_date, content, is_shared_with_therapist, shared_at, created_at, updated_at')
+                .eq('student_id', user.id)
+                .order('created_at', { ascending: false }) // Single order by most recent
+                .limit(100) // Limit to most recent 100 entries for performance
+            )
           ]).catch((err) => {
+            // Handle network errors with more specific messages
+            console.error('Network error fetching data:', err);
+            if (err.message?.includes('timeout') || err.message?.includes('Timeout')) {
+              throw new Error('Request timed out. Please check your internet connection and try again.');
+            } else if (err.message?.includes('Load failed') || err.message?.includes('fetch') || err.message?.includes('network')) {
+              throw new Error('Network error: Unable to connect to the server. Please check your internet connection and try again.');
+            } else if (err.message?.includes('access control') || err.message?.includes('CORS')) {
+              throw new Error('Connection error: Please refresh the page and try again.');
+            }
             throw new Error('Network error: Please check your internet connection and try again.');
           });
 
@@ -394,16 +459,21 @@ const JournalPage = () => {
             throw entriesError;
           }
 
-          const formattedEntries = (entriesData || []).map(entry => ({
-            id: entry.id,
-            date: entry.entry_date,
-            content: entry.content,
-            isShared: entry.is_shared_with_therapist,
-            sharedAt: entry.shared_at,
-            createdAt: entry.created_at,
-            updatedAt: entry.updated_at,
-            hasHighRiskSentiment: checkHighRiskSentiment(entry.content)
-          }));
+          const formattedEntries = (entriesData || []).map(entry => {
+            // Only check sentiment for entries with content (skip empty/null)
+            const hasHighRisk = entry.content ? checkHighRiskSentiment(entry.content) : false;
+            
+            return {
+              id: entry.id,
+              date: entry.entry_date,
+              content: entry.content,
+              isShared: entry.is_shared_with_therapist,
+              sharedAt: entry.shared_at,
+              createdAt: entry.created_at,
+              updatedAt: entry.updated_at,
+              hasHighRiskSentiment: hasHighRisk
+            };
+          });
 
           setEntries(formattedEntries);
         } catch (err) {

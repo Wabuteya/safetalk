@@ -24,7 +24,7 @@ const AppointmentsPage = () => {
   const handleCloseModal = useCallback(() => {
     setSelectedEvent(null);
   }, []);
-
+  
   const fetchAppointments = useCallback(async () => {
     try {
       setLoading(true);

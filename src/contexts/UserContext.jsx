@@ -30,39 +30,39 @@ export const UserProvider = ({ children }) => {
             
             // Fetch profile in background (non-blocking)
             const role = session.user.user_metadata?.role;
-          if (role === 'student') {
-            supabase
-              .from('student_profiles')
-              .select('user_id, alias')
-              .eq('user_id', session.user.id)
+            if (role === 'student') {
+              supabase
+                .from('student_profiles')
+                .select('user_id, alias')
+                .eq('user_id', session.user.id)
               .maybeSingle()
               .then(({ data: profile, error }) => {
                 if (!error && profile) {
                   setUserProfile(profile);
                 }
-              })
+                })
               .catch((err) => {
                 // Silently handle errors - profile fetch is not critical
                 console.warn('Error fetching student profile:', err);
               });
-          } else if (role === 'therapist') {
-            supabase
-              .from('therapist_profiles')
-              .select('user_id, full_name')
-              .eq('user_id', session.user.id)
+            } else if (role === 'therapist') {
+              supabase
+                .from('therapist_profiles')
+                .select('user_id, full_name')
+                .eq('user_id', session.user.id)
               .maybeSingle()
               .then(({ data: profile, error }) => {
                 if (!error && profile) {
                   setUserProfile(profile);
                 }
-              })
+                })
               .catch((err) => {
                 // Silently handle errors - profile fetch is not critical
                 console.warn('Error fetching therapist profile:', err);
               });
-          } else if (role === 'admin') {
-            setUserProfile({ user_id: session.user.id });
-          }
+            } else if (role === 'admin') {
+              setUserProfile({ user_id: session.user.id });
+            }
             break; // Found user, exit loop
           }
         } catch (err) {

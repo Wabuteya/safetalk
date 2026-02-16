@@ -1,111 +1,248 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { supabase } from '../../supabaseClient';
+import {
+  getCrisisEventsForTherapistAll,
+  acknowledgeCrisisEvent,
+  resolveCrisisEvent,
+} from '../../utils/crisisEvents';
+import { useCrisisRealtime } from '../../contexts/CrisisRealtimeContext';
 import './CrisisAlertsPage.css';
 
-const CrisisAlertsPage = () => {
-  // No dummy data - will fetch from backend when implemented
-  const [alerts, setAlerts] = useState([]);
-  const [selectedAlert, setSelectedAlert] = useState(null);
-  const [showModal, setShowModal] = useState(false);
-  const [contactInfoRevealed, setContactInfoRevealed] = useState(false);
+const formatTime = (iso) =>
+  iso
+    ? new Date(iso).toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+    : '—';
 
-  const handleRevealContact = () => {
-    // This would involve a password check in a real app
-    setContactInfoRevealed(true);
-    setShowModal(false);
-  };
-  
-  const handleResolveAlert = () => {
-    if (selectedAlert) {
-      // In a real app, this sends an API call to the backend
-      // For now, this is a placeholder - will be implemented when backend is ready
-      alert(`Alert for ${selectedAlert.studentAlias} has been marked as resolved.`);
-      const updatedAlerts = alerts.filter(a => a.id !== selectedAlert.id);
-      setAlerts(updatedAlerts);
-      setSelectedAlert(updatedAlerts[0] || null);
+const formatSource = (source) => (source ? source.replace(/_/g, ' ') : '—');
+
+const CrisisAlertsPage = () => {
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const eventIdParam = searchParams.get('event');
+  const { refreshCount } = useCrisisRealtime() || {};
+
+  const [user, setUser] = useState(null);
+  const [alerts, setAlerts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedId, setSelectedId] = useState(null);
+  const [actingId, setActingId] = useState(null);
+
+  const refreshAlerts = useCallback(async (therapistId) => {
+    if (!therapistId) return;
+    const events = await getCrisisEventsForTherapistAll(therapistId);
+    setAlerts(events);
+  }, []);
+
+  useEffect(() => {
+    const init = async () => {
+      const {
+        data: { user: u },
+      } = await supabase.auth.getUser();
+      if (!u) {
+        setLoading(false);
+        return;
+      }
+      setUser(u);
+      await refreshAlerts(u.id);
+      if (refreshCount) await refreshCount(u.id);
+      setLoading(false);
+    };
+    init();
+  }, [refreshAlerts, refreshCount]);
+
+  useEffect(() => {
+    if (eventIdParam && alerts.length > 0) {
+      const exists = alerts.some((a) => a.id === eventIdParam);
+      if (exists) setSelectedId(eventIdParam);
+    }
+  }, [eventIdParam, alerts]);
+
+  const selectedAlert = alerts.find((a) => a.id === selectedId);
+
+  const openAlert = async (alert) => {
+    setSelectedId(alert.id);
+    setSearchParams({ event: alert.id }, { replace: true });
+
+    const shouldAcknowledge = ['triggered', 'active', 'escalated'].includes(alert.status);
+    if (user?.id && shouldAcknowledge) {
+      setActingId(alert.id);
+      try {
+        await acknowledgeCrisisEvent(alert.id, user.id);
+        await refreshAlerts(user.id);
+      } catch (err) {
+        console.error('Acknowledge on open failed:', err);
+      } finally {
+        setActingId(null);
+      }
     }
   };
 
+  const handleResolve = async () => {
+    if (!selectedAlert || !user?.id) return;
+    setActingId(selectedAlert.id);
+    try {
+      const { error } = await resolveCrisisEvent(selectedAlert.id, user.id);
+      if (error) throw error;
+      await refreshAlerts(user.id);
+      if (refreshCount) await refreshCount(user.id);
+    } catch (err) {
+      console.error('Resolve failed:', err);
+    } finally {
+      setActingId(null);
+    }
+  };
+
+  const openStudentCase = () => {
+    if (selectedAlert) navigate(`/therapist-dashboard/student/${selectedAlert.student_id}`);
+  };
+
+  if (loading) {
+    return (
+      <div className="crisis-alerts-layout">
+        <div className="crisis-alerts-loading">Loading crisis alerts...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="crisis-alerts-layout">
-      {/* --- CONFIRMATION MODAL --- */}
-      {showModal && (
-        <div className="modal-backdrop">
-          <div className="modal-content">
-            <h3>Confirm Access to Sensitive Information</h3>
-            <p>You are about to view a student's confidential emergency contact information. Please confirm that this is a necessary step for managing a crisis situation.</p>
-            <div className="modal-actions">
-              <button onClick={() => setShowModal(false)} className="modal-btn cancel">Cancel</button>
-              <button onClick={handleRevealContact} className="modal-btn confirm">I Understand, Reveal Info</button>
+      <header className="crisis-alerts-page-header">
+        <h1>Crisis Management</h1>
+        <p className="crisis-alerts-subtitle">Centralized view of all crisis events. Open an alert to acknowledge and take action.</p>
+      </header>
+
+      <div className="crisis-alerts-main">
+        <div className="crisis-alerts-list-panel">
+          <h2 className="crisis-alerts-list-title">All alerts ({alerts.length})</h2>
+          {alerts.length === 0 ? (
+            <div className="crisis-alerts-empty">
+              <p>No crisis alerts.</p>
+              <p className="subtext">Alerts will appear here when students use Crisis Support or when crises are created.</p>
             </div>
-          </div>
+          ) : (
+            <div className="crisis-alerts-table-wrap">
+              <table className="crisis-alerts-table">
+                <thead>
+                  <tr>
+                    <th>Student</th>
+                    <th>Risk level</th>
+                    <th>Trigger source</th>
+                    <th>Time triggered</th>
+                    <th>Status</th>
+                    <th>Assigned therapist</th>
+                    <th aria-label="Actions" />
+                  </tr>
+                </thead>
+                <tbody>
+                  {alerts.map((alert) => (
+                    <tr
+                      key={alert.id}
+                      className={`crisis-alerts-row ${selectedId === alert.id ? 'selected' : ''} status-${alert.status}`}
+                      onClick={() => openAlert(alert)}
+                    >
+                      <td>{alert.studentAlias}</td>
+                      <td>—</td>
+                      <td>{formatSource(alert.source)}</td>
+                      <td>{formatTime(alert.triggered_at)}</td>
+                      <td>
+                        <span className={`crisis-alerts-status-badge status-${alert.displayStatus?.toLowerCase()}`}>
+                          {alert.displayStatus}
+                        </span>
+                      </td>
+                      <td>{alert.assignedTherapistName}</td>
+                      <td onClick={(e) => e.stopPropagation()}>
+                        <button
+                          type="button"
+                          className="crisis-alerts-btn-open"
+                          onClick={() => openAlert(alert)}
+                          disabled={actingId === alert.id}
+                        >
+                          {actingId === alert.id ? '…' : 'Open'}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
-      )}
 
-      {/* --- LEFT SIDEBAR: ALERT QUEUE --- */}
-      <div className="alert-queue">
-        <h3>Active Alerts ({alerts.length})</h3>
-        {alerts.length === 0 ? (
-          <div className="no-alerts-message">
-            <p>No active alerts.</p>
-            <p className="subtext">Crisis alerts will appear here when detected.</p>
-          </div>
-        ) : (
-          alerts.map(alert => (
-            <div
-              key={alert.id}
-              className={`alert-item ${selectedAlert?.id === alert.id ? 'active' : ''}`}
-              onClick={() => {
-                setSelectedAlert(alert);
-                setContactInfoRevealed(false);
-              }}
-            >
-              <p className="alias">{alert.studentAlias}</p>
-              <p className="trigger">{alert.triggerType}</p>
-            </div>
-          ))
-        )}
-      </div>
-
-      {/* --- RIGHT CONTENT: ALERT DETAILS --- */}
-      <div className="alert-details">
-        {selectedAlert ? (
-          <>
-            <h2>Alert Details for {selectedAlert.studentAlias}</h2>
-            
-            <div className="detail-section">
-              <h4>Triggering Content</h4>
-              <p className="trigger-text">"{selectedAlert.triggerContent}"</p>
-              <small>Detected on: {new Date(selectedAlert.timestamp).toLocaleString()}</small>
-            </div>
-
-            <div className="detail-section emergency-contact">
-              <h4>Emergency Contact Information</h4>
-              {contactInfoRevealed ? (
-                <div className="contact-info-revealed">
-                    <p><strong>Name:</strong> {selectedAlert.emergencyContact.name}</p>
-                    <p><strong>Contact:</strong> {selectedAlert.emergencyContact.contact}</p>
+        <div className="crisis-alerts-detail-panel">
+          {selectedAlert ? (
+            <>
+              <h2 className="crisis-alerts-detail-title">Alert details</h2>
+              <div className="crisis-alerts-detail-card">
+                <div className="crisis-alerts-detail-row">
+                  <span className="label">Student</span>
+                  <span>{selectedAlert.studentAlias}</span>
                 </div>
-              ) : (
-                <button className="reveal-btn" onClick={() => setShowModal(true)}>
-                  Reveal Emergency Contact
-                </button>
-              )}
-            </div>
+                <div className="crisis-alerts-detail-row">
+                  <span className="label">Risk level</span>
+                  <span>—</span>
+                </div>
+                <div className="crisis-alerts-detail-row">
+                  <span className="label">Trigger source</span>
+                  <span>{formatSource(selectedAlert.source)}</span>
+                </div>
+                <div className="crisis-alerts-detail-row">
+                  <span className="label">Time triggered</span>
+                  <span>{formatTime(selectedAlert.triggered_at)}</span>
+                </div>
+                <div className="crisis-alerts-detail-row">
+                  <span className="label">Current status</span>
+                  <span className={`crisis-alerts-status-badge status-${selectedAlert.displayStatus?.toLowerCase()}`}>
+                    {selectedAlert.displayStatus}
+                  </span>
+                </div>
+                <div className="crisis-alerts-detail-row">
+                  <span className="label">Assigned therapist</span>
+                  <span>{selectedAlert.assignedTherapistName}</span>
+                </div>
+                {selectedAlert.acknowledged_at && (
+                  <div className="crisis-alerts-detail-row">
+                    <span className="label">Acknowledged at</span>
+                    <span>{formatTime(selectedAlert.acknowledged_at)}</span>
+                  </div>
+                )}
+                {selectedAlert.resolved_at && (
+                  <div className="crisis-alerts-detail-row">
+                    <span className="label">Resolved at</span>
+                    <span>{formatTime(selectedAlert.resolved_at)}</span>
+                  </div>
+                )}
+              </div>
 
-            <div className="detail-section action-log">
-              <h4>Action Log</h4>
-              <textarea placeholder="Log actions taken (e.g., 'Contacted student at 10:35am', 'Escalated to university services')..." rows="4"></textarea>
-              <button className="resolve-btn" onClick={handleResolveAlert}>Mark as Resolved</button>
+              <div className="crisis-alerts-detail-actions">
+                <button type="button" className="crisis-alerts-btn-case" onClick={openStudentCase}>
+                  Open student case
+                </button>
+                {selectedAlert.status !== 'resolved' && (
+                  <button
+                    type="button"
+                    className="crisis-alerts-btn-resolve"
+                    onClick={handleResolve}
+                    disabled={!!actingId}
+                  >
+                    {actingId === selectedAlert.id ? 'Updating…' : 'Mark as Resolved'}
+                  </button>
+                )}
+              </div>
+            </>
+          ) : (
+            <div className="crisis-alerts-no-selection">
+              <h2 className="crisis-alerts-detail-title">Alert details</h2>
+              <p>Select an alert from the list to view details and take action.</p>
+              <p className="subtext">Opening an alert marks it as Acknowledged if it is still Active.</p>
             </div>
-          </>
-        ) : (
-          <div className="no-alert-selected">
-            <h2>All Clear</h2>
-            <p>There are no active alerts that require your attention.</p>
-            <p className="subtext">When crisis alerts are detected, they will appear in the sidebar and details will be shown here.</p>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

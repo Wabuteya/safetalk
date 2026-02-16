@@ -123,6 +123,22 @@
   color: #4F8EC5;
 }
 
+.therapist-sidebar .crisis-nav-badge {
+  margin-left: auto;
+  min-width: 1.25rem;
+  padding: 0.15rem 0.4rem;
+  border-radius: 10px;
+  background: #b91c1c;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.therapist-sidebar .unread-messages-badge {
+  background: #0369a1;
+}
+
 .therapist-sidebar .sidebar-footer {
   padding: 1rem 1.25rem;
   margin-top: auto;
@@ -227,7 +243,390 @@
   box-shadow: 0 10px 18px -10px rgba(0,0,0,0.2);
 }
   
-  /* Crisis Alert Banner */
+  /* Real-time new alert banner (red) */
+  .crisis-realtime-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1rem;
+    border-radius: 10px;
+    border-left: 4px solid #b91c1c;
+    background-color: #b91c1c;
+    color: #fff;
+  }
+
+  .crisis-realtime-banner-text {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  .crisis-realtime-banner-btn {
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    border: 2px solid #fff;
+    background: transparent;
+    color: #fff;
+  }
+
+  .crisis-realtime-banner-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  /* Crisis dashboard summary – link to Crisis Alerts page (no duplicate detail on dashboard) */
+  .crisis-dashboard-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1rem;
+    border-radius: 10px;
+    border-left: 4px solid #b91c1c;
+    background-color: #fef2f2;
+    color: #7f1d1d;
+  }
+
+  .crisis-dashboard-summary-text {
+    font-size: 0.95rem;
+  }
+
+  .crisis-dashboard-summary-btn {
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    border: none;
+    background: #b91c1c;
+    color: white;
+  }
+
+  .crisis-dashboard-summary-btn:hover {
+    background: #991b1b;
+  }
+
+  /* Crisis dashboard banner – prominent when active, reduced intensity when acknowledged */
+  .crisis-dashboard-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1rem;
+    border-radius: 10px;
+    border-left: 4px solid #b91c1c;
+  }
+
+  .crisis-banner-active {
+    background-color: #fef2f2;
+    border-left-color: #b91c1c;
+    color: #7f1d1d;
+  }
+
+  .crisis-banner-acknowledged {
+    background-color: #f8fafc;
+    border-left-color: #64748b;
+    color: #475569;
+  }
+
+  .crisis-banner-escalated {
+    background-color: #fff7ed;
+    border-left-color: #c2410c;
+    color: #9a3412;
+  }
+
+  .crisis-banner-content {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.5rem 1rem;
+  }
+
+  .crisis-banner-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .crisis-banner-alias {
+    font-weight: 600;
+    font-size: 1.05rem;
+  }
+
+  .crisis-banner-meta {
+    font-size: 0.9rem;
+    opacity: 0.9;
+  }
+
+  .crisis-banner-actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .crisis-banner-btn {
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    border: none;
+  }
+
+  .crisis-banner-btn.primary {
+    background: #b91c1c;
+    color: white;
+  }
+
+  .crisis-banner-btn.primary:hover {
+    background: #991b1b;
+  }
+
+  .crisis-banner-btn.secondary {
+    background: #fff;
+    color: #7f1d1d;
+    border: 1px solid #b91c1c;
+  }
+
+  .crisis-banner-btn.secondary:hover:not(:disabled) {
+    background: #fef2f2;
+  }
+
+  .crisis-banner-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+
+  .crisis-availability-hint {
+    font-size: 0.85rem;
+    padding: 0.5rem 1rem;
+    margin-bottom: 1rem;
+    border-radius: 6px;
+    max-width: 420px;
+  }
+
+  .crisis-availability-hint.availability-online {
+    background: #ecfdf5;
+    color: #065f46;
+  }
+
+  .crisis-availability-hint.availability-away,
+  .crisis-availability-hint.availability-offline {
+    background: #fefce8;
+    color: #713f12;
+  }
+
+  /* On-call pool section – prominent for on-call therapists */
+  .crisis-oncall-section {
+    margin-bottom: 2rem;
+    padding: 1rem 1.25rem;
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+    border-radius: 10px;
+  }
+
+  .crisis-oncall-section .crisis-section-title {
+    color: #9a3412;
+    margin-top: 0;
+  }
+
+  .crisis-oncall-intro {
+    margin: 0 0 0.75rem 0;
+    font-size: 0.95rem;
+    color: #c2410c;
+  }
+
+  .crisis-alert-item.oncall-pool {
+    border-left-color: #ea580c;
+  }
+
+  /* Crisis alerts section – calm list, sorted by urgency */
+  .crisis-alerts-section {
+    margin-bottom: 2rem;
+  }
+
+  .crisis-section-title {
+    font-size: 1.1rem;
+    margin: 0 0 0.75rem 0;
+    color: #334155;
+    font-weight: 600;
+  }
+
+  .crisis-alerts-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .crisis-alert-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    margin-bottom: 0.5rem;
+    border-left: 4px solid #64748b;
+  }
+
+  .crisis-alert-item.status-active {
+    border-left-color: #b91c1c;
+    background: #fef2f2;
+  }
+
+  .crisis-alert-item.status-acknowledged {
+    border-left-color: #64748b;
+    background: #f8fafc;
+  }
+
+  .crisis-alert-item.status-in_progress {
+    border-left-color: #0369a1;
+    background: #f0f9ff;
+  }
+
+  .crisis-alert-item.status-escalated {
+    border-left-color: #c2410c;
+    background: #fff7ed;
+  }
+
+  .crisis-alert-item.status-triggered {
+    border-left-color: #b91c1c;
+    background: #fef2f2;
+  }
+
+  .crisis-alert-item.is-acting {
+    opacity: 0.8;
+  }
+
+  .crisis-alert-main {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1rem;
+  }
+
+  .crisis-alert-alias {
+    font-weight: 600;
+    color: #1e293b;
+  }
+
+  .crisis-alert-status {
+    font-size: 0.85rem;
+    text-transform: capitalize;
+    color: #64748b;
+  }
+
+  .crisis-alert-time {
+    font-size: 0.85rem;
+    color: #64748b;
+  }
+
+  .crisis-alert-elapsed {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #475569;
+  }
+
+  .crisis-alert-actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .crisis-alert-btn {
+    padding: 0.35rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    background: #e2e8f0;
+    color: #475569;
+  }
+
+  .crisis-alert-btn.view {
+    background: #E3F2FD;
+    color: #007BFF;
+  }
+
+  .crisis-alert-btn.view:hover {
+    background: #d6e8ff;
+  }
+
+  .crisis-alert-btn.ack {
+    background: #fef2f2;
+    color: #b91c1c;
+  }
+
+  .crisis-alert-btn.ack:hover {
+    background: #fee2e2;
+  }
+
+  .crisis-alert-btn.resolve {
+    background: #f1f5f9;
+    color: #475569;
+  }
+
+  .crisis-alert-btn.resolve:hover {
+    background: #e2e8f0;
+  }
+
+  .crisis-alert-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  /* Therapist home header */
+  .therapist-home-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 50vh;
+    font-size: 1.1rem;
+    color: #5b6888;
+  }
+
+  .therapist-home-header {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .therapist-home-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #ddd;
+  }
+
+  .therapist-home-avatar-placeholder {
+    display: flex;
+  }
+
+  .therapist-home-title {
+    margin: 0;
+    font-size: 1.75rem;
+    color: #1e293b;
+  }
+
+  .therapist-home-subtitle {
+    margin: 0.5rem 0 0 0;
+    color: #64748b;
+  }
+
+  /* Legacy placeholder – keep for layout compatibility */
   .crisis-alert-banner {
     background-color: #6d0c0c;
     color: white;
@@ -235,12 +634,13 @@
     text-align: center;
     font-weight: bold;
   }
+
   .crisis-alert-banner a {
     color: white;
     text-decoration: underline;
     margin-left: 1rem;
     font-weight: bold;
   }
-  
+
   /* Therapist Home Page Widgets */
   /* Widget cards use styles from StudentDashboard.css */

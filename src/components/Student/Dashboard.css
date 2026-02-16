@@ -134,6 +134,47 @@
   color: #4F8EC5;
 }
 
+.sidebar-chat-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  width: 100%;
+  padding: 0.875rem 1.25rem;
+  background: #f0fdf4;
+  border: none;
+  color: #166534;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  border-left: 3px solid #22c55e;
+}
+
+.sidebar-chat-indicator:hover {
+  background: #dcfce7;
+}
+
+.chat-indicator-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: #22c55e;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.sidebar-nav .nav-unread-badge {
+  margin-left: auto;
+  min-width: 1.25rem;
+  padding: 0.15rem 0.4rem;
+  border-radius: 10px;
+  background: #0369a1;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
 .sidebar-footer {
   padding: 1rem 1.25rem;
   margin-top: auto;
@@ -245,6 +286,50 @@
 }
 .welcome-header h1 {
     color: #333;
+}
+
+.dashboard-latest-mood {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.25rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+}
+
+.dashboard-latest-mood .latest-mood-label {
+  color: #666;
+  font-size: 0.95rem;
+}
+
+.dashboard-latest-mood .latest-mood-value {
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.dashboard-latest-mood .latest-mood-note {
+  width: 100%;
+  margin: 0.25rem 0 0 0;
+  font-size: 0.9rem;
+  color: #555;
+  font-style: italic;
+}
+
+.dashboard-latest-mood .latest-mood-link {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  color: #007BFF;
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 0.25rem 0;
+}
+
+.dashboard-latest-mood .latest-mood-link:hover {
+  text-decoration: underline;
 }
 
 .dashboard-grid {

@@ -1,15 +1,20 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../../contexts/UserContext';
 import { supabase } from '../../supabaseClient';
+import { getLatestMood, MOOD_OPTIONS } from '../../utils/moodTracking';
 import UpcomingAppointmentsWidget from './UpcomingAppointmentsWidget';
 import MessageOfTheDay from './MessageOfTheDay';
+
+const moodLabel = (value) => MOOD_OPTIONS.find((o) => o.value === value)?.label || value;
 
 const DashboardHome = () => {
   const navigate = useNavigate();
   const { userProfile, user } = useUser(); // Use cached user profile from context
   const [journalCount, setJournalCount] = useState(0);
   const [loadingJournalCount, setLoadingJournalCount] = useState(true);
+  const [latestMood, setLatestMood] = useState(null);
+  const [loadingMood, setLoadingMood] = useState(true);
 
   // Get alias from cached profile or localStorage fallback
   const userAlias = useMemo(() => {
@@ -47,6 +52,32 @@ const DashboardHome = () => {
     fetchJournalCount();
   }, [user]);
 
+  const fetchLatestMood = useCallback(async () => {
+    if (!user?.id) {
+      setLoadingMood(false);
+      return;
+    }
+    try {
+      const mood = await getLatestMood(user.id);
+      setLatestMood(mood);
+    } catch (err) {
+      console.error('Error fetching latest mood:', err);
+    } finally {
+      setLoadingMood(false);
+    }
+  }, [user?.id]);
+
+  useEffect(() => {
+    setLoadingMood(true);
+    fetchLatestMood();
+  }, [fetchLatestMood]);
+
+  useEffect(() => {
+    const onMoodLogged = () => fetchLatestMood();
+    window.addEventListener('safetalk:moodLogged', onMoodLogged);
+    return () => window.removeEventListener('safetalk:moodLogged', onMoodLogged);
+  }, [fetchLatestMood]);
+
   return (
     <div className="dashboard-home">
       <div className="welcome-header">
@@ -55,6 +86,23 @@ const DashboardHome = () => {
       </div>
 
       <MessageOfTheDay />
+
+      {latestMood && (
+        <div className="dashboard-latest-mood">
+          <span className="latest-mood-label">How you're feeling:</span>
+          <span className="latest-mood-value">{moodLabel(latestMood.mood)}</span>
+          {latestMood.note && (
+            <p className="latest-mood-note">&ldquo;{latestMood.note}&rdquo;</p>
+          )}
+          <button
+            type="button"
+            className="latest-mood-link"
+            onClick={() => navigate('/student-dashboard/mood-history')}
+          >
+            View mood history
+          </button>
+        </div>
+      )}
 
       <div className="dashboard-grid">
         <div 

@@ -11,10 +11,14 @@ import {
   FaSignOutAlt
 } from 'react-icons/fa';
 import { supabase } from '../../supabaseClient';
-import StatusSelector from './StatusSelector.jsx'; // Import the new component
+import { useCrisisRealtime } from '../../contexts/CrisisRealtimeContext';
+import { useUnreadMessages } from '../../contexts/UnreadMessagesContext';
+import StatusSelector from './StatusSelector.jsx';
 
 const TherapistSideNav = () => {
   const navigate = useNavigate();
+  const { crisisCount = 0 } = useCrisisRealtime() || {};
+  const { unreadCount = 0 } = useUnreadMessages();
   const [therapistName, setTherapistName] = useState('Therapist');
   const [user, setUser] = useState(null);
 
@@ -136,6 +140,11 @@ const TherapistSideNav = () => {
           <NavLink to="/therapist-dashboard/live-chat">
             <FaComments className="nav-icon" />
             <span>Live Chat</span>
+            {unreadCount > 0 && (
+              <span className="crisis-nav-badge unread-messages-badge" aria-label={`${unreadCount} unread`}>
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
+            )}
           </NavLink>
         </li>
         <li className="nav-section-heading">RESOURCES</li>
@@ -146,9 +155,14 @@ const TherapistSideNav = () => {
           </NavLink>
         </li>
         <li>
-          <NavLink to="/therapist-dashboard/alerts">
+          <NavLink to="/therapist-dashboard/alerts" className={({ isActive }) => (isActive ? 'active' : '')}>
             <FaBell className="nav-icon" />
-            <span>Crisis Alerts</span>
+            <span>Crisis Management</span>
+            {crisisCount > 0 && (
+              <span className="crisis-nav-badge" aria-label={`${crisisCount} crisis alerts`}>
+                {crisisCount > 99 ? '99+' : crisisCount}
+              </span>
+            )}
           </NavLink>
         </li>
         <li className="nav-section-heading">ACCOUNT</li>

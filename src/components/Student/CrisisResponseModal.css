@@ -1,0 +1,140 @@
+.crisis-response-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 1rem;
+}
+
+.crisis-response-modal {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+  max-width: 440px;
+  width: 100%;
+  padding: 1.5rem 1.75rem;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.crisis-response-title {
+  margin: 0 0 1rem 0;
+  font-size: 1.35rem;
+  color: #1a1a1a;
+}
+
+.crisis-response-messages {
+  margin-bottom: 1.25rem;
+}
+
+.crisis-response-line {
+  margin: 0 0 0.5rem 0;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #333;
+}
+
+.crisis-response-line:last-child {
+  margin-bottom: 0;
+}
+
+.crisis-response-contacts-heading {
+  margin: 0 0 0.5rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.crisis-response-contact-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.25rem 0;
+}
+
+.crisis-response-contact-list li {
+  margin-bottom: 0.5rem;
+}
+
+.crisis-response-contact-link {
+  display: block;
+  padding: 0.6rem 0.75rem;
+  background: #f0f9ff;
+  color: #0369a1;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 0.95rem;
+  border: 1px solid #bae6fd;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.crisis-response-contact-link:hover {
+  background: #e0f2fe;
+  border-color: #7dd3fc;
+}
+
+.crisis-response-contact-link:active {
+  background: #bae6fd;
+}
+
+.crisis-response-close {
+  display: block;
+  width: 100%;
+  padding: 0.6rem 1rem;
+  background: #0369a1;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.crisis-response-close:hover {
+  background: #0284c7;
+}
+
+/* Post-crisis reassurance – calm, minimal, non-technical */
+.crisis-reassurance .crisis-response-messages {
+  margin-bottom: 1.5rem;
+}
+
+.crisis-calming-content {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.crisis-calming-section {
+  margin-bottom: 1rem;
+}
+
+.crisis-calming-section:last-of-type {
+  margin-bottom: 0.75rem;
+}
+
+.crisis-calming-section h4 {
+  margin: 0 0 0.35rem 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+.crisis-calming-section p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: #475569;
+}
+
+.crisis-supportive-message {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #0369a1;
+}

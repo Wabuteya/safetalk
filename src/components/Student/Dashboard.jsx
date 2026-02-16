@@ -1,6 +1,9 @@
 import { Outlet, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import SideNav from './SideNav';
+import MoodPromptGate from './MoodPromptGate';
+import PostCrisisBanner from './PostCrisisBanner';
+import { PostCrisisProvider } from '../../contexts/PostCrisisContext';
 import './Dashboard.css';
 import { useUser } from '../../contexts/UserContext';
 import { supabase } from '../../supabaseClient';
@@ -57,12 +60,16 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="dashboard-layout">
-      <SideNav />
-      <main className="dashboard-content">
-        <Outlet />
-      </main>
-    </div>
+    <PostCrisisProvider>
+      <div className="dashboard-layout">
+        <SideNav />
+        <main className="dashboard-content">
+          <PostCrisisBanner />
+          <Outlet />
+        </main>
+        <MoodPromptGate />
+      </div>
+    </PostCrisisProvider>
   );
 };
 

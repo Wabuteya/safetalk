@@ -2,9 +2,12 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
 import { useUser } from '../../contexts/UserContext';
+import { getMoodHistory, MOOD_OPTIONS } from '../../utils/moodTracking';
 import TherapistNotes from './TherapistNotes';
 import ChatScreen from '../Chat/ChatScreen';
 import './StudentDetailView.css';
+
+const moodLabel = (value) => MOOD_OPTIONS.find((o) => o.value === value)?.label || value;
 
 // Appointments List Component for Student Detail View
 const AppointmentsList = ({ studentId, studentAlias, onAppointmentCountChange }) => {
@@ -218,8 +221,13 @@ const StudentDetailView = () => {
   const [appointmentCount, setAppointmentCount] = useState(0);
   const [noteCount, setNoteCount] = useState(0);
   const [conversationId, setConversationId] = useState(null);
+  const [moodHistory, setMoodHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showRevealContactConfirm, setShowRevealContactConfirm] = useState(false);
+  const [contactRevealed, setContactRevealed] = useState(false);
+  const [contactDetails, setContactDetails] = useState(null);
+  const [revealContactLoading, setRevealContactLoading] = useState(false);
 
   const fetchStudentData = useCallback(async () => {
     if (!user) {
@@ -337,6 +345,30 @@ const StudentDetailView = () => {
     }
   }, [studentId, user, fetchStudentData]);
 
+  useEffect(() => {
+    if (!studentId || !student) return;
+    getMoodHistory(studentId, 90).then(setMoodHistory).catch(() => setMoodHistory([]));
+  }, [studentId, student]);
+
+  const handleRevealContactConfirm = async () => {
+    setShowRevealContactConfirm(false);
+    setRevealContactLoading(true);
+    try {
+      const { data, error: fetchError } = await supabase
+        .from('student_profiles')
+        .select('first_name, last_name, contact, gender')
+        .eq('user_id', studentId)
+        .single();
+      if (fetchError) throw fetchError;
+      setContactDetails(data || {});
+      setContactRevealed(true);
+    } catch (err) {
+      console.error('Error fetching emergency contact:', err);
+    } finally {
+      setRevealContactLoading(false);
+    }
+  };
+
   // Open chat tab if requested from navigation state
   useEffect(() => {
     if (location.state?.openChatTab) {
@@ -451,14 +483,61 @@ const StudentDetailView = () => {
                 <strong>Alias:</strong> {student.alias}
               </div>
               <div className="info-row">
-                <strong>Status:</strong> 
+                <strong>Status:</strong>
                 <span className={`status-badge ${student.status}`}>{student.status}</span>
               </div>
-              <div className="privacy-notice">
-                <p>🔒 Full student details (name, contact, gender) are hidden for privacy protection.</p>
-                <p>Details are only accessible during emergency/crisis situations when immediate intervention is required.</p>
-              </div>
+              {!contactRevealed ? (
+                <>
+                  <div className="privacy-notice">
+                    <p>🔒 Full student details (name, contact, gender) are hidden for privacy protection.</p>
+                    <p>Details are only accessible during emergency/crisis situations when immediate intervention is required.</p>
+                  </div>
+                  <div className="emergency-reveal">
+                    <button
+                      type="button"
+                      className="reveal-contact-btn"
+                      onClick={() => setShowRevealContactConfirm(true)}
+                      disabled={revealContactLoading}
+                    >
+                      {revealContactLoading ? 'Loading…' : 'Reveal contact (emergency use only)'}
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <div className="emergency-contact-revealed">
+                  <p className="emergency-contact-heading">Emergency contact (revealed)</p>
+                  <div className="info-row">
+                    <strong>Name:</strong>{' '}
+                    {[contactDetails?.first_name, contactDetails?.last_name].filter(Boolean).join(' ') || '—'}
+                  </div>
+                  <div className="info-row">
+                    <strong>Contact:</strong> {contactDetails?.contact || '—'}
+                  </div>
+                  <div className="info-row">
+                    <strong>Gender:</strong> {contactDetails?.gender || '—'}
+                  </div>
+                </div>
+              )}
             </div>
+
+            {showRevealContactConfirm && (
+              <div className="emergency-reveal-modal-overlay" role="dialog" aria-modal="true">
+                <div className="emergency-reveal-modal">
+                  <h3>Emergency contact access</h3>
+                  <p>
+                    You are about to view this student&apos;s confidential contact information. Only proceed if this is necessary for an emergency or crisis intervention.
+                  </p>
+                  <div className="emergency-reveal-modal-actions">
+                    <button type="button" className="emergency-reveal-cancel" onClick={() => setShowRevealContactConfirm(false)}>
+                      Cancel
+                    </button>
+                    <button type="button" className="emergency-reveal-confirm" onClick={handleRevealContactConfirm}>
+                      I understand, reveal contact
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
             <div className="info-card">
               <h3>Bio</h3>
               <p>Bio information is not available to protect student privacy.</p>
@@ -473,6 +552,43 @@ const StudentDetailView = () => {
                 </ul>
               ) : (
                 <p>No risk indicators identified.</p>
+              )}
+            </div>
+            <div className="info-card mood-context-card">
+              <h3>Mood (context only)</h3>
+              <p className="mood-context-notice">
+                Read-only. Visible only because this student is attached to you. Mood data is for contextual awareness only. It does not generate alerts, affect priority, or trigger escalation.
+              </p>
+              {moodHistory.length === 0 ? (
+                <p>No mood entries logged yet.</p>
+              ) : (
+                <>
+                  <div className="mood-trend-bars therapist-mood">
+                    {MOOD_OPTIONS.map((opt) => {
+                      const count = moodHistory.filter((e) => e.mood === opt.value).length;
+                      const pct = moodHistory.length ? (count / moodHistory.length) * 100 : 0;
+                      return (
+                        <div key={opt.value} className="mood-trend-row">
+                          <span className="mood-trend-label">{opt.label}</span>
+                          <div className="mood-trend-bar-wrap">
+                            <div className="mood-trend-bar" style={{ width: `${pct}%` }} />
+                          </div>
+                          <span className="mood-trend-count">{count}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <h4 className="mood-history-heading">Recent entries</h4>
+                  <ul className="therapist-mood-entries">
+                    {moodHistory.slice(0, 10).map((entry) => (
+                      <li key={entry.id}>
+                        <span className="mood-entry-date">{formatDateTime(entry.logged_at)}</span>
+                        <span className="mood-entry-mood">{moodLabel(entry.mood)}</span>
+                        {entry.note && <span className="mood-entry-note"> — {entry.note}</span>}
+                      </li>
+                    ))}
+                  </ul>
+                </>
               )}
             </div>
           </div>

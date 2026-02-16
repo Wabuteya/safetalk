@@ -1,6 +1,7 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import TherapistSideNav from './TherapistSideNav.jsx';
+import { CrisisRealtimeProvider } from '../../contexts/CrisisRealtimeContext';
 import { supabase } from '../../supabaseClient';
 import './TherapistDashboard.css';
 
@@ -37,11 +38,9 @@ const updateUserStatus = async (userId, status, silent = false) => {
 
 const TherapistDashboard = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const [loading, setLoading] = useState(true);
     const [user, setUser] = useState(null);
-    // Crisis alerts will be fetched from backend when implemented
-    const hasCrisisAlert = false;
-
     // A ref to hold the timer ID, so we can reset it
     const inactivityTimer = useRef(null);
 
@@ -161,6 +160,28 @@ const TherapistDashboard = () => {
         };
     }, [user]); // This effect depends on the user object
 
+    // When user clicks browser push notification, open Crisis Management page
+    const checkNotificationClick = useCallback(() => {
+        try {
+            if (sessionStorage.getItem('crisisNotificationClick') === 'true') {
+                sessionStorage.removeItem('crisisNotificationClick');
+                if (location.pathname !== '/therapist-dashboard/alerts') {
+                    navigate('/therapist-dashboard/alerts');
+                }
+            }
+        } catch (_) {}
+    }, [location.pathname, navigate]);
+
+    useEffect(() => {
+        checkNotificationClick();
+    }, [checkNotificationClick]);
+
+    useEffect(() => {
+        const onFocus = () => checkNotificationClick();
+        window.addEventListener('focus', onFocus);
+        return () => window.removeEventListener('focus', onFocus);
+    }, [checkNotificationClick]);
+
     if (loading) {
         return (
             <div className="therapist-dashboard-layout">
@@ -179,20 +200,16 @@ const TherapistDashboard = () => {
     }
 
     return (
-        <div className="therapist-dashboard-layout">
-            <TherapistSideNav />
-            <div className="therapist-main-content">
-                {hasCrisisAlert && (
-                    <div className="crisis-alert-banner">
-                        <strong>CRISIS ALERT:</strong> A student requires your immediate attention. 
-                        <a href="/therapist-dashboard/alerts">View Alert Details</a>
-                    </div>
-                )}
-                <main className="therapist-page-content">
-                    <Outlet />
-                </main>
+        <CrisisRealtimeProvider>
+            <div className="therapist-dashboard-layout">
+                <TherapistSideNav />
+                <div className="therapist-main-content">
+                    <main className="therapist-page-content">
+                        <Outlet />
+                    </main>
+                </div>
             </div>
-        </div>
+        </CrisisRealtimeProvider>
     );
 };
 

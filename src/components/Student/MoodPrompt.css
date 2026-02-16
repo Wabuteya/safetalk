@@ -1,0 +1,133 @@
+.mood-prompt-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.mood-prompt-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  padding: 1.75rem 2rem;
+  max-width: 420px;
+  width: 100%;
+}
+
+.mood-prompt-card h2 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.35rem;
+  color: #1a1a1a;
+}
+
+.mood-prompt-subtitle {
+  margin: 0 0 1.25rem 0;
+  font-size: 0.9rem;
+  color: #666;
+  line-height: 1.4;
+}
+
+.mood-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.mood-option-btn {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.mood-option-btn:hover {
+  background: #f5f5f5;
+  border-color: #bbb;
+}
+
+.mood-option-btn.selected {
+  background: #e3f2fd;
+  border-color: #2196f3;
+  color: #1565c0;
+}
+
+.mood-note-field {
+  margin-bottom: 1.25rem;
+}
+
+.mood-note-field label {
+  display: block;
+  font-size: 0.9rem;
+  color: #555;
+  margin-bottom: 0.35rem;
+}
+
+.mood-note-field textarea {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  resize: vertical;
+  min-height: 60px;
+  box-sizing: border-box;
+}
+
+.mood-note-field textarea:focus {
+  outline: none;
+  border-color: #2196f3;
+}
+
+.mood-note-count {
+  display: block;
+  font-size: 0.8rem;
+  color: #888;
+  margin-top: 0.25rem;
+}
+
+.mood-prompt-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.mood-skip-btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  background: transparent;
+  color: #666;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.mood-skip-btn:hover {
+  color: #333;
+}
+
+.mood-save-btn {
+  padding: 0.5rem 1.25rem;
+  border: none;
+  border-radius: 8px;
+  background: #2196f3;
+  color: #fff;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.mood-save-btn:hover:not(:disabled) {
+  background: #1976d2;
+}
+
+.mood-save-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

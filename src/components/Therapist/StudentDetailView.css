@@ -407,6 +407,199 @@
   border-left: 4px solid #c33;
 }
 
+/* Emergency contact reveal (emergency/crisis only) */
+.emergency-reveal {
+  margin-top: 1rem;
+}
+
+.reveal-contact-btn {
+  padding: 0.5rem 1rem;
+  background: #b91c1c;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.reveal-contact-btn:hover:not(:disabled) {
+  background: #991b1b;
+}
+
+.reveal-contact-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.emergency-contact-revealed {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+}
+
+.emergency-contact-heading {
+  margin: 0 0 0.5rem 0;
+  font-weight: 600;
+  color: #991b1b;
+  font-size: 0.95rem;
+}
+
+.emergency-contact-revealed .info-row {
+  margin-bottom: 0.35rem;
+}
+
+.emergency-reveal-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.emergency-reveal-modal {
+  background: #fff;
+  border-radius: 10px;
+  padding: 1.5rem;
+  max-width: 400px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+}
+
+.emergency-reveal-modal h3 {
+  margin: 0 0 0.75rem 0;
+  font-size: 1.15rem;
+  color: #1a1a1a;
+}
+
+.emergency-reveal-modal p {
+  margin: 0 0 1.25rem 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #444;
+}
+
+.emergency-reveal-modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+.emergency-reveal-cancel {
+  padding: 0.5rem 1rem;
+  background: #f0f0f0;
+  color: #333;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.emergency-reveal-cancel:hover {
+  background: #e0e0e0;
+}
+
+.emergency-reveal-confirm {
+  padding: 0.5rem 1rem;
+  background: #b91c1c;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.emergency-reveal-confirm:hover {
+  background: #991b1b;
+}
+
+/* Mood (context only) - read-only, non-escalatory */
+.mood-context-card .mood-context-notice {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 1rem;
+  font-style: italic;
+}
+
+.mood-context-card .mood-trend-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.mood-context-card .mood-trend-row {
+  display: grid;
+  grid-template-columns: 80px 1fr 2rem;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.mood-context-card .mood-trend-label {
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.mood-context-card .mood-trend-bar-wrap {
+  height: 1rem;
+  background: #f0f0f0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.mood-context-card .mood-trend-bar {
+  height: 100%;
+  background: #2196f3;
+  border-radius: 4px;
+  min-width: 2px;
+  transition: width 0.2s ease;
+}
+
+.mood-context-card .mood-trend-count {
+  font-size: 0.85rem;
+  color: #666;
+  text-align: right;
+}
+
+.mood-context-card .mood-history-heading {
+  margin: 1rem 0 0.5rem 0;
+  font-size: 1rem;
+  color: #555;
+}
+
+.therapist-mood-entries {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.therapist-mood-entries li {
+  padding: 0.35rem 0;
+  border-bottom: 1px solid #eee;
+  color: #333;
+}
+
+.therapist-mood-entries .mood-entry-date {
+  color: #666;
+  margin-right: 0.5rem;
+}
+
+.therapist-mood-entries .mood-entry-mood {
+  font-weight: 600;
+  margin-right: 0.25rem;
+}
+
+.therapist-mood-entries .mood-entry-note {
+  font-style: italic;
+  color: #555;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .tabs-container {

@@ -1,0 +1,122 @@
+.crisis-support-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1999;
+  padding: 1rem;
+}
+
+.crisis-support-modal {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+  max-width: 400px;
+  width: 100%;
+  padding: 1.5rem 1.75rem;
+}
+
+.crisis-support-title {
+  margin: 0 0 1rem 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.crisis-support-intro {
+  margin: 0 0 1.25rem 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #444;
+}
+
+.crisis-support-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.crisis-support-btn {
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: center;
+}
+
+.crisis-support-btn.emergency {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 2px solid #fecaca;
+}
+
+.crisis-support-btn.emergency:hover {
+  background: #fee2e2;
+}
+
+.crisis-support-btn.therapist {
+  background: #0369a1;
+  color: #fff;
+}
+
+.crisis-support-btn.therapist:hover {
+  background: #0284c7;
+}
+
+.crisis-support-btn.cancel {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.crisis-support-btn.cancel:hover {
+  background: #e5e5e5;
+}
+
+.crisis-support-contact-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.25rem 0;
+}
+
+.crisis-support-contact-list li {
+  margin-bottom: 0.5rem;
+}
+
+.crisis-support-contact-link {
+  display: block;
+  padding: 0.75rem 1rem;
+  background: #f0f9ff;
+  color: #0369a1;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 1rem;
+  border: 2px solid #bae6fd;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.crisis-support-contact-link:hover {
+  background: #e0f2fe;
+  border-color: #7dd3fc;
+}
+
+.crisis-support-back {
+  display: block;
+  width: 100%;
+  padding: 0.5rem 1rem;
+  background: transparent;
+  color: #666;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.crisis-support-back:hover {
+  background: #f5f5f5;
+}

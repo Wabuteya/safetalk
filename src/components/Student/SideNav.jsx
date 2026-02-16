@@ -1,5 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { 
   FaBook, 
   FaHeart, 
@@ -10,12 +10,23 @@ import {
   FaExclamationTriangle
 } from 'react-icons/fa';
 import { AiOutlineDashboard } from 'react-icons/ai';
+import { FaComments } from 'react-icons/fa';
 import { supabase } from '../../supabaseClient';
 import { useUser } from '../../contexts/UserContext';
+import { usePostCrisis } from '../../contexts/PostCrisisContext';
+import { useUnreadMessages } from '../../contexts/UnreadMessagesContext';
+import { createCrisisEvent } from '../../utils/crisisEvents';
+import CrisisSupportModal from './CrisisSupportModal';
+import CrisisResponseModal from './CrisisResponseModal';
 
 const SideNav = () => {
   const navigate = useNavigate();
-  const { userProfile } = useUser(); // Use cached user profile from context
+  const { user, userProfile } = useUser();
+  const { postCrisis, activatePostCrisis } = usePostCrisis();
+  const { unreadCount, linkedTherapistId } = useUnreadMessages();
+  const [showCrisisSupport, setShowCrisisSupport] = useState(false);
+  const [crisisSending, setCrisisSending] = useState(false);
+  const [crisisModal, setCrisisModal] = useState(null); // 'sent' | 'no_therapist' | 'error'
 
   // Get alias from cached profile or localStorage fallback
   const userAlias = useMemo(() => {
@@ -63,12 +74,44 @@ const SideNav = () => {
   };
 
   const handleCrisisSupportClick = () => {
-    alert(
-      'EMERGENCY SUPPORT ACTIVATED\n\nThis would now connect you to emergency services and send a priority alert to a therapist.'
-    );
+    if (!user?.id) {
+      alert('Please log in to use Crisis Support.');
+      return;
+    }
+    setShowCrisisSupport(true);
+  };
+
+  const handleNotifyTherapist = async () => {
+    setShowCrisisSupport(false);
+    setCrisisSending(true);
+    try {
+      const { data: relation, error: relError } = await supabase
+        .from('therapist_student_relations')
+        .select('therapist_id')
+        .eq('student_id', user.id)
+        .maybeSingle();
+
+      if (relError || !relation?.therapist_id) {
+        setCrisisModal('no_therapist');
+        setCrisisSending(false);
+        return;
+      }
+
+      const { error } = await createCrisisEvent(user.id, relation.therapist_id, 'crisis_support');
+      if (error) throw error;
+
+      activatePostCrisis(relation.therapist_id);
+      setCrisisModal('sent');
+    } catch (err) {
+      console.error('Crisis support error:', err);
+      setCrisisModal('error');
+    } finally {
+      setCrisisSending(false);
+    }
   };
 
   return (
+    <>
     <nav className="sidebar">
       <div className="sidebar-header">
         <h3>SafeTalk </h3>
@@ -104,12 +147,37 @@ const SideNav = () => {
             <span>Find a Therapist</span>
           </NavLink>
         </li>
+        {linkedTherapistId && (
+          <li>
+            <NavLink to={`/student-dashboard/chat/${linkedTherapistId}`}>
+              <FaComments className="nav-icon" />
+              <span>Chat</span>
+              {unreadCount > 0 && (
+                <span className="nav-unread-badge" aria-label={`${unreadCount} unread`}>
+                  {unreadCount > 99 ? '99+' : unreadCount}
+                </span>
+              )}
+            </NavLink>
+          </li>
+        )}
         <li>
           <NavLink to="/student-dashboard/resources">
             <FaLightbulb className="nav-icon" />
             <span>Support Resources</span>
           </NavLink>
         </li>
+        {postCrisis.therapistResponded && postCrisis.therapistId && (
+          <li>
+            <button
+              type="button"
+              className="sidebar-chat-indicator"
+              onClick={() => navigate(`/student-dashboard/chat/${postCrisis.therapistId}`)}
+            >
+              <span className="chat-indicator-dot" aria-hidden />
+              <span>Chat with therapist — new message</span>
+            </button>
+          </li>
+        )}
         <li className="nav-section-heading">ACCOUNT</li>
         <li>
           <NavLink to="/student-dashboard/profile">
@@ -120,9 +188,14 @@ const SideNav = () => {
       </ul>
       <div className="sidebar-footer">
         <div className="crisis-support">
-          <button className="crisis-btn" onClick={handleCrisisSupportClick}>
+          <button
+            type="button"
+            className="crisis-btn"
+            onClick={handleCrisisSupportClick}
+            disabled={crisisSending}
+          >
             <FaExclamationTriangle className="crisis-icon" />
-            <span>Crisis Support</span>
+            <span>{crisisSending ? 'Sending…' : 'Crisis Support'}</span>
           </button>
           <p>If you are in immediate danger, please call emergency services.</p>
         </div>
@@ -132,6 +205,23 @@ const SideNav = () => {
         </button>
       </div>
     </nav>
+
+    {showCrisisSupport && (
+      <CrisisSupportModal
+        onNotifyTherapist={handleNotifyTherapist}
+        onCancel={() => setShowCrisisSupport(false)}
+      />
+    )}
+
+    {crisisModal && (
+      <CrisisResponseModal
+        therapistNotified={crisisModal === 'sent'}
+        noTherapist={crisisModal === 'no_therapist'}
+        sendFailed={crisisModal === 'error'}
+        onClose={() => setCrisisModal(null)}
+      />
+    )}
+    </>
   );
 };
 

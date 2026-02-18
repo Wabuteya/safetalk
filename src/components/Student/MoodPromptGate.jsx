@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useUser } from '../../contexts/UserContext';
-import { hasMoodInLast24Hours, upsertMoodLog } from '../../utils/moodTracking';
+import { hasMoodLoggedToday, upsertMoodLog } from '../../utils/moodTracking';
 import MoodPrompt from './MoodPrompt';
 
-const MOOD_PROMPT_SKIPPED_KEY = 'moodPromptSkippedDate';
+const getSkipKey = (userId) => `moodPromptSkipped_${userId}_${new Date().toDateString()}`;
 
 /** Routes where the optional mood prompt is allowed (never on login, chat, or crisis). */
 const MoodPromptGate = () => {
@@ -25,16 +25,15 @@ const MoodPromptGate = () => {
       return;
     }
     if (typeof sessionStorage !== 'undefined') {
-      const skippedDate = sessionStorage.getItem(MOOD_PROMPT_SKIPPED_KEY);
-      const today = new Date().toDateString();
-      if (skippedDate === today) {
+      const skipKey = getSkipKey(user.id);
+      if (sessionStorage.getItem(skipKey)) {
         setShowPrompt(false);
         return;
       }
     }
     setChecking(true);
     try {
-      const hasMood = await hasMoodInLast24Hours(user.id);
+      const hasMood = await hasMoodLoggedToday(user.id);
       setShowPrompt(!hasMood);
     } catch (err) {
       console.error('MoodPromptGate check error:', err);
@@ -50,8 +49,8 @@ const MoodPromptGate = () => {
 
   const handleClose = (saved) => {
     setShowPrompt(false);
-    if (!saved && typeof sessionStorage !== 'undefined') {
-      sessionStorage.setItem(MOOD_PROMPT_SKIPPED_KEY, new Date().toDateString());
+    if (!saved && typeof sessionStorage !== 'undefined' && user?.id) {
+      sessionStorage.setItem(getSkipKey(user.id), '1');
     }
   };
 

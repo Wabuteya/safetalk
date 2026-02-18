@@ -43,9 +43,14 @@ const SideNav = () => {
     
     console.log('Logout button clicked - starting logout process');
     
-    // Clear localStorage immediately
+    // Clear localStorage and mood skip (so they get prompted again after next login)
     localStorage.removeItem('userAlias');
-    
+    try {
+      Object.keys(sessionStorage).forEach((k) => {
+        if (k.startsWith('moodPromptSkipped')) sessionStorage.removeItem(k);
+      });
+    } catch (_) {}
+
     // Try to sign out with a timeout
     try {
       const signOutPromise = supabase.auth.signOut();

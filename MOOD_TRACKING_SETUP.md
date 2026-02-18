@@ -16,14 +16,14 @@ Optional student mood tracking is implemented and **fully independent of sentime
 The table stores:
 
 - `student_id`, `mood` (predefined value), optional `note`, `logged_at`
-- At most **one log per student per rolling 24-hour period** (enforced in app: overwrite if one exists in last 24h)
+- At most **one log per student per calendar day** (UTC; enforced in app: overwrite if one exists today)
 
 ## Behavior
 
-- **When we prompt**: Only if the student has **no mood log in the past 24 hours** (rolling, server time). Prompt appears only on the **student dashboard home** or **journal** route — never on login, chat, or crisis flows.
+- **When we prompt**: Only if the student has **no mood log for today** (calendar day, UTC). Prompt appears on **student dashboard routes** (except chat) — never on login, chat, or crisis flows.
 - **Input**: Predefined options (Great, Good, Okay, Low, Difficult) plus an optional short note (max 200 chars). Fully optional and skippable.
-- **If they skip**: No record is created and we do not show the prompt again in the same session (sessionStorage; cleared on sign-out).
-- **Storage**: One mood per student per 24h; if one already exists for the current period, the existing row is updated.
+- **If they skip**: No record is created; we do not show the prompt again for that user for that day (sessionStorage key scoped by user id and date; cleared on sign-out).
+- **Storage**: One mood per student per calendar day; if one already exists for today, the existing row is updated.
 - **Student UI**: Latest mood is shown on the dashboard; "Mood history" page shows trends and history (last 7/30/90 days). Available to all students.
 - **Therapist UI**: Read-only "Mood (context only)" section in a student’s profile (Overview tab) **only for students who are attached to that therapist**. Explicitly non-escalatory and non-editable.
 

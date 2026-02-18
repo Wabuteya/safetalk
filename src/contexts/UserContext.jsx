@@ -89,7 +89,9 @@ export const UserProvider = ({ children }) => {
         // Clear any cached data
         localStorage.removeItem('userAlias');
         try {
-          sessionStorage.removeItem('moodPromptSkipped');
+          Object.keys(sessionStorage).forEach((k) => {
+            if (k.startsWith('moodPromptSkipped')) sessionStorage.removeItem(k);
+          });
         } catch (_) {}
       } else if (event === 'TOKEN_REFRESHED' && session?.user) {
         // Update user on token refresh

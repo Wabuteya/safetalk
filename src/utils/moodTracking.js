@@ -9,41 +9,56 @@ export const MOOD_OPTIONS = [
   { value: 'difficult', label: 'Difficult' },
 ];
 
-const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
+/** Start of today in UTC (YYYY-MM-DD 00:00:00Z) */
+function getStartOfTodayUTC() {
+  const d = new Date();
+  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())).toISOString();
+}
+
+/** Start of tomorrow in UTC */
+function getStartOfTomorrowUTC() {
+  const d = new Date();
+  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + 1)).toISOString();
+}
 
 /**
- * Check if the student has any mood log in the past 24 hours (rolling, server time).
+ * Check if the student has any mood log for today (calendar day, UTC).
  * Used only to decide whether to show the optional mood prompt.
+ * If mood logged today, do not prompt again for that day.
  */
-export async function hasMoodInLast24Hours(studentId) {
+export async function hasMoodLoggedToday(studentId) {
   if (!studentId) return false;
-  const since = new Date(Date.now() - TWENTY_FOUR_HOURS_MS).toISOString();
+  const startOfToday = getStartOfTodayUTC();
+  const startOfTomorrow = getStartOfTomorrowUTC();
   const { data, error } = await supabase
     .from('mood_logs')
     .select('id')
     .eq('student_id', studentId)
-    .gte('logged_at', since)
+    .gte('logged_at', startOfToday)
+    .lt('logged_at', startOfTomorrow)
     .limit(1)
     .maybeSingle();
   if (error) {
-    console.error('moodTracking.hasMoodInLast24Hours:', error);
+    console.error('moodTracking.hasMoodLoggedToday:', error);
     return false;
   }
   return !!data;
 }
 
 /**
- * Save or update mood for the current 24-hour period.
- * At most one log per student per 24h: if one exists in the last 24h, overwrite it.
+ * Save or update mood for today (calendar day, UTC).
+ * At most one log per student per day: if one exists today, overwrite it.
  */
 export async function upsertMoodLog(studentId, mood, note = null) {
   if (!studentId || !mood) return { error: new Error('studentId and mood required') };
-  const since = new Date(Date.now() - TWENTY_FOUR_HOURS_MS).toISOString();
+  const startOfToday = getStartOfTodayUTC();
+  const startOfTomorrow = getStartOfTomorrowUTC();
   const { data: existing } = await supabase
     .from('mood_logs')
     .select('id')
     .eq('student_id', studentId)
-    .gte('logged_at', since)
+    .gte('logged_at', startOfToday)
+    .lt('logged_at', startOfTomorrow)
     .order('logged_at', { ascending: false })
     .limit(1)
     .maybeSingle();

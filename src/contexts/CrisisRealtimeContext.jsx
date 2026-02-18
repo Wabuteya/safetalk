@@ -92,9 +92,9 @@ export function CrisisRealtimeProvider({ children }) {
         )
         .subscribe();
 
-      if (typeof window !== 'undefined' && window.Notification?.permission === 'default') {
-        Notification.requestPermission().catch(() => {});
-      }
+      // Don't request permission here: browsers require a user gesture (click/tap).
+      // Push notifications still work if permission was already granted.
+      // Add an "Enable notifications" button that calls requestPermission() on click if needed.
     };
 
     setup();

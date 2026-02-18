@@ -25,6 +25,7 @@ const MoodHistoryPage = () => {
   const [range, setRange] = useState(30);
 
   useEffect(() => {
+    setMoodData([]);
     const fetchHistory = async () => {
       if (!user?.id) {
         setLoading(false);
@@ -35,6 +36,7 @@ const MoodHistoryPage = () => {
         setMoodData(data);
       } catch (err) {
         console.error('Error fetching mood history:', err);
+        setMoodData([]);
       } finally {
         setLoading(false);
       }

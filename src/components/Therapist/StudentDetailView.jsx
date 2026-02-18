@@ -346,7 +346,11 @@ const StudentDetailView = () => {
   }, [studentId, user, fetchStudentData]);
 
   useEffect(() => {
-    if (!studentId || !student) return;
+    if (!studentId || !student) {
+      setMoodHistory([]);
+      return;
+    }
+    setMoodHistory([]);
     getMoodHistory(studentId, 90).then(setMoodHistory).catch(() => setMoodHistory([]));
   }, [studentId, student]);
 

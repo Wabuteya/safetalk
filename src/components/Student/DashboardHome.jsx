@@ -55,6 +55,7 @@ const DashboardHome = () => {
   const fetchLatestMood = useCallback(async () => {
     if (!user?.id) {
       setLoadingMood(false);
+      setLatestMood(null);
       return;
     }
     try {
@@ -62,12 +63,14 @@ const DashboardHome = () => {
       setLatestMood(mood);
     } catch (err) {
       console.error('Error fetching latest mood:', err);
+      setLatestMood(null);
     } finally {
       setLoadingMood(false);
     }
   }, [user?.id]);
 
   useEffect(() => {
+    setLatestMood(null);
     setLoadingMood(true);
     fetchLatestMood();
   }, [fetchLatestMood]);

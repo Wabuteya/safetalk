@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
 import { useUser } from '../../contexts/UserContext';
 import { getMoodHistory, MOOD_OPTIONS } from '../../utils/moodTracking';
+import { isHandlingActiveCrisisForStudent } from '../../utils/crisisEvents';
 import TherapistNotes from './TherapistNotes';
 import ChatScreen from '../Chat/ChatScreen';
 import './StudentDetailView.css';
@@ -56,20 +57,20 @@ const AppointmentsList = ({ studentId, studentAlias, onAppointmentCountChange })
   };
 
   const handleDeleteAppointment = async (appointmentId) => {
-    if (!window.confirm('Are you sure you want to delete this appointment? This action cannot be undone.')) {
+    if (!window.confirm('Are you sure you want to cancel this appointment? This action cannot be undone.')) {
       return;
     }
 
     try {
       setDeleting(appointmentId);
-      const { error: deleteError } = await supabase
+      const { error: updateError } = await supabase
         .from('appointments')
-        .delete()
+        .update({ status: 'cancelled_by_therapist' })
         .eq('id', appointmentId);
 
-      if (deleteError) throw deleteError;
+      if (updateError) throw updateError;
 
-      // Remove from local state
+      // Remove from local state (or update status)
       setAppointments(prev => prev.filter(apt => apt.id !== appointmentId));
       
       // Update count
@@ -104,8 +105,11 @@ const AppointmentsList = ({ studentId, studentAlias, onAppointmentCountChange })
   const getStatusBadge = (status) => {
     const statusColors = {
       scheduled: '#28a745',
+      rescheduled: '#17a2b8',
       completed: '#17a2b8',
       cancelled: '#dc3545',
+      cancelled_by_student: '#dc3545',
+      cancelled_by_therapist: '#dc3545',
       no_show: '#ffc107'
     };
     return (
@@ -228,6 +232,7 @@ const StudentDetailView = () => {
   const [contactRevealed, setContactRevealed] = useState(false);
   const [contactDetails, setContactDetails] = useState(null);
   const [revealContactLoading, setRevealContactLoading] = useState(false);
+  const [isOnPoolCrisisAccess, setIsOnPoolCrisisAccess] = useState(false);
 
   const fetchStudentData = useCallback(async () => {
     if (!user) {
@@ -286,9 +291,16 @@ const StudentDetailView = () => {
         const { data: conversation, error: conversationError } = conversationResult;
 
         if (relError || !relationship) {
-          setError('Student not found in your caseload.');
-          setLoading(false);
-          return;
+          const handlingCrisis = await isHandlingActiveCrisisForStudent(user.id, studentId);
+          if (handlingCrisis) {
+            setIsOnPoolCrisisAccess(true);
+          } else {
+            setError('Student not found in your caseload.');
+            setLoading(false);
+            return;
+          }
+        } else {
+          setIsOnPoolCrisisAccess(false);
         }
 
         if (profileError && profileError.code !== 'PGRST116') {
@@ -436,11 +448,19 @@ const StudentDetailView = () => {
     );
   }
 
+  const backTarget = isOnPoolCrisisAccess ? '/therapist-dashboard/alerts' : '/therapist-dashboard/caseload';
+  const backLabel = isOnPoolCrisisAccess ? '← Back to Crisis Management' : '← Back to Caseload';
+
   return (
     <div className="student-detail-view">
+      {isOnPoolCrisisAccess && (
+        <div className="on-pool-crisis-banner" role="status">
+          <span>⚠️ Temporary access — You are viewing this student&apos;s case because you are handling their active crisis. Access will end when the crisis is marked Resolved.</span>
+        </div>
+      )}
       <div className="detail-header">
-        <button onClick={() => navigate('/therapist-dashboard/caseload')} className="back-btn">
-          ← Back to Caseload
+        <button onClick={() => navigate(backTarget)} className="back-btn">
+          {backLabel}
         </button>
         <h1>{student.alias}</h1>
       </div>
@@ -561,7 +581,9 @@ const StudentDetailView = () => {
             <div className="info-card mood-context-card">
               <h3>Mood (context only)</h3>
               <p className="mood-context-notice">
-                Read-only. Visible only because this student is attached to you. Mood data is for contextual awareness only. It does not generate alerts, affect priority, or trigger escalation.
+                Read-only. {isOnPoolCrisisAccess
+                  ? 'Visible during crisis intervention. Mood data is for contextual awareness only.'
+                  : 'Visible only because this student is attached to you. Mood data is for contextual awareness only. It does not generate alerts, affect priority, or trigger escalation.'}
               </p>
               {moodHistory.length === 0 ? (
                 <p>No mood entries logged yet.</p>

@@ -43,6 +43,23 @@
   border-color: #4F8EC5;
 }
 
+.refresh-btn {
+  padding: 0.75rem 1.5rem;
+  background-color: #fff;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #666;
+  transition: all 0.2s;
+}
+
+.refresh-btn:hover {
+  border-color: #4F8EC5;
+  color: #4F8EC5;
+}
+
 .error-banner {
   background-color: #fee;
   border: 1px solid #fcc;
@@ -55,6 +72,47 @@
   text-align: center;
   padding: 3rem;
   color: #666;
+}
+
+.emergency-cancel-section {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: #fff8e6;
+  border: 1px solid #f0c000;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.emergency-cancel-section label {
+  font-weight: 500;
+  color: #666;
+}
+
+.emergency-cancel-section input[type="date"] {
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+.emergency-cancel-btn {
+  padding: 0.5rem 1rem;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.emergency-cancel-btn:hover:not(:disabled) {
+  background: #c82333;
+}
+
+.emergency-cancel-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .calendar-container {

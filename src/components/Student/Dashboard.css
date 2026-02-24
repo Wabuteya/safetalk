@@ -387,6 +387,30 @@
   transform: translateY(-2px);
   box-shadow: 0 10px 18px -10px rgba(0, 0, 0, 0.2);
 }
+
+.widget-card .appointments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.widget-card .appointment-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #eee;
+}
+
+.widget-card .appointment-item:last-of-type {
+  border-bottom: none;
+}
+
+.widget-card .appointment-reschedule-btn {
+  font-size: 0.85rem;
+  padding: 0.35rem 0.75rem;
+}
+
 .mood-options {
     display: flex;
     justify-content: space-around;

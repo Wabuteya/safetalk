@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
+import RescheduleModal from '../Appointments/RescheduleModal';
 
 const UpcomingAppointmentsWidget = () => {
   const navigate = useNavigate();
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [therapistId, setTherapistId] = useState(null);
+  const [rescheduleAppointment, setRescheduleAppointment] = useState(null);
 
   useEffect(() => {
     fetchUpcomingAppointments();
@@ -35,12 +37,12 @@ const UpcomingAppointmentsWidget = () => {
 
       setTherapistId(relationship.therapist_id);
 
-      // Fetch upcoming appointments
+      // Fetch upcoming appointments (scheduled + rescheduled)
       const { data: appointmentsData, error } = await supabase
         .from('appointments')
         .select('*')
         .eq('student_id', user.id)
-        .eq('status', 'scheduled')
+        .in('status', ['scheduled', 'rescheduled'])
         .gte('appointment_date', new Date().toISOString().split('T')[0])
         .order('appointment_date', { ascending: true })
         .order('start_time', { ascending: true })
@@ -100,11 +102,32 @@ const UpcomingAppointmentsWidget = () => {
           <div className="appointments-list">
             {appointments.map(apt => (
               <div key={apt.id} className="appointment-item">
-                <div className="appointment-date">{formatDate(apt.appointment_date)}</div>
-                <div className="appointment-time">{formatTime(apt.start_time)}</div>
+                <div>
+                  <div className="appointment-date">{formatDate(apt.appointment_date)}</div>
+                  <div className="appointment-time">{formatTime(apt.start_time)}</div>
+                </div>
+                <button
+                  type="button"
+                  className="appointment-reschedule-btn"
+                  onClick={() => setRescheduleAppointment(apt)}
+                >
+                  Reschedule
+                </button>
               </div>
             ))}
           </div>
+          {rescheduleAppointment && therapistId && (
+            <RescheduleModal
+              appointment={rescheduleAppointment}
+              therapistId={therapistId}
+              userRole="student"
+              onSuccess={() => {
+                setRescheduleAppointment(null);
+                fetchUpcomingAppointments();
+              }}
+              onCancel={() => setRescheduleAppointment(null)}
+            />
+          )}
           <button onClick={handleBookClick}>Book Another Session</button>
         </>
       )}

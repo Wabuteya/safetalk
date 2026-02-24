@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
 import { useUser } from '../../contexts/UserContext';
+import { useUnreadMessages } from '../../contexts/UnreadMessagesContext';
 import MessageBubble from './MessageBubble';
 import './Chat.css';
 
@@ -13,6 +14,7 @@ import './Chat.css';
  */
 const ChatScreen = ({ conversationId, otherUserId, otherUserName, userRole, showBackButton = true }) => {
   const { user } = useUser();
+  const { refresh: refreshUnread } = useUnreadMessages();
   const navigate = useNavigate();
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
@@ -60,6 +62,7 @@ const ChatScreen = ({ conversationId, otherUserId, otherUserName, userRole, show
             .from('messages')
             .update({ read_status: true })
             .in('id', messageIds);
+          refreshUnread?.();
         }
       }
     } catch (err) {
@@ -68,7 +71,7 @@ const ChatScreen = ({ conversationId, otherUserId, otherUserName, userRole, show
     } finally {
       setLoading(false);
     }
-  }, [conversationId, user]);
+  }, [conversationId, user, refreshUnread]);
 
   // Check therapist availability
   const checkAvailability = useCallback(async () => {
@@ -268,10 +271,12 @@ const ChatScreen = ({ conversationId, otherUserId, otherUserName, userRole, show
         </div>
       </div>
 
-      {/* Emergency Disclaimer */}
-      <div className="chat-disclaimer">
-        <strong>⚠️ Important:</strong> Messaging is not for emergencies. Use Crisis Support for immediate help.
-      </div>
+      {/* Emergency Disclaimer – students only; therapists don't need this reminder */}
+      {userRole === 'student' && (
+        <div className="chat-disclaimer">
+          <strong>⚠️ Important:</strong> Messaging is not for emergencies. Use Crisis Support for immediate help.
+        </div>
+      )}
 
       {/* Messages Container */}
       <div className="messages-container">

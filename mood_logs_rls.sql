@@ -15,7 +15,7 @@ CREATE POLICY "Students can manage own mood logs"
   USING (student_id = auth.uid())
   WITH CHECK (student_id = auth.uid());
 
--- Therapists: read-only access only for students formally attached via therapist_student_relations
+-- Therapists: read-only access for students formally attached via therapist_student_relations
 CREATE POLICY "Therapists can view mood for attached students only"
   ON mood_logs
   FOR SELECT
@@ -25,5 +25,20 @@ CREATE POLICY "Therapists can view mood for attached students only"
       SELECT 1 FROM public.therapist_student_relations t
       WHERE t.therapist_id = auth.uid()
         AND t.student_id = mood_logs.student_id
+    )
+  );
+
+-- On-pool therapists: read-only access for students whose active crisis they are handling
+DROP POLICY IF EXISTS "On-pool therapists can view mood during crisis" ON mood_logs;
+CREATE POLICY "On-pool therapists can view mood during crisis"
+  ON mood_logs
+  FOR SELECT
+  TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.crisis_events c
+      WHERE c.student_id = mood_logs.student_id
+        AND c.handled_by_id = auth.uid()
+        AND c.status != 'resolved'
     )
   );

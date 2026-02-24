@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { AiOutlineDashboard } from 'react-icons/ai';
 import {
   FaClipboardList,
@@ -17,7 +17,9 @@ import StatusSelector from './StatusSelector.jsx';
 
 const TherapistSideNav = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { crisisCount = 0 } = useCrisisRealtime() || {};
+  const isOnCrisisPage = location.pathname.startsWith('/therapist-dashboard/alerts');
   const { unreadCount = 0 } = useUnreadMessages();
   const [therapistName, setTherapistName] = useState('Therapist');
   const [user, setUser] = useState(null);
@@ -158,7 +160,7 @@ const TherapistSideNav = () => {
           <NavLink to="/therapist-dashboard/alerts" className={({ isActive }) => (isActive ? 'active' : '')}>
             <FaBell className="nav-icon" />
             <span>Crisis Management</span>
-            {crisisCount > 0 && (
+            {crisisCount > 0 && !isOnCrisisPage && (
               <span className="crisis-nav-badge" aria-label={`${crisisCount} crisis alerts`}>
                 {crisisCount > 99 ? '99+' : crisisCount}
               </span>

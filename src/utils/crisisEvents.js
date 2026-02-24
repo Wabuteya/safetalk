@@ -42,6 +42,22 @@ export async function isOnCallTherapist(therapistId) {
 }
 
 /**
+ * Check if therapist is handling an active (non-resolved) crisis for this student.
+ * Used to grant temporary case access for on-pool therapists.
+ */
+export async function isHandlingActiveCrisisForStudent(therapistId, studentId) {
+  if (!therapistId || !studentId) return false;
+  const { data, error } = await supabase
+    .from('crisis_events')
+    .select('id')
+    .eq('student_id', studentId)
+    .eq('handled_by_id', therapistId)
+    .neq('status', 'resolved')
+    .maybeSingle();
+  return !error && !!data;
+}
+
+/**
  * Fetch non-resolved crisis events for a therapist (own caseload + on-call pool if in pool).
  * Escalates all expired triggered crises first. Returns { events, isOnCall }.
  */
@@ -63,8 +79,8 @@ export async function getCrisisEventsForTherapist(therapistId) {
       .from('crisis_events')
       .select('id, student_id, therapist_id, handled_by_id, status, source, triggered_at, acknowledgement_due_at, acknowledged_at, escalated_at, unacknowledged, routed_to_on_call_at, resolved_at')
       .not('routed_to_on_call_at', 'is', null)
-      .or(`handled_by_id.is.null,handled_by_id.eq.${therapistId}`)
-      .in('status', ['triggered', 'acknowledged', 'in_progress', 'escalated'])
+      .neq('status', 'resolved')
+      .or(`handled_by_id.eq.${therapistId},handled_by_id.is.null`)
       .order('triggered_at', { ascending: false });
     onCallEvents = onCall || [];
   }
@@ -125,7 +141,8 @@ export async function getCrisisEventsForTherapistAll(therapistId) {
       .from('crisis_events')
       .select('id, student_id, therapist_id, handled_by_id, status, source, triggered_at, acknowledgement_due_at, acknowledged_at, escalated_at, unacknowledged, routed_to_on_call_at, resolved_at')
       .not('routed_to_on_call_at', 'is', null)
-      .or(`handled_by_id.is.null,handled_by_id.eq.${therapistId}`)
+      .neq('status', 'resolved')
+      .or(`handled_by_id.eq.${therapistId},handled_by_id.is.null`)
       .order('triggered_at', { ascending: false });
     onCallEvents = onCall || [];
   }

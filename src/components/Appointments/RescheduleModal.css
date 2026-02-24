@@ -1,0 +1,140 @@
+.reschedule-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.reschedule-modal {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  max-width: 480px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.reschedule-modal h3 {
+  margin: 0 0 0.5rem 0;
+}
+
+.reschedule-current {
+  color: #666;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.reschedule-error {
+  background: #fee;
+  color: #c33;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+}
+
+.reschedule-step {
+  margin-bottom: 1.25rem;
+}
+
+.reschedule-step label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.reschedule-dates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.reschedule-date-btn {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.reschedule-date-btn:hover {
+  border-color: #4F8EC5;
+  color: #4F8EC5;
+}
+
+.reschedule-date-btn.selected {
+  background: #4F8EC5;
+  color: #fff;
+  border-color: #4F8EC5;
+}
+
+.reschedule-slots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.reschedule-slot-btn {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.reschedule-slot-btn:hover {
+  border-color: #4F8EC5;
+  color: #4F8EC5;
+}
+
+.reschedule-slot-btn.selected {
+  background: #4F8EC5;
+  color: #fff;
+  border-color: #4F8EC5;
+}
+
+.no-slots {
+  color: #999;
+  font-size: 0.9rem;
+}
+
+.reschedule-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #eee;
+}
+
+.reschedule-cancel {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+}
+
+.reschedule-confirm {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  background: #4F8EC5;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.reschedule-confirm:hover:not(:disabled) {
+  background: #3d7ab5;
+}
+
+.reschedule-confirm:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

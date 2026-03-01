@@ -231,7 +231,7 @@ const PublicResourcesPage = () => {
 
       <footer className="resources-footer">
         <p className="footer-brand">SafeTalk</p>
-        <p className="footer-copyright">&copy; 2025 SafeTalk. All rights reserved.</p>
+        <p className="footer-copyright">&copy; 2026 SafeTalk. All rights reserved.</p>
         <p className="footer-contact">support@safetalk.university</p>
       </footer>
     </div>

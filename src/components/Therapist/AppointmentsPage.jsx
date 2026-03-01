@@ -1,19 +1,26 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { supabase } from '../../supabaseClient';
 import { useUser } from '../../contexts/UserContext';
 import AvailabilityManager from './AvailabilityManager';
+import RescheduleModal from '../Appointments/RescheduleModal';
+import { therapistBulkCancel } from '../../utils/appointmentReschedule';
 import './AppointmentsPage.css';
 
 const localizer = momentLocalizer(moment);
 
 const AppointmentsPage = () => {
+  const navigate = useNavigate();
   const { user } = useUser(); // Use cached user from context
   const [activeTab, setActiveTab] = useState('calendar'); // 'calendar' or 'availability'
   const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [rescheduleEvent, setRescheduleEvent] = useState(null);
+  const [emergencyCancelDate, setEmergencyCancelDate] = useState('');
+  const [emergencyCancelling, setEmergencyCancelling] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -48,7 +55,7 @@ const AppointmentsPage = () => {
         .from('appointments')
         .select('id, therapist_id, student_id, appointment_date, start_time, end_time, status, notes, student_notes')
         .eq('therapist_id', user.id)
-        .in('status', ['scheduled', 'completed'])
+        .in('status', ['scheduled', 'rescheduled', 'completed'])
         .gte('appointment_date', todayStr)
         .order('appointment_date', { ascending: true })
         .order('start_time', { ascending: true });
@@ -119,12 +126,12 @@ const AppointmentsPage = () => {
     }
 
     try {
-      const { error } = await supabase
+      const { error: updateError } = await supabase
         .from('appointments')
-        .update({ status: 'cancelled' })
+        .update({ status: 'cancelled_by_therapist' })
         .eq('id', selectedEvent.appointment.id);
 
-      if (error) throw error;
+      if (updateError) throw updateError;
 
       await fetchAppointments();
       handleCloseModal();
@@ -132,6 +139,33 @@ const AppointmentsPage = () => {
     } catch (err) {
       console.error('Error cancelling appointment:', err);
       alert('Failed to cancel appointment. Please try again.');
+    }
+  };
+
+  const handleEmergencyBulkCancel = async () => {
+    if (!emergencyCancelDate) {
+      alert('Please select a date.');
+      return;
+    }
+    if (!window.confirm(`Cancel ALL scheduled appointments on ${emergencyCancelDate}? Affected students will need to be notified.`)) {
+      return;
+    }
+    setEmergencyCancelling(true);
+    try {
+      const result = await therapistBulkCancel(user.id, emergencyCancelDate);
+      if (result.success) {
+        const count = result.affectedCount ?? 0;
+        alert(`Cancelled ${count} appointment(s) for ${emergencyCancelDate}.`);
+        setEmergencyCancelDate('');
+        await fetchAppointments();
+      } else {
+        alert(result.error || 'Failed to cancel appointments.');
+      }
+    } catch (err) {
+      console.error('Emergency cancel error:', err);
+      alert('Failed to cancel appointments. Please try again.');
+    } finally {
+      setEmergencyCancelling(false);
     }
   };
 
@@ -151,8 +185,19 @@ const AppointmentsPage = () => {
             )}
             <div className="modal-actions">
               <button onClick={handleCloseModal} className="modal-btn cancel">Close</button>
+              <button onClick={() => { setRescheduleEvent(selectedEvent); handleCloseModal(); }} className="modal-btn">Reschedule</button>
               <button onClick={handleCancelAppointment} className="modal-btn delete">Cancel Appointment</button>
-              <button className="modal-btn confirm">Join Chat Session</button>
+              <button
+                className="modal-btn confirm"
+                onClick={() => {
+                  handleCloseModal();
+                  navigate(`/therapist-dashboard/student/${selectedEvent.appointment.student_id}`, {
+                    state: { openChatTab: true },
+                  });
+                }}
+              >
+                Join Chat Session
+              </button>
             </div>
           </div>
         </div>
@@ -187,7 +232,39 @@ const AppointmentsPage = () => {
 
       {error && <div className="error-banner">{error}</div>}
 
+      {rescheduleEvent && user && (
+        <RescheduleModal
+          appointment={rescheduleEvent.appointment}
+          therapistId={user.id}
+          userRole="therapist"
+          onSuccess={() => {
+            setRescheduleEvent(null);
+            fetchAppointments();
+          }}
+          onCancel={() => setRescheduleEvent(null)}
+        />
+      )}
+
       {activeTab === 'calendar' && (
+        <>
+        <div className="emergency-cancel-section">
+          <label htmlFor="emergency-cancel-date">Emergency cancel all appointments on:</label>
+          <input
+            id="emergency-cancel-date"
+            type="date"
+            value={emergencyCancelDate}
+            onChange={(e) => setEmergencyCancelDate(e.target.value)}
+            min={new Date().toISOString().split('T')[0]}
+          />
+          <button
+            type="button"
+            className="emergency-cancel-btn"
+            onClick={handleEmergencyBulkCancel}
+            disabled={!emergencyCancelDate || emergencyCancelling}
+          >
+            {emergencyCancelling ? 'Cancelling…' : 'Cancel All for Date'}
+          </button>
+        </div>
         <div className="calendar-container">
           {loading ? (
             <div className="loading-container">Loading appointments...</div>
@@ -202,6 +279,7 @@ const AppointmentsPage = () => {
             />
           )}
         </div>
+        </>
       )}
 
       {activeTab === 'availability' && <AvailabilityManager />}

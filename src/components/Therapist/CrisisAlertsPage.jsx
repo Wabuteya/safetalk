@@ -25,7 +25,7 @@ const CrisisAlertsPage = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const eventIdParam = searchParams.get('event');
-  const { refreshCount } = useCrisisRealtime() || {};
+  const { refreshCount, clearNewAlert } = useCrisisRealtime() || {};
 
   const [user, setUser] = useState(null);
   const [alerts, setAlerts] = useState([]);
@@ -38,6 +38,10 @@ const CrisisAlertsPage = () => {
     const events = await getCrisisEventsForTherapistAll(therapistId);
     setAlerts(events);
   }, []);
+
+  useEffect(() => {
+    clearNewAlert?.();
+  }, [clearNewAlert]);
 
   useEffect(() => {
     const init = async () => {

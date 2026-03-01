@@ -71,6 +71,22 @@
       background-color: #f8f9fa;
   }
   
+  .profile-error {
+    color: #c33;
+    background-color: #fee;
+    padding: 0.75rem;
+    border-radius: 5px;
+    margin-bottom: 1rem;
+  }
+
+  .profile-success {
+    color: #2e7d32;
+    background-color: #e8f5e9;
+    padding: 0.75rem;
+    border-radius: 5px;
+    margin-bottom: 1rem;
+  }
+
   .save-btn {
     background-color: #007BFF;
     color: white;
@@ -80,6 +96,11 @@
     font-weight: bold;
     cursor: pointer;
     margin-top: 1.5rem;
+  }
+
+  .save-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
   }
   
   .danger-zone {

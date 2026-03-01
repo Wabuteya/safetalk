@@ -37,6 +37,9 @@ const TherapistDashboardHome = () => {
         }
         setUser(currentUser);
 
+        const today = new Date();
+        const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+
         const [profileResult, appointmentsResult, caseloadResult] = await Promise.all([
           supabase
             .from('therapist_profiles')
@@ -47,8 +50,8 @@ const TherapistDashboardHome = () => {
             .from('appointments')
             .select('id')
             .eq('therapist_id', currentUser.id)
-            .eq('appointment_date', new Date().toISOString().split('T')[0])
-            .eq('status', 'scheduled'),
+            .eq('appointment_date', todayStr)
+            .in('status', ['scheduled', 'rescheduled']),
           supabase
             .from('therapist_student_relations')
             .select('id')

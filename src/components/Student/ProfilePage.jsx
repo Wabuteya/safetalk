@@ -1,54 +1,124 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { supabase } from '../../supabaseClient';
+import { useUser } from '../../contexts/UserContext';
 import './ProfilePage.css';
 import PasswordInput from '../PasswordInput';
 
 const ProfilePage = () => {
-  // Mock data - in a real app, this would be fetched from the backend
+  const { user, userProfile } = useUser();
+  const [alias, setAlias] = useState('');
   const [profileData, setProfileData] = useState({
-    firstName: 'Alex',
-    lastName: 'Doe',
-    contact: '123-456-7890',
-    gender: 'Male',
+    firstName: '',
+    lastName: '',
+    contact: '',
+    gender: '',
   });
-
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [profileError, setProfileError] = useState('');
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
     newPassword: '',
     confirmPassword: '',
   });
+  const [passwordSaving, setPasswordSaving] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordSuccess, setPasswordSuccess] = useState(false);
+
+  const fetchProfile = useCallback(async () => {
+    if (!user?.id || user?.user_metadata?.role !== 'student') return;
+    setProfileLoading(true);
+    setProfileError('');
+    const { data, error } = await supabase
+      .from('student_profiles')
+      .select('alias, first_name, last_name, contact, gender')
+      .eq('user_id', user.id)
+      .maybeSingle();
+    if (error) {
+      setProfileError('Failed to load profile.');
+      setProfileLoading(false);
+      return;
+    }
+    if (data?.alias) {
+      setAlias(data.alias);
+      localStorage.setItem('userAlias', data.alias);
+    }
+    setProfileData({
+      firstName: data?.first_name || '',
+      lastName: data?.last_name || '',
+      contact: data?.contact || '',
+      gender: data?.gender || '',
+    });
+    setProfileLoading(false);
+  }, [user?.id, user?.user_metadata?.role]);
+
+  useEffect(() => {
+    if (userProfile?.alias) setAlias(userProfile.alias);
+    fetchProfile();
+  }, [user?.id, userProfile?.alias, fetchProfile]);
 
   const handleProfileChange = (e) => {
     setProfileData({ ...profileData, [e.target.name]: e.target.value });
+    setProfileError('');
   };
 
   const handlePasswordChange = (e) => {
     setPasswordData({ ...passwordData, [e.target.name]: e.target.value });
+    setPasswordError('');
+    setPasswordSuccess(false);
   };
-  
-  const handleProfileSubmit = (e) => {
+
+  const handleProfileSubmit = async (e) => {
     e.preventDefault();
-    // API call to update profile data would go here
-    console.log('Updating profile:', profileData);
+    if (!user?.id) return;
+    setProfileSaving(true);
+    setProfileError('');
+    const { error } = await supabase
+      .from('student_profiles')
+      .update({
+        first_name: profileData.firstName || null,
+        last_name: profileData.lastName || null,
+        contact: profileData.contact || null,
+        gender: profileData.gender || null,
+      })
+      .eq('user_id', user.id);
+    setProfileSaving(false);
+    if (error) {
+      setProfileError('Failed to save. Please try again.');
+      return;
+    }
     alert('Emergency contact information updated successfully.');
   };
 
-  const handlePasswordSubmit = (e) => {
+  const handlePasswordSubmit = async (e) => {
     e.preventDefault();
+    setPasswordError('');
+    setPasswordSuccess(false);
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      alert('New passwords do not match.');
+      setPasswordError('New passwords do not match.');
       return;
     }
-    // API call to change password would go here
-    console.log('Changing password...');
-    alert('Password changed successfully.');
+    if (passwordData.newPassword.length < 8) {
+      setPasswordError('Password must be at least 8 characters long.');
+      return;
+    }
+    setPasswordSaving(true);
+    const { error } = await supabase.auth.updateUser({ password: passwordData.newPassword });
+    setPasswordSaving(false);
+    if (error) {
+      setPasswordError(error.message || 'Failed to update password.');
+      return;
+    }
+    setPasswordSuccess(true);
     setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
   };
 
   const handleDeleteAccount = () => {
-    const confirmation = window.prompt('To confirm deletion, please type your password:');
-    if (confirmation) { // In a real app, you'd verify the password
-        console.log('Account deletion initiated...');
-        alert('Your account is scheduled for deletion.');
+    const confirmed = window.confirm(
+      'Are you sure you want to delete your account? This will permanently remove all your data. This action cannot be undone. Contact support if you need assistance.'
+    );
+    if (confirmed) {
+      alert('To delete your account, please contact support. Account deletion requires verification.');
     }
   };
 
@@ -61,7 +131,7 @@ const ProfilePage = () => {
       <div className="profile-section">
         <h2>Your Anonymous Alias</h2>
         <p className="section-description">This is the randomly assigned name that is visible to therapists to protect your privacy. This alias is permanent.</p>
-        <div className="alias-display">Anonymous Panda</div>
+        <div className="alias-display">{alias || 'Loading…'}</div>
       </div>
 
       {/* --- Emergency Contact Information Section --- */}
@@ -70,29 +140,35 @@ const ProfilePage = () => {
         <div className="confidential-disclaimer">
           <strong>This information is strictly confidential.</strong> It is only used for emergency purposes and is never visible to therapists.
         </div>
+        {profileError && <div className="profile-error">{profileError}</div>}
         <form onSubmit={handleProfileSubmit}>
           <div className="form-grid">
             <div className="form-group">
               <label htmlFor="firstName">First Name</label>
-              <input type="text" id="firstName" name="firstName" value={profileData.firstName} onChange={handleProfileChange} />
+              <input type="text" id="firstName" name="firstName" value={profileData.firstName} onChange={handleProfileChange} placeholder="First name" disabled={profileLoading} />
             </div>
             <div className="form-group">
               <label htmlFor="lastName">Last Name</label>
-              <input type="text" id="lastName" name="lastName" value={profileData.lastName} onChange={handleProfileChange} />
+              <input type="text" id="lastName" name="lastName" value={profileData.lastName} onChange={handleProfileChange} placeholder="Last name" disabled={profileLoading} />
             </div>
             <div className="form-group">
               <label htmlFor="contact">Contact Number</label>
-              <input type="tel" id="contact" name="contact" value={profileData.contact} onChange={handleProfileChange} />
+              <input type="tel" id="contact" name="contact" value={profileData.contact} onChange={handleProfileChange} placeholder="Phone number" disabled={profileLoading} />
             </div>
             <div className="form-group">
               <label htmlFor="gender">Gender</label>
-              <select id="gender" name="gender" value={profileData.gender} onChange={handleProfileChange}>
-                <option>Male</option>
-                <option>Female</option>
+              <select id="gender" name="gender" value={profileData.gender} onChange={handleProfileChange} disabled={profileLoading}>
+                <option value="">Select</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+                <option value="Prefer not to say">Prefer not to say</option>
               </select>
             </div>
           </div>
-          <button type="submit" className="save-btn">Save Contact Info</button>
+          <button type="submit" className="save-btn" disabled={profileLoading || profileSaving}>
+            {profileSaving ? 'Saving…' : 'Save Contact Info'}
+          </button>
         </form>
       </div>
 
@@ -102,22 +178,22 @@ const ProfilePage = () => {
         <form onSubmit={handlePasswordSubmit}>
             <div className="form-group">
                 <label>Email Address</label>
-                <input type="email" value="alex.doe@university.edu" disabled />
+                <input type="email" value={user?.email || ''} disabled readOnly />
             </div>
             <p className="section-description">Change your password below.</p>
-            <div className="form-group">
-                <label htmlFor="currentPassword">Current Password</label>
-                <PasswordInput id="currentPassword" name="currentPassword" value={passwordData.currentPassword} onChange={handlePasswordChange} required/>
-            </div>
+            {passwordError && <div className="profile-error">{passwordError}</div>}
+            {passwordSuccess && <div className="profile-success">Password changed successfully.</div>}
             <div className="form-group">
                 <label htmlFor="newPassword">New Password</label>
-                <PasswordInput id="newPassword" name="newPassword" value={passwordData.newPassword} onChange={handlePasswordChange} required/>
+                <PasswordInput id="newPassword" name="newPassword" value={passwordData.newPassword} onChange={handlePasswordChange} placeholder="At least 8 characters" required />
             </div>
             <div className="form-group">
                 <label htmlFor="confirmPassword">Confirm New Password</label>
-                <PasswordInput id="confirmPassword" name="confirmPassword" value={passwordData.confirmPassword} onChange={handlePasswordChange} required/>
+                <PasswordInput id="confirmPassword" name="confirmPassword" value={passwordData.confirmPassword} onChange={handlePasswordChange} placeholder="Confirm new password" required />
             </div>
-            <button type="submit" className="save-btn">Change Password</button>
+            <button type="submit" className="save-btn" disabled={passwordSaving}>
+              {passwordSaving ? 'Updating…' : 'Change Password'}
+            </button>
         </form>
       </div>
 

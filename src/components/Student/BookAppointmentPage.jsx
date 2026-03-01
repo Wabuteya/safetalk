@@ -188,7 +188,7 @@ const BookAppointmentPage = () => {
         .eq('therapist_id', therapistId)
         .eq('appointment_date', date)
         .in('start_time', startTimes)
-        .eq('status', 'scheduled');
+        .in('status', ['scheduled', 'rescheduled']);
 
       if (error) {
         // If error is about empty array, just return empty set
@@ -284,7 +284,16 @@ const BookAppointmentPage = () => {
           student_notes: studentNotes.trim() || null
         });
 
-      if (insertError) throw insertError;
+      if (insertError) {
+        if (insertError.code === '23505') {
+          setError('Selected time slot is no longer available.');
+          const dayOfWeek = new Date(selectedDate).getDay();
+          const slots = await getAvailableTimeSlots(dayOfWeek, selectedDate);
+          setAvailableTimeSlots(slots);
+          return;
+        }
+        throw insertError;
+      }
 
       alert('Appointment booked successfully!');
       navigate('/student-dashboard');

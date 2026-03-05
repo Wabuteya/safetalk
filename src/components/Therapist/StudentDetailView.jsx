@@ -1,10 +1,22 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+} from 'recharts';
 import { supabase } from '../../supabaseClient';
 import { useUser } from '../../contexts/UserContext';
-import { getMoodHistory, MOOD_OPTIONS } from '../../utils/moodTracking';
+import { getMoodHistory, MOOD_OPTIONS, MOOD_VALUES } from '../../utils/moodTracking';
 import { isHandlingActiveCrisisForStudent } from '../../utils/crisisEvents';
 import TherapistNotes from './TherapistNotes';
+import EmotionalTrends from './EmotionalTrends';
 import ChatScreen from '../Chat/ChatScreen';
 import './StudentDetailView.css';
 
@@ -233,6 +245,25 @@ const StudentDetailView = () => {
   const [contactDetails, setContactDetails] = useState(null);
   const [revealContactLoading, setRevealContactLoading] = useState(false);
   const [isOnPoolCrisisAccess, setIsOnPoolCrisisAccess] = useState(false);
+  const [moodChartType, setMoodChartType] = useState('line');
+
+  const moodChartData = useMemo(() => {
+    return [...moodHistory]
+      .sort((a, b) => new Date(a.logged_at).getTime() - new Date(b.logged_at).getTime())
+      .map((entry) => ({
+        date: new Date(entry.logged_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        fullDate: new Date(entry.logged_at).toLocaleString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        }),
+        value: MOOD_VALUES[entry.mood] ?? 3,
+        mood: moodLabel(entry.mood),
+        note: entry.note,
+      }));
+  }, [moodHistory]);
 
   const fetchStudentData = useCallback(async () => {
     if (!user) {
@@ -496,6 +527,14 @@ const StudentDetailView = () => {
         >
           Therapist Notes {noteCount > 0 && <span className="tab-badge">({noteCount})</span>}
         </button>
+        {user?.user_metadata?.role === 'therapist' && (
+          <button
+            className={`tab-btn ${activeTab === 'emotional-trends' ? 'active' : ''}`}
+            onClick={() => setActiveTab('emotional-trends')}
+          >
+            Emotional Trends
+          </button>
+        )}
       </div>
 
       <div className="tab-content">
@@ -589,13 +628,85 @@ const StudentDetailView = () => {
                 <p>No mood entries logged yet.</p>
               ) : (
                 <>
+                  <div className="therapist-mood-chart-section">
+                    <div className="chart-type-toggle">
+                      <button
+                        type="button"
+                        className={moodChartType === 'line' ? 'active' : ''}
+                        onClick={() => setMoodChartType('line')}
+                      >
+                        Line
+                      </button>
+                      <button
+                        type="button"
+                        className={moodChartType === 'bar' ? 'active' : ''}
+                        onClick={() => setMoodChartType('bar')}
+                      >
+                        Bar
+                      </button>
+                    </div>
+                    <p className="chart-legend">Scale: 1 = Difficult, 5 = Great</p>
+                    <div className="therapist-mood-chart-wrapper">
+                      <ResponsiveContainer width="100%" height={220}>
+                        {moodChartType === 'line' ? (
+                          <LineChart data={moodChartData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
+                            <XAxis dataKey="date" tick={{ fontSize: 11 }} />
+                            <YAxis domain={[1, 5]} ticks={[1, 2, 3, 4, 5]} tick={{ fontSize: 11 }} />
+                            <Tooltip
+                              content={({ active, payload }) => {
+                                if (!active || !payload?.length) return null;
+                                const d = payload[0].payload;
+                                return (
+                                  <div className="mood-chart-tooltip">
+                                    <div className="tooltip-date">{d.fullDate}</div>
+                                    <div className="tooltip-mood">{d.mood} ({d.value}/5)</div>
+                                    {d.note && <div className="tooltip-note">&ldquo;{d.note}&rdquo;</div>}
+                                  </div>
+                                );
+                              }}
+                            />
+                            <Line
+                              type="monotone"
+                              dataKey="value"
+                              stroke="#2196f3"
+                              strokeWidth={2}
+                              dot={{ r: 3, fill: '#2196f3' }}
+                              activeDot={{ r: 5 }}
+                            />
+                          </LineChart>
+                        ) : (
+                          <BarChart data={moodChartData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
+                            <XAxis dataKey="date" tick={{ fontSize: 11 }} />
+                            <YAxis domain={[1, 5]} ticks={[1, 2, 3, 4, 5]} tick={{ fontSize: 11 }} />
+                            <Tooltip
+                              content={({ active, payload }) => {
+                                if (!active || !payload?.length) return null;
+                                const d = payload[0].payload;
+                                return (
+                                  <div className="mood-chart-tooltip">
+                                    <div className="tooltip-date">{d.fullDate}</div>
+                                    <div className="tooltip-mood">{d.mood} ({d.value}/5)</div>
+                                    {d.note && <div className="tooltip-note">&ldquo;{d.note}&rdquo;</div>}
+                                  </div>
+                                );
+                              }}
+                            />
+                            <Bar dataKey="value" fill="#2196f3" radius={[4, 4, 0, 0]} />
+                          </BarChart>
+                        )}
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
                   <div className="mood-trend-bars therapist-mood">
-                    {MOOD_OPTIONS.map((opt) => {
+                    {[...MOOD_OPTIONS].reverse().map((opt) => {
                       const count = moodHistory.filter((e) => e.mood === opt.value).length;
                       const pct = moodHistory.length ? (count / moodHistory.length) * 100 : 0;
+                      const value = MOOD_VALUES[opt.value];
                       return (
                         <div key={opt.value} className="mood-trend-row">
-                          <span className="mood-trend-label">{opt.label}</span>
+                          <span className="mood-trend-label">{opt.label} ({value})</span>
                           <div className="mood-trend-bar-wrap">
                             <div className="mood-trend-bar" style={{ width: `${pct}%` }} />
                           </div>
@@ -609,7 +720,7 @@ const StudentDetailView = () => {
                     {moodHistory.slice(0, 10).map((entry) => (
                       <li key={entry.id}>
                         <span className="mood-entry-date">{formatDateTime(entry.logged_at)}</span>
-                        <span className="mood-entry-mood">{moodLabel(entry.mood)}</span>
+                        <span className="mood-entry-mood">{moodLabel(entry.mood)} ({MOOD_VALUES[entry.mood] ?? '—'}/5)</span>
                         {entry.note && <span className="mood-entry-note"> — {entry.note}</span>}
                       </li>
                     ))}
@@ -750,6 +861,12 @@ const StudentDetailView = () => {
               studentAlias={student?.alias}
               onNoteCountChange={setNoteCount}
             />
+          </div>
+        )}
+
+        {activeTab === 'emotional-trends' && user?.user_metadata?.role === 'therapist' && (
+          <div className="emotional-trends-tab">
+            <EmotionalTrends studentId={studentId} />
           </div>
         )}
       </div>

@@ -13,6 +13,7 @@ const ResourceView = () => {
   const [allResources, setAllResources] = useState([]);
   const [assessment, setAssessment] = useState(null);
   const [linkedTherapist, setLinkedTherapist] = useState(null);
+  const [hasMediumRiskJournal, setHasMediumRiskJournal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -53,6 +54,23 @@ const ResourceView = () => {
       }
     } catch (err) {
       console.log('Therapist relationship fetch failed (non-critical):', err);
+    }
+  }, [user]);
+
+  // Fetch medium-risk journal status via RPC (no direct journal_analysis access for students)
+  const fetchMediumRiskStatus = useCallback(async () => {
+    if (!user) return;
+
+    try {
+      const { data, error: rpcError } = await supabase.rpc('has_medium_risk_journal', {
+        p_student_id: user.id
+      });
+
+      if (!rpcError && data === true) {
+        setHasMediumRiskJournal(true);
+      }
+    } catch (err) {
+      console.log('Medium-risk check failed (non-critical):', err);
     }
   }, [user]);
 
@@ -137,20 +155,20 @@ const ResourceView = () => {
     }
   }, [user, linkedTherapist]);
 
-  // Fetch assessment and therapist first, then resources
+  // Fetch assessment, therapist, and medium-risk status first, then resources
   useEffect(() => {
     const loadData = async () => {
       if (!user) return;
 
-      // Fetch assessment and therapist in parallel
       await Promise.all([
         fetchAssessment(),
-        fetchLinkedTherapist()
+        fetchLinkedTherapist(),
+        fetchMediumRiskStatus()
       ]);
     };
 
     loadData();
-  }, [user, fetchAssessment, fetchLinkedTherapist]);
+  }, [user, fetchAssessment, fetchLinkedTherapist, fetchMediumRiskStatus]);
 
   // Fetch resources after linkedTherapist is determined (even if null)
   useEffect(() => {
@@ -283,37 +301,50 @@ const ResourceView = () => {
         </div>
       ) : (
         <>
-          {/* Recommended Resources (if assessment exists) */}
-          {prioritizedResources.recommended.length > 0 && (
-            <section className="resource-section">
+          {/* Medium-risk: show eligible resources (system + therapist_all + therapist_attached for assigned) */}
+          {hasMediumRiskJournal ? (
+            <section className="resource-section medium-risk-recommended">
               <h2 className="section-title">✨ Recommended for You</h2>
-              <p className="section-description">Resources that match your areas of interest</p>
+              <p className="section-description">Resources that may help based on your recent journal entries</p>
               <div className="resources-grid">
-                {prioritizedResources.recommended.map(renderResourceCard)}
+                {allResources.map(renderResourceCard)}
               </div>
             </section>
-          )}
+          ) : (
+            <>
+              {/* Tags-based recommendation (assessment match - for search/filter UI only) */}
+              {prioritizedResources.recommended.length > 0 && (
+                <section className="resource-section">
+                  <h2 className="section-title">✨ Recommended for You</h2>
+                  <p className="section-description">Resources that match your areas of interest</p>
+                  <div className="resources-grid">
+                    {prioritizedResources.recommended.map(renderResourceCard)}
+                  </div>
+                </section>
+              )}
 
-          {/* Therapist Resources (if attached) */}
-          {prioritizedResources.therapist.length > 0 && (
-            <section className="resource-section">
-              <h2 className="section-title">👤 Your Therapist's Resources</h2>
-              <p className="section-description">Resources shared specifically with you</p>
-              <div className="resources-grid">
-                {prioritizedResources.therapist.map(renderResourceCard)}
-              </div>
-            </section>
-          )}
+              {/* Therapist Resources (if attached) */}
+              {prioritizedResources.therapist.length > 0 && (
+                <section className="resource-section">
+                  <h2 className="section-title">👤 Your Therapist&apos;s Resources</h2>
+                  <p className="section-description">Resources shared specifically with you</p>
+                  <div className="resources-grid">
+                    {prioritizedResources.therapist.map(renderResourceCard)}
+                  </div>
+                </section>
+              )}
 
-          {/* General Resources */}
-          {prioritizedResources.general.length > 0 && (
-            <section className="resource-section">
-              <h2 className="section-title">📚 General Resources</h2>
-              <p className="section-description">Helpful resources available to all students</p>
-              <div className="resources-grid">
-                {prioritizedResources.general.map(renderResourceCard)}
-              </div>
-            </section>
+              {/* General Resources */}
+              {prioritizedResources.general.length > 0 && (
+                <section className="resource-section">
+                  <h2 className="section-title">📚 General Resources</h2>
+                  <p className="section-description">Helpful resources available to all students</p>
+                  <div className="resources-grid">
+                    {prioritizedResources.general.map(renderResourceCard)}
+                  </div>
+                </section>
+              )}
+            </>
           )}
         </>
       )}

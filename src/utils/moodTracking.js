@@ -9,6 +9,15 @@ export const MOOD_OPTIONS = [
   { value: 'difficult', label: 'Difficult' },
 ];
 
+/** Numeric mood values for charts: 1=Difficult, 5=Great */
+export const MOOD_VALUES = {
+  difficult: 1,
+  low: 2,
+  okay: 3,
+  good: 4,
+  great: 5,
+};
+
 /** Start of today in UTC (YYYY-MM-DD 00:00:00Z) */
 function getStartOfTodayUTC() {
   const d = new Date();

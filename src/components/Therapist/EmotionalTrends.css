@@ -1,0 +1,139 @@
+.emotional-trends-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.emotional-trends-card {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 100%;
+}
+
+.emotional-trends-card h3 {
+  margin: 0 0 1rem 0;
+  color: #333;
+  font-size: 1.25rem;
+}
+
+.emotional-trends-card-body {
+  min-height: 120px;
+}
+
+.emotional-trends-loading,
+.emotional-trends-empty {
+  margin: 0;
+  color: #666;
+}
+
+.emotional-trends-error p {
+  margin: 0;
+  color: #c0392b;
+}
+
+/* Risk Summary Card */
+.risk-summary-body {
+  min-height: 80px;
+}
+
+.risk-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+.risk-summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.risk-summary-label {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.risk-summary-value {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.risk-summary-value.risk-high {
+  color: #d63031;
+}
+
+.risk-summary-value.risk-medium {
+  color: #e17055;
+}
+
+.risk-summary-value.risk-low {
+  color: #00b894;
+}
+
+.risk-summary-value.trend-increasing {
+  color: #d63031;
+}
+
+.risk-summary-value.trend-decreasing {
+  color: #00b894;
+}
+
+.risk-summary-value.trend-stable {
+  color: #666;
+}
+
+/* Chart */
+.chart-body {
+  min-height: 280px;
+}
+
+.emotional-trends-chart-wrapper {
+  width: 100%;
+}
+
+.emotional-trends-legend-helper {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.emotional-trends-legend-helper .marker-high {
+  color: #d63031;
+}
+
+.emotional-trends-legend-helper .marker-medium {
+  color: #e17055;
+}
+
+/* Tooltip */
+.emotional-trends-tooltip {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  min-width: 200px;
+}
+
+.emotional-trends-tooltip-date {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.emotional-trends-tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.85rem;
+}
+
+.emotional-trends-tooltip-risk {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #eee;
+  font-size: 0.85rem;
+}

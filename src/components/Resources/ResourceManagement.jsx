@@ -15,11 +15,20 @@ const ResourceManagement = ({ userRole }) => {
   const [error, setError] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingResource, setEditingResource] = useState(null);
+  const RESOURCE_CATEGORIES = [
+    { value: 'depression', label: 'Depression' },
+    { value: 'anxiety', label: 'Anxiety' },
+    { value: 'emotional_regulation', label: 'Emotional Regulation' },
+    { value: 'stress_management', label: 'Stress Management' },
+    { value: 'crisis_support', label: 'Crisis Support' },
+  ];
+
   const [formData, setFormData] = useState({
     title: '',
     content: '',
     link: '',
     tags: '',
+    category: 'stress_management',
     visibility_scope: userRole === 'admin' ? 'system' : 'therapist_all'
   });
 
@@ -98,6 +107,7 @@ const ResourceManagement = ({ userRole }) => {
         content: resource.content || '',
         link: resource.link || '',
         tags: (resource.tags || []).join(', '),
+        category: resource.category || 'stress_management',
         visibility_scope: resource.visibility_scope || (userRole === 'admin' ? 'system' : 'therapist_all')
       });
     } else {
@@ -107,6 +117,7 @@ const ResourceManagement = ({ userRole }) => {
         content: '',
         link: '',
         tags: '',
+        category: 'stress_management',
         visibility_scope: userRole === 'admin' ? 'system' : 'therapist_all'
       });
     }
@@ -121,6 +132,7 @@ const ResourceManagement = ({ userRole }) => {
       content: '',
       link: '',
       tags: '',
+      category: 'stress_management',
       visibility_scope: userRole === 'admin' ? 'system' : 'therapist_all'
     });
   };
@@ -142,6 +154,13 @@ const ResourceManagement = ({ userRole }) => {
     }
 
     try {
+      // Validate: category is required
+      const validCategories = RESOURCE_CATEGORIES.map(c => c.value);
+      if (!formData.category || !validCategories.includes(formData.category)) {
+        alert('Please select a category.');
+        return;
+      }
+
       // Validate: at least one of content or link must be provided
       if (!formData.content.trim() && !formData.link.trim()) {
         alert('Please provide either content or a link.');
@@ -159,6 +178,7 @@ const ResourceManagement = ({ userRole }) => {
         content: formData.content.trim() || null,
         link: formData.link.trim() || null,
         tags: tagsArray,
+        category: formData.category,
         created_by_role: userRole,
         visibility_scope: formData.visibility_scope,
         therapist_id: userRole === 'therapist' ? user.id : null
@@ -250,6 +270,7 @@ const ResourceManagement = ({ userRole }) => {
             <thead>
               <tr>
                 <th>Title</th>
+                <th>Category</th>
                 <th>Type</th>
                 <th>Visibility</th>
                 <th>Tags</th>
@@ -261,6 +282,11 @@ const ResourceManagement = ({ userRole }) => {
               {resources.map(resource => (
                 <tr key={resource.id}>
                   <td className="title-cell">{resource.title}</td>
+                  <td>
+                    <span className="category-badge">
+                      {RESOURCE_CATEGORIES.find(c => c.value === resource.category)?.label || resource.category}
+                    </span>
+                  </td>
                   <td>
                     <span className={`type-badge ${resource.link ? 'link' : 'content'}`}>
                       {resource.link ? 'Link' : 'Content'}
@@ -357,6 +383,24 @@ const ResourceManagement = ({ userRole }) => {
               </div>
 
               <div className="form-group">
+                <label htmlFor="category">Category *</label>
+                <select
+                  id="category"
+                  name="category"
+                  value={formData.category}
+                  onChange={handleInputChange}
+                  required
+                >
+                  {RESOURCE_CATEGORIES.map((cat) => (
+                    <option key={cat.value} value={cat.value}>
+                      {cat.label}
+                    </option>
+                  ))}
+                </select>
+                <small className="form-hint">Required. Used for resource recommendation.</small>
+              </div>
+
+              <div className="form-group">
                 <label htmlFor="tags">Tags (comma-separated)</label>
                 <input
                   type="text"
@@ -366,7 +410,7 @@ const ResourceManagement = ({ userRole }) => {
                   onChange={handleInputChange}
                   placeholder="e.g., stress, anxiety, academics, sleep"
                 />
-                <small className="form-hint">Separate multiple tags with commas</small>
+                <small className="form-hint">Separate multiple tags with commas. For search and filter only.</small>
               </div>
 
               {userRole === 'therapist' && (

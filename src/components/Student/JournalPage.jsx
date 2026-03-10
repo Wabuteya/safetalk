@@ -239,6 +239,11 @@ const JournalPage = () => {
         throw saveError;
       }
 
+      // Fire-and-forget: trigger background journal analysis (do NOT await)
+      supabase.functions
+        .invoke('analyze-journal-entry', { body: { journal_id: savedEntry.id } })
+        .catch(() => {});
+
       // Format the new entry for display
       const formattedEntry = {
         id: savedEntry.id,

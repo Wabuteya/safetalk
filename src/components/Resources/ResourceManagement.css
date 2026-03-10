@@ -120,6 +120,15 @@
   color: #004085;
 }
 
+.category-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  background-color: #f3e8ff;
+  color: #6b21a8;
+}
+
 .tags-container {
   display: flex;
   flex-wrap: wrap;

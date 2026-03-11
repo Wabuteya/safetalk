@@ -1,6 +1,7 @@
 import { Outlet, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import SideNav from './SideNav';
+import DashboardLayout from '../layout/DashboardLayout';
 import MoodPromptGate from './MoodPromptGate';
 import PostCrisisBanner from './PostCrisisBanner';
 import { PostCrisisProvider } from '../../contexts/PostCrisisContext';
@@ -48,7 +49,7 @@ const Dashboard = () => {
   // Show loading state while checking authentication
   if (loading || checkingAuth) {
     return (
-      <div className="dashboard-layout" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+      <div className="dashboard-layout-root" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
         <div>Loading...</div>
       </div>
     );
@@ -61,14 +62,13 @@ const Dashboard = () => {
 
   return (
     <PostCrisisProvider>
-      <div className="dashboard-layout">
-        <SideNav />
-        <main className="dashboard-content">
+      <DashboardLayout sidebar={<SideNav />} title="SafeTalk">
+        <div className="dashboard-content">
           <PostCrisisBanner />
           <Outlet />
-        </main>
-        <MoodPromptGate />
-      </div>
+        </div>
+      </DashboardLayout>
+      <MoodPromptGate />
     </PostCrisisProvider>
   );
 };

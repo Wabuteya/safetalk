@@ -15,6 +15,8 @@ const ResourceManagement = ({ userRole }) => {
   const [error, setError] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingResource, setEditingResource] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterCategory, setFilterCategory] = useState('all');
   const RESOURCE_CATEGORIES = [
     { value: 'depression', label: 'Depression' },
     { value: 'anxiety', label: 'Anxiety' },
@@ -22,6 +24,38 @@ const ResourceManagement = ({ userRole }) => {
     { value: 'stress_management', label: 'Stress Management' },
     { value: 'crisis_support', label: 'Crisis Support' },
   ];
+
+  const getCategoryBadgeClass = (category) => {
+    const map = {
+      stress_management: 'badge-stress',
+      anxiety: 'badge-anxiety',
+      depression: 'badge-depression',
+      emotional_regulation: 'badge-academic',
+      crisis_support: 'badge-crisis',
+    };
+    return map[category] || 'badge-stress';
+  };
+
+  const getTypeBadgeClass = (resource) => {
+    if (resource.link?.includes('youtube') || resource.content?.includes('youtube')) return 'badge-video';
+    if (resource.link) return 'badge-link';
+    return 'badge-content';
+  };
+
+  const getTypeLabel = (resource) => {
+    if (resource.link?.includes('youtube') || resource.content?.includes('youtube')) return 'Video';
+    if (resource.link) return 'Link';
+    return 'Content';
+  };
+
+  const filteredResources = resources.filter((r) => {
+    const matchesSearch =
+      !searchQuery ||
+      (r.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (r.tags || []).some((t) => t.toLowerCase().includes(searchQuery.toLowerCase())));
+    const matchesCategory = filterCategory === 'all' || r.category === filterCategory;
+    return matchesSearch && matchesCategory;
+  });
 
   const [formData, setFormData] = useState({
     title: '',
@@ -247,12 +281,10 @@ const ResourceManagement = ({ userRole }) => {
 
   return (
     <div className="resource-management-container">
-      <div className="page-header">
-        <h1>Manage Resources</h1>
-        <button className="add-resource-btn" onClick={() => handleOpenModal()}>
-          <FaPlus /> Add New Resource
-        </button>
-      </div>
+      <h1 className="page-title">Manage Resources</h1>
+      <button className="add-resource-btn" onClick={() => handleOpenModal()}>
+        <FaPlus /> Add New Resource
+      </button>
 
       {error && (
         <div className="error-banner">{error}</div>
@@ -265,73 +297,108 @@ const ResourceManagement = ({ userRole }) => {
           <p>Start by adding your first resource to help students.</p>
         </div>
       ) : (
-        <div className="resources-table-container">
-          <table className="resources-table">
-            <thead>
-              <tr>
-                <th>Title</th>
-                <th>Category</th>
-                <th>Type</th>
-                <th>Visibility</th>
-                <th>Tags</th>
-                <th>Created</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {resources.map(resource => (
-                <tr key={resource.id}>
-                  <td className="title-cell">{resource.title}</td>
-                  <td>
-                    <span className="category-badge">
-                      {RESOURCE_CATEGORIES.find(c => c.value === resource.category)?.label || resource.category}
-                    </span>
-                  </td>
-                  <td>
-                    <span className={`type-badge ${resource.link ? 'link' : 'content'}`}>
-                      {resource.link ? 'Link' : 'Content'}
-                    </span>
-                  </td>
-                  <td>
-                    <span className="visibility-badge">
-                      {resource.visibility_scope === 'system' && 'System (All Students)'}
-                      {resource.visibility_scope === 'therapist_all' && 'All Students'}
-                      {resource.visibility_scope === 'therapist_attached' && 'Attached Students Only'}
-                    </span>
-                  </td>
-                  <td>
-                    <div className="tags-container">
-                      {resource.tags && resource.tags.length > 0 ? (
-                        resource.tags.map((tag, idx) => (
-                          <span key={idx} className="tag">{tag}</span>
-                        ))
-                      ) : (
-                        <span className="no-tags">No tags</span>
-                      )}
-                    </div>
-                  </td>
-                  <td>{new Date(resource.created_at).toLocaleDateString()}</td>
-                  <td className="actions-cell">
-                    <button
-                      className="action-btn edit-btn"
-                      onClick={() => handleOpenModal(resource)}
-                      title="Edit"
-                    >
-                      <FaEdit />
-                    </button>
-                    <button
-                      className="action-btn delete-btn"
-                      onClick={() => handleDelete(resource.id)}
-                      title="Delete"
-                    >
-                      <FaTrash />
-                    </button>
-                  </td>
-                </tr>
+        <>
+          <div className="table-controls">
+            <input
+              type="text"
+              placeholder="Search resources..."
+              className="search-input"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <select
+              className="filter-select"
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value)}
+            >
+              <option value="all">All Categories</option>
+              {RESOURCE_CATEGORIES.map((cat) => (
+                <option key={cat.value} value={cat.value}>
+                  {cat.label}
+                </option>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </select>
+          </div>
+          <div className="table-card">
+            <table className="resources-table">
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Category</th>
+                  <th>Type</th>
+                  <th>Visibility</th>
+                  <th>Tags</th>
+                  <th>Created</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredResources.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="empty-table-message">
+                      No resources match your search or filter.
+                    </td>
+                  </tr>
+                ) : (
+                filteredResources.map(resource => (
+                  <tr key={resource.id}>
+                    <td className="resource-title">{resource.title}</td>
+                    <td>
+                      <span className={`badge-category ${getCategoryBadgeClass(resource.category)}`}>
+                        {RESOURCE_CATEGORIES.find(c => c.value === resource.category)?.label || resource.category}
+                      </span>
+                    </td>
+                    <td>
+                      <span className={`badge-type ${getTypeBadgeClass(resource)}`}>
+                        {getTypeLabel(resource)}
+                      </span>
+                    </td>
+                    <td>
+                      <span className="badge-visibility">
+                        {resource.visibility_scope === 'system' && 'System (All Students)'}
+                        {resource.visibility_scope === 'therapist_all' && 'All Students'}
+                        {resource.visibility_scope === 'therapist_attached' && 'Attached Students Only'}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="tags-container">
+                        {resource.tags && resource.tags.length > 0 ? (
+                          resource.tags.map((tag, idx) => (
+                            <span key={idx} className="tag">
+                              {tag === 'academice' ? 'academics' : tag}
+                            </span>
+                          ))
+                        ) : (
+                          <span className="no-tags">No tags</span>
+                        )}
+                      </div>
+                    </td>
+                    <td>{new Date(resource.created_at).toLocaleDateString()}</td>
+                    <td>
+                      <div className="action-buttons">
+                        <button
+                          className="edit-btn"
+                          onClick={() => handleOpenModal(resource)}
+                          title="Edit"
+                        >
+                          <FaEdit /> Edit
+                        </button>
+                        <button
+                          className="delete-btn"
+                          onClick={() => handleDelete(resource.id)}
+                          title="Delete"
+                        >
+                          <FaTrash /> Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
 
       {/* Add/Edit Modal */}

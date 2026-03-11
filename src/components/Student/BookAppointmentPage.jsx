@@ -337,15 +337,15 @@ const BookAppointmentPage = () => {
         <button onClick={() => navigate('/student-dashboard/therapists')} className="back-btn">
           ← Back
         </button>
-        <h1>Book Appointment with {therapist?.full_name || 'Therapist'}</h1>
+        <h1 className="page-title">Book Appointment with {therapist?.full_name || 'Therapist'}</h1>
       </div>
 
       {error && <div className="error-banner">{error}</div>}
 
       <div className="booking-steps">
-        <div className="step">
-          <h2>Step 1: Select Date</h2>
-          <p>Choose a date when your therapist is available.</p>
+        <div className="step step-card">
+          <h2 className="step-title">Step 1: Select Date</h2>
+          <p className="step-subtitle">Choose a date when your therapist is available.</p>
           <div className="dates-grid">
             {availableDates.length === 0 ? (
               <p className="no-availability">No available dates in the next 30 days. Please contact your therapist.</p>
@@ -353,12 +353,13 @@ const BookAppointmentPage = () => {
               availableDates.map(({ date, dayName }) => (
                 <button
                   key={date}
-                  className={`date-btn ${selectedDate === date ? 'selected' : ''}`}
+                  type="button"
+                  className={`date-tile date-btn ${selectedDate === date ? 'selected' : ''}`}
                   onClick={() => handleDateSelect(date)}
                 >
-                  <div className="date-day">{dayName}</div>
-                  <div className="date-number">{new Date(date).getDate()}</div>
-                  <div className="date-month">{new Date(date).toLocaleDateString('en-US', { month: 'short' })}</div>
+                  <span className="day-name date-day">{dayName}</span>
+                  <span className="day-number date-number">{new Date(date).getDate()}</span>
+                  <span className="month date-month">{new Date(date).toLocaleDateString('en-US', { month: 'short' })}</span>
                 </button>
               ))
             )}
@@ -366,9 +367,9 @@ const BookAppointmentPage = () => {
         </div>
 
         {selectedDate && (
-          <div className="step">
-            <h2>Step 2: Select Time</h2>
-            <p>Choose an available time slot for {new Date(selectedDate).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}.</p>
+          <div className="step step-card">
+            <h2 className="step-title">Step 2: Select Time</h2>
+            <p className="step-subtitle">Choose an available time slot for {new Date(selectedDate).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}.</p>
             {loadingTimeSlots ? (
               <div className="loading-time-slots">Loading available times...</div>
             ) : availableTimeSlots.length === 0 ? (
@@ -378,7 +379,8 @@ const BookAppointmentPage = () => {
                 {availableTimeSlots.map((slot, index) => (
                   <button
                     key={index}
-                    className={`time-slot-btn ${selectedTimeSlot?.start_time === slot.start_time ? 'selected' : ''}`}
+                    type="button"
+                    className={`time-slot time-slot-btn ${selectedTimeSlot?.start_time === slot.start_time ? 'selected' : ''}`}
                     onClick={() => handleTimeSlotSelect(slot)}
                   >
                     {formatTime(slot.start_time)} - {formatTime(slot.end_time)}
@@ -390,9 +392,9 @@ const BookAppointmentPage = () => {
         )}
 
         {selectedDate && selectedTimeSlot && (
-          <div className="step">
-            <h2>Step 3: Add Notes (Optional)</h2>
-            <p>Any specific topics or concerns you'd like to discuss?</p>
+          <div className="step step-card">
+            <h2 className="step-title">Step 3: Add Notes (Optional)</h2>
+            <p className="step-subtitle">Any specific topics or concerns you'd like to discuss?</p>
             <textarea
               value={studentNotes}
               onChange={(e) => setStudentNotes(e.target.value)}
@@ -404,17 +406,26 @@ const BookAppointmentPage = () => {
         )}
 
         {selectedDate && selectedTimeSlot && (
-          <div className="booking-summary">
-            <h3>Appointment Summary</h3>
+          <div className="summary-card booking-summary">
+            <h3 className="summary-title">Appointment Summary</h3>
             <div className="summary-details">
-              <p><strong>Date:</strong> {new Date(selectedDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-              <p><strong>Time:</strong> {formatTime(selectedTimeSlot.start_time)} - {formatTime(selectedTimeSlot.end_time)}</p>
-              <p><strong>Therapist:</strong> {therapist?.full_name || 'Therapist'}</p>
+              <div className="summary-row">
+                <span className="summary-label">Date:</span>
+                <span className="summary-value">{new Date(selectedDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
+              </div>
+              <div className="summary-row">
+                <span className="summary-label">Time:</span>
+                <span className="summary-value">{formatTime(selectedTimeSlot.start_time)} - {formatTime(selectedTimeSlot.end_time)}</span>
+              </div>
+              <div className="summary-row">
+                <span className="summary-label">Therapist:</span>
+                <span className="summary-value">{therapist?.full_name || 'Therapist'}</span>
+              </div>
             </div>
             <button
               onClick={handleBookAppointment}
               disabled={booking}
-              className="book-btn"
+              className="confirm-btn book-btn"
             >
               {booking ? 'Booking...' : 'Confirm Booking'}
             </button>

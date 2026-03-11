@@ -234,77 +234,70 @@ const ChatActivityHub = () => {
 
   return (
     <div className="activity-hub-container">
-      <div className="activity-hub-header">
-        <h1>Live Chat Activity</h1>
-        <p>Monitor student availability and message activity</p>
-      </div>
+      <h1 className="page-title">Live Chat</h1>
+      <p className="page-subtitle">Monitor student availability and message activity</p>
 
-      {/* Activity Summary */}
-      <div className="activity-summary">
-        <div className="summary-card">
-          <div className="summary-icon online">🟢</div>
-          <div className="summary-content">
-            <div className="summary-value">{onlineCount}</div>
-            <div className="summary-label">Online Now</div>
+      {/* Stat Cards */}
+      <div className="stat-cards-row">
+        <div className="stat-card online">
+          <div className="stat-icon">🟢</div>
+          <div>
+            <div className="stat-number">{onlineCount}</div>
+            <div className="stat-label">Online Now</div>
           </div>
         </div>
-        <div className="summary-card">
-          <div className="summary-icon unread">📩</div>
-          <div className="summary-content">
-            <div className="summary-value">{totalUnread}</div>
-            <div className="summary-label">Unread Messages</div>
+        <div className="stat-card unread">
+          <div className="stat-icon">📩</div>
+          <div>
+            <div className="stat-number">{totalUnread}</div>
+            <div className="stat-label">Unread Messages</div>
           </div>
         </div>
         {highRiskCount > 0 && (
-          <div className="summary-card priority">
-            <div className="summary-icon priority">⚠️</div>
-            <div className="summary-content">
-              <div className="summary-value">{highRiskCount}</div>
-              <div className="summary-label">Priority Alerts</div>
+          <div className="stat-card" style={{ borderTopColor: '#DC2626' }}>
+            <div className="stat-icon" style={{ background: '#FFF0F0' }}>⚠️</div>
+            <div>
+              <div className="stat-number">{highRiskCount}</div>
+              <div className="stat-label">Priority Alerts</div>
             </div>
           </div>
         )}
       </div>
 
-      {/* Students List */}
+      {/* Conversation List */}
       {students.length === 0 ? (
         <div className="empty-activity">
           <p>No students assigned to your caseload yet.</p>
-          <p>Students will appear here once they're linked to you.</p>
+          <p>Students will appear here once they&apos;re linked to you.</p>
         </div>
       ) : (
-        <div className="activity-list">
+        <div className="conversations-list">
           {students.map((student) => (
             <div
               key={student.id}
-              className={`activity-item ${student.hasHighRisk ? 'high-risk' : ''} ${student.unreadCount > 0 ? 'has-unread' : ''}`}
+              className={`conversation-row ${student.unreadCount > 0 ? 'unread' : ''}`}
               onClick={() => handleStudentClick(student)}
             >
-              <div className="activity-item-header">
-                <div className="activity-student-info">
-                  <h3>{student.alias}</h3>
-                  <div className="activity-status">
-                    <span className={`status-dot ${student.isOnline ? 'online' : 'offline'}`}></span>
-                    <span>{student.isOnline ? 'Online' : 'Offline'}</span>
-                  </div>
-                </div>
-                <div className="activity-badges">
-                  {student.hasHighRisk && (
-                    <span className="priority-badge">⚠️ Priority</span>
-                  )}
-                  {student.unreadCount > 0 && (
-                    <span className="unread-badge">{student.unreadCount}</span>
-                  )}
+              <div className="student-avatar">
+                {student.alias?.charAt(0)?.toUpperCase() || '?'}
+              </div>
+              <div className="conversation-info">
+                <div className="student-name">{student.alias}</div>
+                <div className="last-message">
+                  {student.lastMessage || 'No messages yet'}
                 </div>
               </div>
-              {student.lastMessage ? (
-                <>
-                  <p className="activity-preview">{student.lastMessage}</p>
-                  <span className="activity-time">{formatTime(student.lastMessageTime)}</span>
-                </>
-              ) : (
-                <p className="activity-no-messages">No messages yet</p>
-              )}
+              <div className="conversation-meta">
+                <div className="status-indicator">
+                  <span className={`status-dot ${student.isOnline ? 'online' : ''}`} />
+                  {student.isOnline ? 'Online' : 'Offline'}
+                </div>
+                <div className="last-time">{formatTime(student.lastMessageTime)}</div>
+                {student.unreadCount > 0 && (
+                  <span className="unread-badge">{student.unreadCount}</span>
+                )}
+              </div>
+              <span className="open-chat-arrow">→</span>
             </div>
           ))}
         </div>

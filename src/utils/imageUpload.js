@@ -1,5 +1,14 @@
 import { supabase } from '../supabaseClient';
 
+/**
+ * Helper to get therapist photo URL with fallback
+ * @param {string} profilePhotoUrl - profile_photo_url from database
+ * @param {string} imageUrl - image_url from database (legacy)
+ * @returns {string|null}
+ */
+export const getTherapistPhotoUrl = (profilePhotoUrl, imageUrl = null) =>
+  profilePhotoUrl || imageUrl || null;
+
 const BUCKET_NAME = 'therapist-avatars';
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png'];

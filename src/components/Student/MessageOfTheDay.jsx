@@ -55,27 +55,23 @@ const MessageOfTheDay = () => {
   // Show loading state (minimal, just a subtle placeholder)
   if (loading) {
     return (
-      <div className="message-of-the-day">
-        <div className="motd-label">
+      <div className="todays-message message-of-the-day">
+        <div className="message-label motd-label">
           <FaQuoteLeft className="motd-icon" />
           Today's Message
         </div>
-        <div className="motd-content">
-          <div className="motd-text-placeholder">Loading today's message...</div>
-        </div>
+        <p className="message-text motd-text-placeholder">Loading today's message...</p>
       </div>
     );
   }
 
   return (
-    <div className="message-of-the-day">
-      <div className="motd-label">
+    <div className="todays-message message-of-the-day">
+      <div className="message-label motd-label">
         <FaQuoteLeft className="motd-icon" />
         Today's Message
       </div>
-      <div className="motd-content">
-        <p className="motd-text">{message}</p>
-      </div>
+      <p className="message-text motd-text">{message}</p>
     </div>
   );
 };

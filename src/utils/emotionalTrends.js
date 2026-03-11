@@ -17,7 +17,7 @@ export async function fetchJournalAnalysisForStudent(studentId) {
 
   const { data, error } = await supabase
     .from('journal_analysis')
-    .select('sadness_score, fear_score, joy_score, anger_score, neutral_score, surprise_score, disgust_score, derived_risk, created_at')
+    .select('journal_id, sadness_score, fear_score, joy_score, anger_score, neutral_score, surprise_score, disgust_score, derived_risk, created_at')
     .eq('student_id', studentId)
     .order('created_at', { ascending: true });
 

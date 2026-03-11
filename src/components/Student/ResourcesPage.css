@@ -56,6 +56,12 @@
       transform: translateY(-5px);
       box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
   }
+  @media (hover: none) {
+    .resource-card:active {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 12px rgba(0, 0, 0, 0.08);
+    }
+  }
   
   .resource-image-container {
     position: relative;

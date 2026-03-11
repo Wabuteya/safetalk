@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { FaLock } from 'react-icons/fa';
 import { supabase } from '../../supabaseClient';
 import { uploadTherapistPhoto } from '../../utils/imageUpload';
-// We can reuse the profile page CSS since the structure is similar
-import '../Student/ProfilePage.css';
+import { getTherapistPhotoUrl } from '../../utils/defaultAvatar';
+import './TherapistProfilePage.css';
 
 const TherapistProfilePage = () => {
   const [profileData, setProfileData] = useState({
@@ -148,14 +149,14 @@ const TherapistProfilePage = () => {
   
   if (loading) {
     return (
-      <div className="profile-layout">
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'center', 
-          alignItems: 'center', 
+      <div className="therapist-profile-layout">
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
           minHeight: '50vh',
           fontSize: '1.1rem',
-          color: '#5b6888'
+          color: '#6B7280'
         }}>
           Loading profile...
         </div>
@@ -163,152 +164,134 @@ const TherapistProfilePage = () => {
     );
   }
 
+  const photoDisplayUrl = photoPreview || getTherapistPhotoUrl(profileData.profile_photo_url, profileData.image_url);
+
   return (
-    <div className="profile-layout">
-      <h1>My Therapist Profile</h1>
+    <div className="therapist-profile-layout">
+      <h1 className="page-title">My Therapist Profile</h1>
 
       {/* --- Public Profile Information Section --- */}
-      <div className="profile-section">
-        <h2>Public Profile Information</h2>
-        <p className="section-description">This is the information students will see. Once you save, you will be visible in the student directory.</p>
+      <div className="profile-card">
+        <h2 className="card-title">Public Profile Information</h2>
+        <p className="card-subtitle">This is the information students will see. Once you save, you will be visible in the student directory.</p>
         <form onSubmit={handleProfileSubmit}>
           <div className="form-group">
-            <label htmlFor="full_name">Full Name</label>
-            <input 
-              type="text" 
-              id="full_name" 
-              name="full_name" 
-              value={profileData.full_name} 
+            <label htmlFor="full_name" className="form-label">Full Name</label>
+            <input
+              type="text"
+              id="full_name"
+              name="full_name"
+              className="form-input"
+              value={profileData.full_name}
               onChange={handleProfileChange}
               required
             />
           </div>
           <div className="form-group">
-            <label htmlFor="title">Title / Credentials</label>
-            <input 
-              type="text" 
-              id="title" 
-              name="title" 
-              value={profileData.title} 
+            <label htmlFor="title" className="form-label">Title / Credentials</label>
+            <input
+              type="text"
+              id="title"
+              name="title"
+              className="form-input"
+              value={profileData.title}
               onChange={handleProfileChange}
               placeholder="e.g., Clinical Psychologist, Licensed Therapist"
               required
             />
           </div>
           <div className="form-group">
-            <label htmlFor="profile_photo">Profile Photo</label>
-            <div style={{ marginBottom: '1rem' }}>
-              {photoPreview && (
-                <div style={{ 
-                  marginBottom: '1rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '1rem'
-                }}>
-                  <img 
-                    src={photoPreview} 
-                    alt="Profile preview" 
-                    style={{
-                      width: '120px',
-                      height: '120px',
-                      objectFit: 'cover',
-                      borderRadius: '50%',
-                      border: '2px solid #ddd'
-                    }}
-                  />
-                  <div>
-                    <p style={{ margin: 0, fontSize: '0.9rem', color: '#666' }}>
-                      {selectedFile ? 'New photo selected' : 'Current photo'}
-                    </p>
-                    {selectedFile && (
-                      <button
-                        type="button"
-                        onClick={handlePhotoUpload}
-                        disabled={uploadingPhoto}
-                        style={{
-                          marginTop: '0.5rem',
-                          padding: '0.5rem 1rem',
-                          backgroundColor: '#007BFF',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '0.25rem',
-                          cursor: uploadingPhoto ? 'not-allowed' : 'pointer',
-                          fontSize: '0.9rem'
-                        }}
-                      >
-                        {uploadingPhoto ? 'Uploading...' : 'Upload Photo'}
-                      </button>
-                    )}
-                  </div>
+            <label className="form-label">Profile Photo</label>
+            <div className="photo-section">
+              {photoDisplayUrl ? (
+                <img src={photoDisplayUrl} alt="Profile" className="profile-photo" />
+              ) : (
+                <div className="profile-photo" style={{ background: '#E5E7EB', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9CA3AF', fontSize: '1.5rem' }}>
+                  —
                 </div>
               )}
-              <input 
-                type="file" 
-                id="profile_photo" 
-                name="profile_photo" 
-                accept="image/jpeg,image/jpg,image/png"
-                onChange={handlePhotoChange}
-                style={{ marginBottom: '0.5rem' }}
-              />
-              <small style={{ display: 'block', color: '#666' }}>
-                Upload a JPG or PNG image (max 5MB). This will replace your current photo.
-              </small>
+              <div className="photo-info">
+                <span className="photo-label">{selectedFile ? 'New photo selected' : 'Current photo'}</span>
+                <label htmlFor="profile_photo" className="upload-btn" style={{ cursor: uploadingPhoto ? 'not-allowed' : 'pointer' }}>
+                  {uploadingPhoto ? 'Uploading...' : 'Choose file'}
+                </label>
+                <input
+                  type="file"
+                  id="profile_photo"
+                  name="profile_photo"
+                  accept="image/jpeg,image/jpg,image/png"
+                  onChange={handlePhotoChange}
+                  disabled={uploadingPhoto}
+                />
+                {selectedFile && (
+                  <button type="button" className="upload-btn" onClick={handlePhotoUpload} disabled={uploadingPhoto}>
+                    {uploadingPhoto ? 'Uploading...' : 'Upload Photo'}
+                  </button>
+                )}
+              </div>
             </div>
-            {/* Keep image_url for backward compatibility / external URLs */}
-            <label htmlFor="image_url" style={{ marginTop: '1rem', display: 'block' }}>
-              Photo URL (Alternative - for external images)
-            </label>
-            <input 
-              type="url" 
-              id="image_url" 
-              name="image_url" 
-              value={profileData.image_url} 
+            <p className="form-hint">Upload a JPG or PNG image (max 5MB).</p>
+            <label htmlFor="image_url" className="form-label" style={{ marginTop: '16px' }}>Photo URL (Alternative)</label>
+            <input
+              type="url"
+              id="image_url"
+              name="image_url"
+              className="form-input"
+              value={profileData.image_url}
               onChange={handleProfileChange}
               placeholder="https://example.com/your-photo.jpg"
             />
-            <small style={{ display: 'block', color: '#666', marginTop: '0.25rem' }}>
-              Optional: Enter a URL to an external image (if not using file upload above)
-            </small>
+            <p className="form-hint">Optional: Enter a URL to an external image.</p>
           </div>
           <div className="form-group">
-            <label htmlFor="bio">Biography</label>
-            <textarea 
-              id="bio" 
-              name="bio" 
-              rows="5" 
-              value={profileData.bio} 
+            <label htmlFor="bio" className="form-label">Biography</label>
+            <textarea
+              id="bio"
+              name="bio"
+              className="form-textarea"
+              rows={5}
+              value={profileData.bio}
               onChange={handleProfileChange}
               placeholder="Tell students about your approach, experience, and how you can help them..."
               required
-            ></textarea>
+            />
           </div>
           <div className="form-group">
-            <label htmlFor="specialties">Specialties (comma-separated)</label>
-            <input 
-              type="text" 
-              id="specialties" 
-              name="specialties" 
-              value={profileData.specialties} 
+            <label htmlFor="specialties" className="form-label">Specialties (comma-separated)</label>
+            <input
+              type="text"
+              id="specialties"
+              name="specialties"
+              className="form-input"
+              value={profileData.specialties}
               onChange={handleProfileChange}
               placeholder="e.g., Anxiety, Depression, Stress Management"
             />
-            <small>Separate multiple specialties with commas</small>
+            <p className="form-hint">Separate multiple specialties with commas.</p>
           </div>
-          <button type="submit" className="save-btn" disabled={saving}>
+          <button type="submit" className="save-profile-btn" disabled={saving}>
             {saving ? 'Saving...' : 'Save Profile & Go Live'}
           </button>
         </form>
       </div>
 
       {/* --- Account & Security Section --- */}
-      <div className="profile-section">
-        <h2>Account & Security</h2>
-         <div className="form-group">
-            <label>Email Address</label>
-            <input type="email" value={user?.email || ''} disabled />
+      <div className="profile-card security-card">
+        <h2 className="card-title">Account & Security</h2>
+        <p className="card-subtitle">Your account details and security options.</p>
+        <div className="form-group">
+          <label className="form-label">Email Address</label>
+          <div className="email-wrapper">
+            <input
+              type="email"
+              className="form-input"
+              value={user?.email || ''}
+              readOnly
+            />
+            <span className="lock-icon" aria-hidden="true"><FaLock /></span>
+          </div>
         </div>
-        {/* The change password form would go here, identical to the student's profile */}
-        <button className="save-btn">Change Password</button>
+        <button type="button" className="change-password-btn">Change Password</button>
       </div>
     </div>
   );

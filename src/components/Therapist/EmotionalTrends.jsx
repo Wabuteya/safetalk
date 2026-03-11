@@ -16,13 +16,23 @@ import { fetchJournalAnalysisForStudent } from '../../utils/emotionalTrends';
 import './EmotionalTrends.css';
 
 const EMOTION_COLORS = {
-  sadness: '#6c5ce7',
-  fear: '#e17055',
-  joy: '#00b894',
-  anger: '#d63031',
-  neutral: '#636e72',
-  surprise: '#fdcb6e',
-  disgust: '#8b7355',
+  Anger: '#DC2626',
+  Disgust: '#7C3AED',
+  Fear: '#F59E0B',
+  Joy: '#10B981',
+  Neutral: '#6B7280',
+  Sadness: '#003DA5',
+  Surprise: '#F97316',
+};
+
+const EMOTION_DATA_KEYS = {
+  Anger: 'anger_score',
+  Disgust: 'disgust_score',
+  Fear: 'fear_score',
+  Joy: 'joy_score',
+  Neutral: 'neutral_score',
+  Sadness: 'sadness_score',
+  Surprise: 'surprise_score',
 };
 
 const formatTooltipDate = (iso) => {
@@ -46,13 +56,27 @@ const pct = (v) => (v != null && !Number.isNaN(v) ? `${Math.round((v ?? 0) * 100
 
 const riskLabel = (r) => (r ? String(r).charAt(0).toUpperCase() + String(r).slice(1).toLowerCase() : '—');
 
+const RISK_BORDER_COLORS = {
+  High: '#DC2626',
+  Medium: '#F59E0B',
+  Low: '#10B981',
+};
+
 /**
  * Emotional Trends — Therapist-only view for journal-derived emotional and risk insights.
  * Students never see this component (role guard + route isolation).
  */
+const snippet = (text, maxLen = 60) => {
+  if (!text || typeof text !== 'string') return null;
+  const t = text.trim();
+  if (!t) return null;
+  return t.length <= maxLen ? t : `${t.slice(0, maxLen)}…`;
+};
+
 const EmotionalTrends = ({ studentId }) => {
   const { user } = useUser();
   const [analysisData, setAnalysisData] = useState([]);
+  const [journalSnippets, setJournalSnippets] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -81,6 +105,31 @@ const EmotionalTrends = ({ studentId }) => {
     fetchData();
   }, [fetchData]);
 
+  useEffect(() => {
+    if (!studentId || !analysisData.length) {
+      setJournalSnippets({});
+      return;
+    }
+    const ids = [...new Set(analysisData.map((r) => r.journal_id).filter(Boolean))];
+    if (ids.length === 0) {
+      setJournalSnippets({});
+      return;
+    }
+    supabase
+      .from('journal_entries')
+      .select('id, content')
+      .in('id', ids)
+      .eq('is_shared_with_therapist', true)
+      .then(({ data }) => {
+        const map = {};
+        (data || []).forEach((j) => {
+          map[j.id] = snippet(j.content);
+        });
+        setJournalSnippets(map);
+      })
+      .catch(() => setJournalSnippets({}));
+  }, [studentId, analysisData]);
+
   // Realtime: subscribe to new journal_analysis inserts for this student
   useEffect(() => {
     if (!studentId || !isTherapist) return;
@@ -107,12 +156,30 @@ const EmotionalTrends = ({ studentId }) => {
   }, [studentId, isTherapist, fetchData]);
 
   const chartData = useMemo(() => {
-    return analysisData.map((row) => ({
-      ...row,
-      timestamp: row.created_at,
-      dateLabel: formatAxisDate(row.created_at),
-    }));
+    const byDate = new Map();
+    analysisData.forEach((row) => {
+      const dateKey = formatAxisDate(row.created_at);
+      if (!byDate.has(dateKey)) byDate.set(dateKey, []);
+      byDate.get(dateKey).push(row);
+    });
+    return Array.from(byDate.entries())
+      .map(([dateKey, rows]) => {
+        const latest = rows.reduce((acc, r) => (new Date(r.created_at) > new Date(acc.created_at) ? r : acc));
+        return { ...latest, timestamp: latest.created_at, date: dateKey };
+      })
+      .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
   }, [analysisData]);
+
+  const riskHistory = useMemo(() => {
+    return [...analysisData]
+      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+      .map((entry) => ({
+        date: formatAxisDate(entry.created_at),
+        level: riskLabel(entry.derived_risk),
+        riskLevel: riskLabel(entry.derived_risk),
+        journalSnippet: entry.journal_id ? journalSnippets[entry.journal_id] : null,
+      }));
+  }, [analysisData, journalSnippets]);
 
   const riskSummary = useMemo(() => {
     if (!analysisData.length) {
@@ -138,11 +205,15 @@ const EmotionalTrends = ({ studentId }) => {
   }, [analysisData]);
 
   const riskMarkers = useMemo(() => {
+    const seen = new Set();
     return analysisData
-      .map((row, idx) => ({ ...row, idx }))
+      .map((row, idx) => ({ ...row, idx, date: formatAxisDate(row.created_at) }))
       .filter((r) => {
         const risk = String(r.derived_risk || '').toLowerCase();
-        return risk === 'high' || risk === 'medium';
+        if (risk !== 'high' && risk !== 'medium') return false;
+        if (seen.has(r.date)) return false;
+        seen.add(r.date);
+        return true;
       });
   }, [analysisData]);
 
@@ -211,28 +282,36 @@ const EmotionalTrends = ({ studentId }) => {
     );
   }
 
+  const latestRisk = String(riskSummary.latest?.derived_risk || 'low').toLowerCase();
+
   return (
     <div className="emotional-trends-container">
-      <div className="emotional-trends-card risk-summary-card">
-        <h3>Risk Snapshot</h3>
-        <div className="emotional-trends-card-body risk-summary-body">
+      <div className="ai-disclaimer">
+        🤖 <strong>AI-generated insight.</strong> Emotional trends are derived from sentiment analysis of both shared and private journal entries. Use as supportive context only — not a clinical diagnosis.
+      </div>
+
+      <div className={`risk-card ${latestRisk}`}>
+        <h4 className="section-title">Risk Snapshot</h4>
+        <div className="risk-summary-body">
           {analysisData.length === 0 ? (
             <p className="emotional-trends-empty">No journal analysis data yet. Trends will appear after journal entries are analyzed.</p>
           ) : (
-            <div className="risk-summary-grid">
-              <div className="risk-summary-item">
-                <span className="risk-summary-label">Latest risk</span>
-                <span className={`risk-summary-value risk-${String(riskSummary.latest?.derived_risk || 'low').toLowerCase()}`}>
+            <div className="risk-stats">
+              <div className="risk-stat">
+                <span className="risk-stat-label">Latest risk</span>
+                <span className={`risk-stat-value risk-value ${latestRisk}`}>
                   {riskLabel(riskSummary.latest?.derived_risk)}
                 </span>
               </div>
-              <div className="risk-summary-item">
-                <span className="risk-summary-label">Total high-risk occurrences</span>
-                <span className="risk-summary-value">{riskSummary.highCount}</span>
+              <div className="risk-stat">
+                <span className="risk-stat-label">High-risk occurrences</span>
+                <span className={`risk-stat-value risk-value ${riskSummary.highCount > 0 ? 'high' : 'neutral'}`}>
+                  {riskSummary.highCount}
+                </span>
               </div>
-              <div className="risk-summary-item">
-                <span className="risk-summary-label">7-day trend</span>
-                <span className={`risk-summary-value trend-${riskSummary.trend7d}`}>
+              <div className="risk-stat">
+                <span className="risk-stat-label">7-day trend</span>
+                <span className={`risk-stat-value risk-value ${riskSummary.trend7d}`}>
                   {riskSummary.trend7d === 'increasing' && '↑ Increasing'}
                   {riskSummary.trend7d === 'decreasing' && '↓ Decreasing'}
                   {riskSummary.trend7d === 'stable' && '→ Stable'}
@@ -243,9 +322,9 @@ const EmotionalTrends = ({ studentId }) => {
         </div>
       </div>
 
-      <div className="emotional-trends-card">
-        <h3>Emotional Trend Graph</h3>
-        <div className="emotional-trends-card-body chart-body">
+      <div className="chart-card">
+        <h4 className="section-title">Emotional Trend Graph</h4>
+        <div className="chart-body">
           {chartData.length === 0 ? (
             <p className="emotional-trends-empty">No data to display. Journal analysis will populate this chart.</p>
           ) : (
@@ -254,10 +333,9 @@ const EmotionalTrends = ({ studentId }) => {
                 <LineChart data={chartData} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
                   <XAxis
-                    dataKey="timestamp"
-                    tickFormatter={formatAxisDate}
-                    stroke="#666"
-                    fontSize={12}
+                    dataKey="date"
+                    tick={{ fill: '#9CA3AF', fontSize: 12 }}
+                    interval="preserveStartEnd"
                   />
                   <YAxis domain={[0, 1]} stroke="#666" fontSize={12} tickFormatter={(v) => `${Math.round(v * 100)}%`} />
                   <Tooltip content={<CustomTooltip />} />
@@ -265,89 +343,62 @@ const EmotionalTrends = ({ studentId }) => {
 
                   {riskMarkers.map((m) => (
                     <ReferenceDot
-                      key={`${m.idx}-${m.created_at}`}
-                      x={m.created_at}
+                      key={`${m.idx}-${m.date}`}
+                      x={m.date}
                       y={1}
                       r={6}
-                      fill={String(m.derived_risk || '').toLowerCase() === 'high' ? '#d63031' : '#e17055'}
+                      fill={String(m.derived_risk || '').toLowerCase() === 'high' ? '#DC2626' : '#F59E0B'}
                       stroke="white"
                       strokeWidth={2}
                     />
                   ))}
 
-                  <Line
-                    type="monotone"
-                    dataKey="sadness_score"
-                    name="Sadness"
-                    stroke={EMOTION_COLORS.sadness}
-                    strokeWidth={2}
-                    dot={false}
-                    connectNulls
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="fear_score"
-                    name="Fear"
-                    stroke={EMOTION_COLORS.fear}
-                    strokeWidth={2}
-                    dot={false}
-                    connectNulls
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="joy_score"
-                    name="Joy"
-                    stroke={EMOTION_COLORS.joy}
-                    strokeWidth={2}
-                    dot={false}
-                    connectNulls
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="anger_score"
-                    name="Anger"
-                    stroke={EMOTION_COLORS.anger}
-                    strokeWidth={2}
-                    dot={false}
-                    connectNulls
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="neutral_score"
-                    name="Neutral"
-                    stroke={EMOTION_COLORS.neutral}
-                    strokeWidth={2}
-                    dot={false}
-                    connectNulls
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="surprise_score"
-                    name="Surprise"
-                    stroke={EMOTION_COLORS.surprise}
-                    strokeWidth={2}
-                    dot={false}
-                    connectNulls
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="disgust_score"
-                    name="Disgust"
-                    stroke={EMOTION_COLORS.disgust}
-                    strokeWidth={2}
-                    dot={false}
-                    connectNulls
-                  />
+                  {Object.entries(EMOTION_COLORS).map(([emotion, color]) => (
+                    <Line
+                      key={emotion}
+                      type="monotone"
+                      dataKey={EMOTION_DATA_KEYS[emotion]}
+                      name={emotion}
+                      stroke={color}
+                      strokeWidth={2}
+                      dot={false}
+                      activeDot={{ r: 5 }}
+                      connectNulls
+                    />
+                  ))}
                 </LineChart>
               </ResponsiveContainer>
-              <div className="emotional-trends-legend-helper">
-                <span className="marker-high">●</span> High risk &nbsp;
-                <span className="marker-medium">●</span> Medium risk
+              <div className="risk-legend">
+                <span><span className="legend-dot high" /> High risk</span>
+                <span><span className="legend-dot medium" /> Medium risk</span>
               </div>
+              <p className="chart-note">
+                🔴 Red dot indicates a high-risk journal entry detected on that date
+              </p>
             </div>
           )}
         </div>
       </div>
+
+      {riskHistory.length > 0 && (
+        <div className="risk-history">
+          <h4 className="risk-history-title">Risk History</h4>
+          {riskHistory.map((entry, i) => {
+            const levelClass = ['high', 'medium', 'low'].includes((entry.level || '').toLowerCase())
+              ? entry.level.toLowerCase()
+              : 'low';
+            const borderColor = RISK_BORDER_COLORS[entry.riskLevel] || RISK_BORDER_COLORS.Low;
+            return (
+            <div key={i} className="risk-history-item" style={{ borderLeftColor: borderColor }}>
+              <span className="risk-date">{entry.date}</span>
+              <span className={`risk-badge ${levelClass}`}>
+                {entry.level}
+              </span>
+              <span className="risk-trigger">&quot;{entry.journalSnippet || 'Journal entry'}&quot;</span>
+            </div>
+          );})}
+        </div>
+      )}
     </div>
   );
 };

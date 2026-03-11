@@ -4,16 +4,19 @@ import { supabase } from '../../supabaseClient';
 import { DefaultAvatar, getTherapistPhotoUrl } from '../../utils/defaultAvatar';
 import { getCrisisEventsForTherapist } from '../../utils/crisisEvents';
 import { useCrisisRealtime } from '../../contexts/CrisisRealtimeContext';
+import { useUnreadMessages } from '../../contexts/UnreadMessagesContext';
 
 const TherapistDashboardHome = () => {
   const navigate = useNavigate();
   const { newAlertReceived, clearNewAlert, refreshCount } = useCrisisRealtime() || {};
+  const { unreadCount = 0 } = useUnreadMessages();
   const [user, setUser] = useState(null);
   const [therapistName, setTherapistName] = useState('Therapist');
   const [therapistPhotoUrl, setTherapistPhotoUrl] = useState(null);
   const [loading, setLoading] = useState(true);
   const [appointmentsCount, setAppointmentsCount] = useState(0);
   const [caseloadCount, setCaseloadCount] = useState(0);
+  const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
   const [crisisEvents, setCrisisEvents] = useState([]);
   const [isOnCall, setIsOnCall] = useState(false);
   const [availabilityStatus, setAvailabilityStatus] = useState(null);
@@ -40,7 +43,7 @@ const TherapistDashboardHome = () => {
         const today = new Date();
         const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
-        const [profileResult, appointmentsResult, caseloadResult] = await Promise.all([
+        const [profileResult, appointmentsResult, caseloadResult, pendingResult] = await Promise.all([
           supabase
             .from('therapist_profiles')
             .select('full_name, title, profile_photo_url, image_url, status')
@@ -56,6 +59,11 @@ const TherapistDashboardHome = () => {
             .from('therapist_student_relations')
             .select('id')
             .eq('therapist_id', currentUser.id),
+          supabase
+            .from('therapist_change_requests')
+            .select('id')
+            .eq('current_therapist_id', currentUser.id)
+            .eq('status', 'pending'),
         ]);
 
         const profile = profileResult?.data;
@@ -74,6 +82,8 @@ const TherapistDashboardHome = () => {
           setAppointmentsCount(appointmentsResult.data.length);
         if (!caseloadResult.error && caseloadResult.data)
           setCaseloadCount(caseloadResult.data.length);
+        if (!pendingResult.error && pendingResult.data)
+          setPendingRequestsCount(pendingResult.data.length);
 
         await refreshCrises(currentUser.id);
         if (refreshCount) await refreshCount(currentUser.id);
@@ -137,12 +147,12 @@ const TherapistDashboardHome = () => {
         </div>
       )}
 
-      <div className="therapist-home-header">
+      <div className="dashboard-header">
         {therapistPhotoUrl ? (
           <img
             src={therapistPhotoUrl}
             alt={therapistName}
-            className="therapist-home-avatar"
+            className="therapist-avatar"
             onError={(e) => {
               e.target.style.display = 'none';
               const next = e.target.nextElementSibling;
@@ -152,34 +162,74 @@ const TherapistDashboardHome = () => {
         ) : null}
         {!therapistPhotoUrl && (
           <div className="therapist-home-avatar-placeholder">
-            <DefaultAvatar size={80} />
+            <DefaultAvatar size={64} />
           </div>
         )}
         <div>
-          <h1 className="therapist-home-title">Dashboard</h1>
-          <p className="therapist-home-subtitle">
-            Welcome back, {therapistName}. Here is your summary for today.
-          </p>
+          <h1 className="welcome-title">Welcome back, {therapistName}</h1>
+          <p className="welcome-subtitle">Here is your summary for today.</p>
         </div>
       </div>
 
       <div className="dashboard-grid">
-        <div className="widget-card">
+        <div className="dash-card">
+          <div className="dash-card-sticker-placeholder" title="Schedule illustration">
+            <img
+              className="dash-card-sticker-image"
+              src="/Sticker/Schedule-bro.png"
+              alt=""
+              aria-hidden="true"
+            />
+          </div>
           <h3>Upcoming Appointments</h3>
-          <p>
-            You have <strong>{appointmentsCount} {appointmentsCount === 1 ? 'appointment' : 'appointments'}</strong> scheduled for today.
-          </p>
-          <button onClick={() => navigate('/therapist-dashboard/appointments')}>
+          <p>You have <strong>{appointmentsCount} {appointmentsCount === 1 ? 'appointment' : 'appointments'}</strong> today.</p>
+          <button type="button" className="card-btn" onClick={() => navigate('/therapist-dashboard/appointments')}>
             View Calendar
           </button>
         </div>
-        <div className="widget-card">
+        <div className="dash-card">
+          <div className="dash-card-sticker-placeholder" title="Caseload illustration">
+            <img
+              className="dash-card-sticker-image"
+              src="/Sticker/college%20students-rafiki.png"
+              alt=""
+              aria-hidden="true"
+            />
+          </div>
           <h3>My Caseload</h3>
-          <p>
-            You are currently managing <strong>{caseloadCount} {caseloadCount === 1 ? 'student case' : 'student cases'}</strong>.
-          </p>
-          <button onClick={() => navigate('/therapist-dashboard/caseload')}>
+          <p>Managing <strong>{caseloadCount} {caseloadCount === 1 ? 'student case' : 'student cases'}</strong>.</p>
+          <button type="button" className="card-btn" onClick={() => navigate('/therapist-dashboard/caseload')}>
             View Caseload
+          </button>
+        </div>
+        <div className="dash-card">
+          <div className="dash-card-sticker-placeholder" title="New message illustration">
+            <img
+              className="dash-card-sticker-image"
+              src="/Sticker/New%20message-bro.png"
+              alt=""
+              aria-hidden="true"
+            />
+          </div>
+          <h3>Unread Messages</h3>
+          <p>You have <strong>{unreadCount} unread {unreadCount === 1 ? 'message' : 'messages'}</strong>.</p>
+          <button type="button" className="card-btn" onClick={() => navigate('/therapist-dashboard/live-chat')}>
+            Open Chat
+          </button>
+        </div>
+        <div className="dash-card maroon">
+          <div className="dash-card-sticker-placeholder" title="Pending requests illustration">
+            <img
+              className="dash-card-sticker-image"
+              src="/Sticker/Accept%20request-rafiki.png"
+              alt=""
+              aria-hidden="true"
+            />
+          </div>
+          <h3>Pending Requests</h3>
+          <p>You have <strong>{pendingRequestsCount} pending</strong> therapist change requests.</p>
+          <button type="button" className="card-btn maroon" onClick={() => navigate('/therapist-dashboard/caseload')}>
+            Review Requests
           </button>
         </div>
       </div>

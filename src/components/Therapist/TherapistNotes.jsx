@@ -1,6 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
+import { LazyLottie } from '../LazyLottie';
 import { supabase } from '../../supabaseClient';
 import './TherapistNotes.css';
+
+const EMPTY_NOTES_LOTTIE_PATH = '/Lottie/pencil%20write%20on%20clipboard.json';
 
 const TherapistNotes = ({ studentId, studentAlias, onNoteCountChange }) => {
   const [notes, setNotes] = useState([]);
@@ -201,12 +204,16 @@ const TherapistNotes = ({ studentId, studentAlias, onNoteCountChange }) => {
   return (
     <div className="therapist-notes-container">
       <div className="notes-header">
-        <h2>Private Notes for {studentAlias || 'Student'}</h2>
-        <p className="notes-description">These notes are private and not visible to the student.</p>
+        <h2 className="notes-title">Private Notes for {studentAlias || 'Student'}</h2>
+        <p className="notes-subtitle">Document observations and thoughts about this student.</p>
+        <div className="privacy-notice">
+          🔒 <strong>Private notes.</strong> These observations are only
+          visible to you and are never shared with the student.
+        </div>
         {!isCreating && (
           <button
             onClick={() => setIsCreating(true)}
-            className="create-note-btn"
+            className="new-note-btn"
           >
             + New Note
           </button>
@@ -216,8 +223,8 @@ const TherapistNotes = ({ studentId, studentAlias, onNoteCountChange }) => {
       {error && <div className="error-banner">{error}</div>}
 
       {isCreating && (
-        <div className="note-editor">
-          <h3>Create New Note</h3>
+        <div className="note-form-card">
+          <h3 className="form-card-title">Create New Note</h3>
           <div className="note-form">
             <input
               type="text"
@@ -230,14 +237,14 @@ const TherapistNotes = ({ studentId, studentAlias, onNoteCountChange }) => {
               placeholder="Enter your note here..."
               value={newNote.content}
               onChange={(e) => setNewNote({ ...newNote, content: e.target.value })}
-              className="note-content-textarea"
+              className="note-textarea"
               rows="8"
             />
             <div className="note-actions">
               <button
                 onClick={handleCreateNote}
                 disabled={saving}
-                className="save-btn"
+                className="save-note-btn"
               >
                 {saving ? 'Saving...' : 'Save Note'}
               </button>
@@ -247,7 +254,7 @@ const TherapistNotes = ({ studentId, studentAlias, onNoteCountChange }) => {
                   setNewNote({ title: '', content: '' });
                 }}
                 disabled={saving}
-                className="cancel-btn"
+                className="cancel-note-btn"
               >
                 Cancel
               </button>
@@ -257,13 +264,13 @@ const TherapistNotes = ({ studentId, studentAlias, onNoteCountChange }) => {
       )}
 
       {notes.length === 0 && !isCreating ? (
-        <div className="empty-state">
-          <div className="empty-icon">📋</div>
+        <div className="empty-state notes-empty-state">
+          <LazyLottie path={EMPTY_NOTES_LOTTIE_PATH} loop style={{ width: 100, height: 100 }} />
           <h3>No Notes Yet</h3>
           <p>Start documenting your observations and thoughts about this student.</p>
           <button
             onClick={() => setIsCreating(true)}
-            className="create-note-btn"
+            className="create-first-btn"
           >
             + Create First Note
           </button>
@@ -273,8 +280,8 @@ const TherapistNotes = ({ studentId, studentAlias, onNoteCountChange }) => {
           {notes.map(note => (
             <div key={note.id} className="note-card">
               {editingNote?.id === note.id ? (
-                <div className="note-editor">
-                  <h3>Edit Note</h3>
+                <div className="note-form-card">
+                  <h3 className="form-card-title">Edit Note</h3>
                   <div className="note-form">
                     <input
                       type="text"
@@ -287,21 +294,21 @@ const TherapistNotes = ({ studentId, studentAlias, onNoteCountChange }) => {
                       placeholder="Enter your note here..."
                       value={editNote.content}
                       onChange={(e) => setEditNote({ ...editNote, content: e.target.value })}
-                      className="note-content-textarea"
+                      className="note-textarea"
                       rows="8"
                     />
                     <div className="note-actions">
                       <button
                         onClick={handleEditNote}
                         disabled={saving}
-                        className="save-btn"
+                        className="save-note-btn"
                       >
                         {saving ? 'Saving...' : 'Save Changes'}
                       </button>
                       <button
                         onClick={cancelEditing}
                         disabled={saving}
-                        className="cancel-btn"
+                        className="cancel-note-btn"
                       >
                         Cancel
                       </button>

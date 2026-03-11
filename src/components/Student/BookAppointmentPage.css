@@ -11,25 +11,29 @@
   margin-bottom: 2rem;
 }
 
+.page-title,
 .booking-header h1 {
   margin: 0;
-  color: #333;
-  font-size: 2rem;
+  color: #003DA5;
+  font-weight: 800;
+  font-size: 1.6rem;
 }
 
 .back-btn {
-  padding: 0.5rem 1rem;
-  background-color: #f0f0f0;
-  border: 1px solid #ddd;
-  border-radius: 6px;
+  background: white;
+  border: 1.5px solid #D1D5DB;
+  color: #374151;
+  border-radius: 8px;
+  padding: 7px 16px;
+  font-weight: 600;
+  font-size: 13px;
   cursor: pointer;
-  font-size: 0.95rem;
-  transition: all 0.2s;
+  transition: all 0.15s;
 }
 
 .back-btn:hover {
-  background-color: #e0e0e0;
-  border-color: #bbb;
+  border-color: #003DA5;
+  color: #003DA5;
 }
 
 .booking-steps {
@@ -38,21 +42,33 @@
   gap: 2rem;
 }
 
+.step-title {
+  color: #003DA5;
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin: 0 0 4px 0;
+}
+
+.step-subtitle {
+  color: #6B7280;
+  font-size: 13.5px;
+  margin: 0 0 16px 0;
+}
+
+.step-card,
 .step {
-  background-color: #ffffff;
-  border-radius: 10px;
-  padding: 2rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: white;
+  border-radius: 14px;
+  padding: 24px 28px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  margin-bottom: 16px;
 }
 
 .step h2 {
   margin-top: 0;
-  color: #333;
-  font-size: 1.5rem;
 }
 
 .step p {
-  color: #666;
   margin-bottom: 1.5rem;
 }
 
@@ -63,42 +79,69 @@
   margin-top: 1rem;
 }
 
+.date-tile,
 .date-btn {
-  background-color: #f8f9fa;
-  border: 2px solid #dee2e6;
-  border-radius: 8px;
-  padding: 1rem;
-  cursor: pointer;
-  transition: all 0.2s;
+  border: 1.5px solid #E5E7EB;
+  border-radius: 10px;
+  padding: 12px 16px;
   text-align: center;
+  cursor: pointer;
+  transition: all 0.15s;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
+.date-tile:hover,
 .date-btn:hover {
-  background-color: #e9ecef;
-  border-color: #4F8EC5;
+  border-color: #003DA5;
+  background: #EEF2FF;
 }
 
+.date-tile.selected,
 .date-btn.selected {
-  background-color: #4F8EC5;
-  border-color: #4F8EC5;
+  background: #003DA5;
+  border-color: #003DA5;
+  box-shadow: 0 4px 12px rgba(0, 61, 165, 0.3);
+}
+
+.day-name,
+.date-day {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6B7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.date-tile.selected .day-name,
+.date-btn.selected .date-day {
   color: white;
 }
 
-.date-day {
-  font-size: 0.85rem;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-}
-
+.day-number,
 .date-number {
   font-size: 1.5rem;
-  font-weight: bold;
-  margin-bottom: 0.25rem;
+  font-weight: 800;
+  color: #111827;
+  line-height: 1.2;
 }
 
+.date-tile.selected .day-number,
+.date-btn.selected .date-number {
+  color: white;
+}
+
+.month,
 .date-month {
-  font-size: 0.75rem;
-  opacity: 0.8;
+  font-size: 11px;
+  color: #9CA3AF;
+}
+
+.date-tile.selected .month,
+.date-btn.selected .date-month {
+  color: white;
 }
 
 .time-slots-grid {
@@ -108,82 +151,119 @@
   margin-top: 1rem;
 }
 
+.time-slot,
 .time-slot-btn {
-  background-color: #ffffff;
-  border: 2px solid #dee2e6;
+  border: 1.5px solid #E5E7EB;
   border-radius: 8px;
-  padding: 1rem;
+  padding: 12px 20px;
+  background: white;
+  font-weight: 600;
+  font-size: 14px;
+  color: #374151;
   cursor: pointer;
-  transition: all 0.2s;
-  font-size: 1rem;
-  font-weight: 500;
+  transition: all 0.15s;
 }
 
+.time-slot:hover,
 .time-slot-btn:hover {
-  background-color: #f8f9fa;
-  border-color: #4F8EC5;
+  border-color: #003DA5;
+  color: #003DA5;
+  background: #EEF2FF;
 }
 
+.time-slot.selected,
 .time-slot-btn.selected {
-  background-color: #4F8EC5;
-  border-color: #4F8EC5;
+  background: #003DA5;
+  border-color: #003DA5;
   color: white;
+  box-shadow: 0 4px 12px rgba(0, 61, 165, 0.25);
 }
 
 .notes-textarea {
   width: 100%;
-  padding: 1rem;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 1rem;
-  font-family: inherit;
-  resize: vertical;
-  margin-top: 1rem;
-}
-
-.booking-summary {
-  background-color: #f8f9fa;
-  border: 2px solid #4F8EC5;
+  min-height: 120px;
+  border: 1.5px solid #E5E7EB;
   border-radius: 10px;
-  padding: 2rem;
-  margin-top: 2rem;
-}
-
-.booking-summary h3 {
+  padding: 14px 16px;
+  font-size: 14px;
+  color: #374151;
+  line-height: 1.6;
+  resize: vertical;
+  box-sizing: border-box;
+  font-family: inherit;
   margin-top: 0;
-  color: #333;
 }
 
-.summary-details {
-  margin: 1.5rem 0;
+.notes-textarea:focus {
+  border-color: #003DA5;
+  box-shadow: 0 0 0 3px rgba(0, 61, 165, 0.08);
+  outline: none;
 }
 
-.summary-details p {
-  margin: 0.75rem 0;
-  color: #333;
-  font-size: 1.1rem;
+.summary-card,
+.booking-summary {
+  background: #F0F4FF;
+  border: 2px solid #003DA5;
+  border-radius: 14px;
+  padding: 24px 28px;
+  margin-top: 0;
 }
 
+.summary-title,
+.booking-summary h3 {
+  color: #003DA5;
+  font-weight: 800;
+  font-size: 16px;
+  margin: 0 0 16px 0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #DBEAFE;
+}
+
+.summary-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.summary-row:last-of-type {
+  margin-bottom: 0;
+}
+
+.summary-label {
+  font-weight: 700;
+  color: #374151;
+  min-width: 90px;
+}
+
+.summary-value {
+  color: #6B7280;
+}
+
+.confirm-btn,
 .book-btn {
-  background-color: #28a745;
-  color: white;
+  background: #F5A800;
+  color: #111827;
   border: none;
-  border-radius: 6px;
-  padding: 1rem 2rem;
-  font-size: 1.1rem;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.2s;
+  border-radius: 10px;
+  padding: 16px;
+  font-size: 16px;
+  font-weight: 800;
   width: 100%;
-  margin-top: 1rem;
+  cursor: pointer;
+  margin-top: 16px;
+  transition: all 0.2s;
+  letter-spacing: 0.02em;
 }
 
+.confirm-btn:hover:not(:disabled),
 .book-btn:hover:not(:disabled) {
-  background-color: #218838;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+  background: #D98F00;
+  box-shadow: 0 8px 20px rgba(245, 168, 0, 0.4);
+  transform: translateY(-1px);
 }
 
+.confirm-btn:disabled,
 .book-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;

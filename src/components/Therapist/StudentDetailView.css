@@ -8,50 +8,264 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.page-title,
+.detail-header h1 {
+  margin: 0;
+  color: #003DA5;
+  font-weight: 800;
+  font-size: 1.75rem;
 }
 
 .back-btn {
-  padding: 0.5rem 1rem;
-  background-color: #f0f0f0;
-  border: 1px solid #ddd;
-  border-radius: 6px;
+  background: white;
+  border: 1.5px solid #D1D5DB;
+  color: #374151;
+  border-radius: 8px;
+  padding: 7px 16px;
+  font-weight: 600;
+  font-size: 13px;
   cursor: pointer;
-  font-size: 0.95rem;
   transition: all 0.2s;
 }
 
 .back-btn:hover {
-  background-color: #e0e0e0;
-  border-color: #bbb;
+  border-color: #003DA5;
+  color: #003DA5;
 }
 
-.detail-header h1 {
-  margin: 0;
-  color: #333;
-  font-size: 2rem;
+/* Tab navigation */
+.tabs-row,
+.tabs-container {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 24px;
+  background: white;
+  border-radius: 10px;
+  padding: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  width: fit-content;
+  flex-wrap: wrap;
 }
 
-/* Privacy Notice */
-.privacy-notice {
-  background-color: #f8f9fa;
-  border: 1px solid #dee2e6;
+.tab-btn {
+  padding: 9px 18px;
+  border: none;
+  background: transparent;
   border-radius: 8px;
-  padding: 1.5rem;
-  margin-top: 1.5rem;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #6B7280;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.tab-btn:hover {
+  background: #F3F4F6;
+  color: #374151;
+}
+
+.tab-btn.active {
+  background: #003DA5 !important;
+  color: white !important;
+  box-shadow: 0 2px 8px rgba(0, 61, 165, 0.25);
+}
+
+.tab-badge {
+  background: #7B1D1D;
+  color: white;
+  border-radius: 20px;
+  padding: 1px 7px;
+  font-size: 11px;
+  font-weight: 700;
+  margin-left: 6px;
+}
+
+/* Section cards */
+.profile-section-card,
+.info-card {
+  background: white;
+  border-radius: 14px;
+  padding: 24px 28px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  margin-bottom: 16px;
+}
+
+.section-title,
+.info-card h3 {
+  color: #003DA5;
+  font-weight: 700;
+  font-size: 1rem;
+  margin: 0 0 16px 0;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #F3F4F6;
+}
+
+
+/* Info rows */
+.info-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  font-size: 14px;
+  border-bottom: 1px solid #F9FAFB;
+}
+
+.info-label {
+  font-weight: 600;
+  color: #374151;
+  min-width: 80px;
+}
+
+.info-value {
+  color: #6B7280;
+}
+
+/* Status badge */
+.student-detail-view .status-badge {
+  background: #F3F4F6;
+  border: 1px solid #E5E7EB;
+  color: #6B7280;
+  border-radius: 20px;
+  padding: 3px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.student-detail-view .status-badge.online {
+  background: #F0FDF4;
+  border-color: #BBF7D0;
+  color: #15803D;
+}
+
+/* Privacy notice */
+.privacy-notice {
+  background: #FFFBEB;
+  border: 1.5px solid #F5A800;
+  border-left: 4px solid #F5A800;
+  border-radius: 10px;
+  padding: 16px 20px;
   text-align: center;
+  margin: 16px 0;
+}
+
+.privacy-notice strong {
+  color: #92600A;
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
 }
 
 .privacy-notice p {
+  color: #78450A;
+  font-size: 13px;
+  line-height: 1.6;
   margin: 0.5rem 0;
-  color: #495057;
-  font-size: 0.95rem;
+}
+
+/* Reveal contact button */
+.reveal-btn,
+.reveal-contact-btn {
+  background: #DC2626;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 11px 24px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.reveal-btn:hover:not(:disabled),
+.reveal-contact-btn:hover:not(:disabled) {
+  background: #B91C1C;
+  box-shadow: 0 6px 16px rgba(220, 38, 38, 0.3);
+}
+
+.reveal-contact-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Bio */
+.bio-text {
+  color: #9CA3AF;
+  font-size: 14px;
+  font-style: italic;
   line-height: 1.6;
 }
 
-.privacy-notice p:first-child {
+/* Risk indicators */
+.no-risk {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #15803D;
+  font-size: 14px;
   font-weight: 600;
-  color: #333;
+}
+
+.risk-badge {
+  background: #FFF0F0;
+  border-left: 4px solid #DC2626;
+  border-radius: 8px;
+  padding: 12px 16px;
+  color: #7B1D1D;
+  font-size: 13.5px;
+  margin-bottom: 8px;
+}
+
+/* Mood disclaimer */
+.mood-disclaimer {
+  background: #F0F4FF;
+  border-left: 3px solid #003DA5;
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 12.5px;
+  color: #374151;
+  margin-bottom: 16px;
+  line-height: 1.6;
+}
+
+/* Recent entries */
+.recent-entry {
+  padding: 10px 0 10px 12px;
+  border-bottom: 1px solid #F3F4F6;
+  border-left: 3px solid;
+  margin-bottom: 4px;
+  border-radius: 0 4px 4px 0;
+}
+
+.therapist-mood-entries {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.entry-timestamp,
+.therapist-mood-entries .mood-entry-date {
+  font-size: 12px;
+  color: #9CA3AF;
+  margin-bottom: 3px;
+  display: block;
+}
+
+.entry-mood-value,
+.therapist-mood-entries .mood-entry-mood {
+  font-weight: 700;
+  font-size: 14px;
+  color: #111827;
 }
 
 /* Appointments List View */
@@ -59,19 +273,41 @@
   padding: 1rem 0;
 }
 
-.appointments-list-view h2 {
-  margin-bottom: 2rem;
-  color: #333;
+.appointments-page-title {
+  color: #003DA5;
+  font-weight: 800;
+  font-size: 1.3rem;
+  margin-bottom: 20px;
 }
 
 .appointments-section {
   margin-bottom: 3rem;
 }
 
-.appointments-section h3 {
-  color: #555;
-  margin-bottom: 1.5rem;
-  font-size: 1.3rem;
+.section-heading {
+  color: #374151;
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-heading::before {
+  content: '';
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.section-heading.upcoming::before {
+  background: #003DA5;
+}
+
+.section-heading.past::before {
+  background: #9CA3AF;
 }
 
 .appointments-grid {
@@ -80,66 +316,235 @@
   gap: 1.5rem;
 }
 
-.appointment-card {
-  background-color: #ffffff;
-  border: 1px solid #dee2e6;
-  border-radius: 8px;
-  padding: 1.5rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s, box-shadow 0.2s;
+/* Status badges */
+.status-badge.confirmed {
+  background: #EFF6FF;
+  border: 1px solid #BFDBFE;
+  color: #003DA5;
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 11px;
+  font-weight: 700;
 }
 
-.appointment-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+.status-badge.completed {
+  background: #F0FDF4;
+  border: 1px solid #BBF7D0;
+  color: #15803D;
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 11px;
+  font-weight: 700;
 }
 
-.appointment-card.past {
-  opacity: 0.7;
+.status-badge.cancelled {
+  background: #FFF0F0;
+  border: 1px solid #FECACA;
+  color: #7B1D1D;
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 11px;
+  font-weight: 700;
 }
 
-.appointment-header {
+/* Upcoming appointment card */
+.upcoming-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px 24px;
+  border-top: 4px solid #003DA5;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  margin-bottom: 12px;
+}
+
+.appointment-date {
+  color: #111827;
+  font-weight: 700;
+  font-size: 15px;
+  margin-bottom: 8px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid #eee;
+  gap: 10px;
 }
 
-.appointment-header h4 {
-  margin: 0;
-  color: #333;
-  font-size: 1.1rem;
+.appointment-time {
+  color: #6B7280;
+  font-size: 13.5px;
 }
 
-.appointment-details {
-  color: #666;
+.appointment-time strong {
+  color: #374151;
 }
 
-.appointment-details p {
-  margin: 0.5rem 0;
-  line-height: 1.6;
+/* Past appointment cards */
+.past-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px 24px;
+  border-top: 3px solid #E5E7EB;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  opacity: 0.92;
+  transition: all 0.2s;
+}
+
+.past-card:hover {
+  opacity: 1;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.09);
+}
+
+/* Student Notes — mark as sensitive */
+.student-notes-row {
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: #FFFBEB;
+  border-left: 3px solid #F5A800;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.notes-label {
+  font-weight: 700;
+  color: #92600A;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.notes-content {
+  color: #374151;
+  font-style: italic;
+  line-height: 1.5;
+}
+
+.therapist-notes {
+  margin-top: 12px;
+  color: #6B7280;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.past-card-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #F3F4F6;
+}
+
+.view-details-btn {
+  background: none;
+  border: none;
+  color: #003DA5;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+
+.view-details-btn:hover {
+  text-decoration: underline;
 }
 
 .delete-appointment-btn {
   background: none;
   border: none;
+  color: #9CA3AF;
   cursor: pointer;
-  font-size: 1.2rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  transition: background-color 0.2s;
-  opacity: 0.7;
+  padding: 6px;
+  border-radius: 6px;
+  transition: all 0.15s;
 }
 
 .delete-appointment-btn:hover {
-  background-color: #fee;
-  opacity: 1;
+  background: #FFF0F0;
+  color: #DC2626;
 }
 
 .delete-appointment-btn:disabled {
   opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Delete appointment confirmation modal */
+.delete-appointment-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.delete-appointment-modal {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  max-width: 420px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.delete-appointment-modal h3 {
+  margin: 0 0 0.75rem 0;
+  font-size: 1.15rem;
+  color: #111827;
+}
+
+.delete-appointment-modal p {
+  margin: 0 0 1.25rem 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #374151;
+}
+
+.delete-appointment-modal-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+.delete-modal-cancel {
+  background: none;
+  border: 1.5px solid #E5E7EB;
+  color: #374151;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.delete-modal-cancel:hover:not(:disabled) {
+  background: #F9FAFB;
+  border-color: #D1D5DB;
+}
+
+.delete-modal-cancel:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.delete-modal-confirm {
+  background: #DC2626;
+  border: none;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.delete-modal-confirm:hover:not(:disabled) {
+  background: #B91C1C;
+}
+
+.delete-modal-confirm:disabled {
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
@@ -150,47 +555,6 @@
   font-style: italic;
 }
 
-.tabs-container {
-  display: flex;
-  gap: 0.5rem;
-  border-bottom: 2px solid #eee;
-  margin-bottom: 2rem;
-  flex-wrap: wrap;
-}
-
-.tab-btn {
-  padding: 0.75rem 1.5rem;
-  background: none;
-  border: none;
-  border-bottom: 3px solid transparent;
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: 500;
-  color: #666;
-  transition: all 0.2s;
-  margin-bottom: -2px;
-}
-
-.tab-btn:hover {
-  color: #333;
-  background-color: #f8f9fa;
-}
-
-.tab-btn.active {
-  color: #7B1FA2;
-  border-bottom-color: #7B1FA2;
-  font-weight: 600;
-}
-
-.tab-badge {
-  background-color: #7B1FA2;
-  color: white;
-  padding: 0.2rem 0.5rem;
-  border-radius: 12px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  margin-left: 0.5rem;
-}
 
 .tab-content {
   min-height: 400px;
@@ -216,44 +580,8 @@
   font-size: 1.25rem;
 }
 
-.info-row {
-  margin-bottom: 0.75rem;
-  font-size: 0.95rem;
-  color: #333;
-}
-
 .info-row:last-child {
-  margin-bottom: 0;
-}
-
-.info-row strong {
-  color: #555;
-  margin-right: 0.5rem;
-}
-
-.status-badge {
-  display: inline-block;
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
-  font-size: 0.85rem;
-  font-weight: 500;
-  text-transform: capitalize;
-  margin-left: 0.5rem;
-}
-
-.status-badge.online {
-  background-color: #d4edda;
-  color: #155724;
-}
-
-.status-badge.away {
-  background-color: #fff3cd;
-  color: #856404;
-}
-
-.status-badge.offline {
-  background-color: #e2e3e5;
-  color: #383d41;
+  border-bottom: none;
 }
 
 /* Chat Tab */
@@ -290,6 +618,20 @@
   gap: 1.5rem;
 }
 
+.journal-notice {
+  background: #EFF6FF;
+  border-left: 4px solid #003DA5;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 13px;
+  color: #374151;
+  margin-bottom: 20px;
+}
+
+.journal-notice strong {
+  color: #003DA5;
+}
+
 .journals-list {
   display: flex;
   flex-direction: column;
@@ -297,11 +639,18 @@
 }
 
 .journal-entry-card {
-  background: white;
-  border-radius: 8px;
-  padding: 1.5rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  border-left: 4px solid #007BFF;
+  background: #ffffff;
+  border-radius: 12px;
+  border-left: 4px solid #2563EB;
+  padding: 20px 24px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  margin-bottom: 14px;
+  transition: all 0.2s;
+}
+
+.journal-entry-card:hover {
+  transform: translateX(4px);
+  box-shadow: 0 8px 24px rgba(0, 61, 165, 0.1);
 }
 
 .journal-entry-card.high-risk {
@@ -321,6 +670,40 @@
   gap: 0.5rem;
 }
 
+.entry-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #F3F4F6;
+}
+
+.entry-date {
+  text-transform: none;
+  font-weight: 700;
+  font-size: 15px;
+  color: #003DA5;
+}
+
+.shared-badge {
+  background: #F0FDF4;
+  border: 1px solid #BBF7D0;
+  color: #15803D;
+  border-radius: 20px;
+  padding: 3px 12px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.entry-content {
+  font-family: 'Georgia', serif;
+  font-size: 14.5px;
+  line-height: 1.8;
+  color: #374151;
+  white-space: pre-wrap;
+}
+
 .journal-header h3 {
   margin: 0 0 0.5rem 0;
   color: #333;
@@ -330,19 +713,6 @@
 .journal-meta {
   font-size: 0.85rem;
   color: #666;
-  margin: 0;
-}
-
-.journal-content {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid #eee;
-}
-
-.journal-content p {
-  white-space: pre-wrap;
-  line-height: 1.8;
-  color: #333;
   margin: 0;
 }
 
@@ -377,6 +747,21 @@
   min-height: 400px;
   text-align: center;
   color: #666;
+}
+
+.empty-state.journals-empty {
+  padding: 60px 20px;
+  color: #9CA3AF;
+}
+
+.empty-state.journals-empty h3 {
+  color: #374151;
+  font-weight: 700;
+  margin: 12px 0 8px;
+}
+
+.empty-state.journals-empty p:first-child {
+  font-size: 3rem;
 }
 
 .empty-icon {
@@ -554,9 +939,9 @@
 }
 
 .therapist-mood-chart-section .chart-type-toggle button.active {
-  background: #2196f3;
+  background: #003DA5;
   color: white;
-  border-color: #2196f3;
+  border-color: #003DA5;
 }
 
 .therapist-mood-chart-section .chart-legend {
@@ -595,12 +980,6 @@
   font-size: 0.8rem;
 }
 
-.mood-context-card .mood-context-notice {
-  font-size: 0.9rem;
-  color: #666;
-  margin-bottom: 1rem;
-  font-style: italic;
-}
 
 .mood-context-card .mood-trend-bars {
   display: flex;
@@ -630,7 +1009,7 @@
 
 .mood-context-card .mood-trend-bar {
   height: 100%;
-  background: #2196f3;
+  background: #003DA5;
   border-radius: 4px;
   min-width: 2px;
   transition: width 0.2s ease;

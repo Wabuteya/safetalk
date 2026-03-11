@@ -15,11 +15,23 @@
 
 .admin-main-content {
   flex-grow: 1;
-  background: radial-gradient(circle at top left, #d1e9ff, transparent 55%),
-    radial-gradient(circle at bottom right, #fbd3ff, transparent 50%),
-    linear-gradient(135deg, #f5f8ff 0%, #fdfdfd 100%);
+  background: linear-gradient(
+    135deg,
+    #E8EEFF 0%,
+    #F0E8E8 50%,
+    #F5E6E6 100%
+  );
   padding: 2rem 3rem;
-  border-radius: 12px;
+  border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  margin: 1rem;
+}
+
+@media (max-width: 767px) {
+  .admin-main-content {
+    padding: 1rem;
+    border-radius: 0;
+  }
 }
 
 /* Admin Sidebar - Card/Tile Format */
@@ -182,3 +194,190 @@
 .admin-sidebar .sidebar-nav::-webkit-scrollbar-thumb:hover {
   background: #b0b0b0;
 }
+
+/* === Updated Admin Sidebar (UCU styling) === */
+.admin-sidebar {
+  background: #003DA5;
+  border-radius: 16px;
+  margin: 12px 0 12px 12px;
+  height: calc(100vh - 24px);
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  color: #ffffff;
+  box-shadow: none;
+  max-height: none;
+  position: static;
+}
+
+.admin-sidebar .sidebar-header {
+  padding: 0 0 8px 0;
+  border-bottom: none;
+  background: transparent;
+}
+
+.admin-sidebar .sidebar-header h3 {
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 1.1rem;
+  margin: 0 0 4px 0;
+}
+
+.admin-sidebar .sidebar-profile {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+  margin-bottom: 24px;
+  padding: 0 0 16px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  background: transparent;
+}
+
+.admin-sidebar .sidebar-nav {
+  padding: 0;
+  margin: 0;
+  flex-grow: 1;
+  background: transparent;
+}
+
+.admin-sidebar .sidebar-nav li.nav-section-heading {
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin: 16px 0 6px;
+  padding: 0;
+}
+
+.admin-sidebar .sidebar-nav a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-decoration: none;
+}
+
+.admin-sidebar .sidebar-nav a:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.admin-sidebar .sidebar-nav a.active {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.admin-sidebar .nav-icon {
+  color: #ffffff;
+}
+
+.admin-sidebar .sidebar-footer {
+  margin-top: auto;
+  padding: 0;
+  border-top: none;
+  background: transparent;
+}
+
+.admin-sidebar .logout-btn {
+  margin-top: auto;
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 12px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.admin-sidebar .logout-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* === Admin Analytics page styling === */
+.admin-home {
+  /* container inside admin-main-content */
+}
+
+.analytics-title {
+  color: #111827;
+  font-weight: 800;
+  font-size: 1.75rem;
+  margin-bottom: 4px;
+}
+
+.analytics-subtitle {
+  color: #6B7280;
+  font-size: 14px;
+  margin-bottom: 28px;
+}
+
+.analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 900px) {
+  .analytics-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.admin-home .stat-card {
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 24px 28px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  transition: all 0.2s;
+}
+
+.admin-home .stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.09);
+}
+
+.admin-home .stat-card.students {
+  border-top: 4px solid #003DA5;
+}
+
+.admin-home .stat-card.therapists {
+  border-top: 4px solid #7B1D1D;
+}
+
+.admin-home .stat-card.sessions {
+  border-top: 4px solid #F5A800;
+}
+
+.stat-card-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #9CA3AF;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 10px;
+}
+
+.stat-card-value {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #111827;
+  line-height: 1;
+}
+
+.stat-card.students .stat-card-value { color: #003DA5; }
+.stat-card.therapists .stat-card-value { color: #7B1D1D; }
+.stat-card.sessions .stat-card-value { color: #F5A800; }

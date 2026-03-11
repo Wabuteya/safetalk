@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { LazyLottie } from './LazyLottie';
 import { supabase } from '../supabaseClient';
-import './ForgotPasswordPage.css'; // Dedicated CSS file
+import './ForgotPasswordPage.css';
+
+const FORGOT_LOTTIE_PATH = '/Lottie/Forgot%20Password.json';
 
 const ForgotPasswordPage = () => {
     const [email, setEmail] = useState('');
@@ -32,7 +35,9 @@ const ForgotPasswordPage = () => {
         <div className="forgot-password-layout">
             <div className="forgot-password-card">
                 <div className="fp-header">
-                    <div className="fp-icon">🔐</div>
+                    <div className="fp-lottie">
+                        <LazyLottie path={FORGOT_LOTTIE_PATH} loop={false} />
+                    </div>
                     <h2>Forgot Password?</h2>
                     <p>No problem! Enter your email address and we'll send you a link to reset your password.</p>
                 </div>

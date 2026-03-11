@@ -2,7 +2,16 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
 import { useUser } from '../../contexts/UserContext';
+import { JOURNAL_COLOR_OPTIONS, JOURNAL_DEFAULT_COLOR } from '../../utils/journalColors';
 import './JournalPage.css';
+
+const formatDate = (dateStr) => {
+  return new Date(dateStr).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+};
 
 const JournalPage = () => {
   const navigate = useNavigate();
@@ -11,7 +20,9 @@ const JournalPage = () => {
   const [selectedEntry, setSelectedEntry] = useState(null);
   const [isCreatingNew, setIsCreatingNew] = useState(false);
   const [newEntryContent, setNewEntryContent] = useState('');
+  const [newEntryColor, setNewEntryColor] = useState(JOURNAL_DEFAULT_COLOR);
   const [shareWithTherapist, setShareWithTherapist] = useState(false);
+  const [editingEntry, setEditingEntry] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -84,7 +95,7 @@ const JournalPage = () => {
           fetchWithTimeout(
             supabase
               .from('journal_entries')
-              .select('id, entry_date, content, is_shared_with_therapist, shared_at, created_at, updated_at') // Only select needed fields
+              .select('id, entry_date, content, is_shared_with_therapist, shared_at, created_at, updated_at, color')
               .eq('student_id', user.id)
               .order('created_at', { ascending: false }) // Single order by most recent
               .limit(100) // Limit to most recent 100 entries for performance
@@ -132,6 +143,7 @@ const JournalPage = () => {
             sharedAt: entry.shared_at,
             createdAt: entry.created_at,
             updatedAt: entry.updated_at,
+            color: entry.color || JOURNAL_DEFAULT_COLOR,
             hasHighRiskSentiment: hasHighRisk
           };
         });
@@ -172,7 +184,28 @@ const JournalPage = () => {
   const handleNewEntryClick = () => {
     setSelectedEntry(null);
     setIsCreatingNew(true);
+    setEditingEntry(null);
     setNewEntryContent('');
+    setNewEntryColor(JOURNAL_DEFAULT_COLOR);
+    setShareWithTherapist(false);
+    setError('');
+  };
+
+  const handleEditEntry = (entry) => {
+    setEditingEntry(entry);
+    setNewEntryContent(entry.content);
+    const validColor = JOURNAL_COLOR_OPTIONS.some(o => o.hex.toUpperCase() === (entry.color || '').toUpperCase())
+      ? (entry.color || JOURNAL_DEFAULT_COLOR)
+      : JOURNAL_DEFAULT_COLOR;
+    setNewEntryColor(validColor);
+    setShareWithTherapist(entry.isShared);
+    setError('');
+  };
+
+  const handleCancelEdit = () => {
+    setEditingEntry(null);
+    setNewEntryContent('');
+    setNewEntryColor(JOURNAL_DEFAULT_COLOR);
     setShareWithTherapist(false);
     setError('');
   };
@@ -223,44 +256,73 @@ const JournalPage = () => {
 
     try {
       const entryDate = new Date().toISOString().slice(0, 10); // YYYY-MM-DD format
+      const colorToSave = newEntryColor || JOURNAL_DEFAULT_COLOR;
 
-      const { data: savedEntry, error: saveError } = await supabase
-        .from('journal_entries')
-        .insert({
-          student_id: user.id,
-          entry_date: entryDate,
-          content: newEntryContent.trim(),
-          is_shared_with_therapist: shareWithTherapist && hasLinkedTherapist
-        })
-        .select()
-        .single();
+      if (editingEntry) {
+        // Update existing entry
+        const { data: updatedEntry, error: updateError } = await supabase
+          .from('journal_entries')
+          .update({
+            content: newEntryContent.trim(),
+            color: colorToSave
+          })
+          .eq('id', editingEntry.id)
+          .eq('student_id', user.id)
+          .select()
+          .single();
 
-      if (saveError) {
-        throw saveError;
+        if (updateError) throw updateError;
+
+        const formattedEntry = {
+          ...editingEntry,
+          content: updatedEntry.content,
+          color: updatedEntry.color || JOURNAL_DEFAULT_COLOR
+        };
+
+        setEntries(entries.map(e => e.id === editingEntry.id ? formattedEntry : e));
+        setSelectedEntry(formattedEntry);
+        setEditingEntry(null);
+        setNewEntryContent('');
+        setNewEntryColor(JOURNAL_DEFAULT_COLOR);
+        setShareWithTherapist(false);
+      } else {
+        // Create new entry
+        const { data: savedEntry, error: saveError } = await supabase
+          .from('journal_entries')
+          .insert({
+            student_id: user.id,
+            entry_date: entryDate,
+            content: newEntryContent.trim(),
+            is_shared_with_therapist: shareWithTherapist && hasLinkedTherapist,
+            color: colorToSave
+          })
+          .select()
+          .single();
+
+        if (saveError) throw saveError;
+
+        supabase.functions
+          .invoke('analyze-journal-entry', { body: { journal_id: savedEntry.id } })
+          .catch(() => {});
+
+        const formattedEntry = {
+          id: savedEntry.id,
+          date: savedEntry.entry_date,
+          content: savedEntry.content,
+          isShared: savedEntry.is_shared_with_therapist,
+          sharedAt: savedEntry.shared_at,
+          createdAt: savedEntry.created_at,
+          updatedAt: savedEntry.updated_at,
+          color: savedEntry.color || JOURNAL_DEFAULT_COLOR
+        };
+
+        setEntries([formattedEntry, ...entries]);
+        setSelectedEntry(formattedEntry);
+        setIsCreatingNew(false);
+        setNewEntryContent('');
+        setNewEntryColor(JOURNAL_DEFAULT_COLOR);
+        setShareWithTherapist(false);
       }
-
-      // Fire-and-forget: trigger background journal analysis (do NOT await)
-      supabase.functions
-        .invoke('analyze-journal-entry', { body: { journal_id: savedEntry.id } })
-        .catch(() => {});
-
-      // Format the new entry for display
-      const formattedEntry = {
-        id: savedEntry.id,
-        date: savedEntry.entry_date,
-        content: savedEntry.content,
-        isShared: savedEntry.is_shared_with_therapist,
-        sharedAt: savedEntry.shared_at,
-        createdAt: savedEntry.created_at,
-        updatedAt: savedEntry.updated_at
-      };
-
-      // Add to entries list and select it
-      setEntries([formattedEntry, ...entries]);
-      setSelectedEntry(formattedEntry);
-      setIsCreatingNew(false);
-      setNewEntryContent('');
-      setShareWithTherapist(false);
     } catch (err) {
       console.error('Error saving journal entry:', err);
       setError(`Failed to save entry: ${err.message || 'Unknown error'}. Please try again.`);
@@ -386,7 +448,7 @@ const JournalPage = () => {
   // Show loading if we're fetching data (don't wait for userLoading - it might be stuck)
   if (loading) {
     return (
-      <div className="journal-layout">
+      <div className="journal-page journal-layout">
         <div className="loading-container">
           <p>Loading your journal...</p>
         </div>
@@ -430,7 +492,7 @@ const JournalPage = () => {
             fetchWithTimeout(
               supabase
                 .from('journal_entries')
-                .select('id, entry_date, content, is_shared_with_therapist, shared_at, created_at, updated_at')
+                .select('id, entry_date, content, is_shared_with_therapist, shared_at, created_at, updated_at, color')
                 .eq('student_id', user.id)
                 .order('created_at', { ascending: false }) // Single order by most recent
                 .limit(100) // Limit to most recent 100 entries for performance
@@ -465,9 +527,7 @@ const JournalPage = () => {
           }
 
           const formattedEntries = (entriesData || []).map(entry => {
-            // Only check sentiment for entries with content (skip empty/null)
             const hasHighRisk = entry.content ? checkHighRiskSentiment(entry.content) : false;
-            
             return {
               id: entry.id,
               date: entry.entry_date,
@@ -476,6 +536,7 @@ const JournalPage = () => {
               sharedAt: entry.shared_at,
               createdAt: entry.created_at,
               updatedAt: entry.updated_at,
+              color: entry.color || JOURNAL_DEFAULT_COLOR,
               hasHighRiskSentiment: hasHighRisk
             };
           });
@@ -501,7 +562,7 @@ const JournalPage = () => {
   };
 
   return (
-    <div className="journal-layout">
+    <div className="journal-page journal-layout">
       {error && (
         <div className="error-banner">
           <div className="error-content">
@@ -528,18 +589,19 @@ const JournalPage = () => {
             entries.map((entry) => (
               <div
                 key={entry.id}
-                className={`entry-item ${selectedEntry?.id === entry.id ? 'active' : ''}`}
+                className={`entry-item entry-card ${selectedEntry?.id === entry.id ? 'active' : ''}`}
+                style={{
+                  '--entry-color': (entry.color && entry.color.toUpperCase() !== '#FFFFFF')
+                    ? entry.color
+                    : '#e3e8f3'
+                }}
                 onClick={() => handleSelectEntry(entry)}
               >
                 <div className="entry-item-header">
                   <p className="entry-date">{entry.date}</p>
                   {entry.isShared && <span className="shared-indicator">Shared</span>}
                 </div>
-                <p className="entry-preview">
-                  {entry.content.length > 60 
-                    ? entry.content.substring(0, 60) + '...' 
-                    : entry.content}
-                </p>
+                <p className="entry-preview">{entry.content}</p>
               </div>
             ))
           )}
@@ -548,23 +610,45 @@ const JournalPage = () => {
 
       {/* RIGHT COLUMN: Editor/Viewer */}
       <div className="journal-main">
-        {isCreatingNew ? (
-          // --- Creating a New Entry ---
+        {(isCreatingNew || editingEntry) ? (
+          // --- Creating or Editing Entry ---
           <div className="journal-editor">
-            <h2>New Journal Entry</h2>
+            <h2 className="editor-title">{editingEntry ? 'Edit Journal Entry' : 'New Journal Entry'}</h2>
             <textarea
+              className="journal-textarea"
               value={newEntryContent}
               onChange={(e) => setNewEntryContent(e.target.value)}
               placeholder="Write what's on your mind..."
               disabled={saving}
               rows={15}
             />
+            <div className="char-counter">{newEntryContent.length} characters</div>
+            <div className="journal-color-picker">
+              <label className="journal-color-label color-label">Entry Color</label>
+              <div className="journal-color-options" role="group" aria-label="Select a color for this entry">
+                {JOURNAL_COLOR_OPTIONS.map(({ hex, label }) => (
+                  <button
+                    key={hex}
+                    type="button"
+                    className={`journal-color-swatch color-dot ${newEntryColor === hex ? 'selected' : ''}`}
+                    style={{ backgroundColor: hex }}
+                    onClick={() => setNewEntryColor(hex)}
+                    title={label}
+                    aria-label={`${label}${newEntryColor === hex ? ' (selected)' : ''}`}
+                    aria-pressed={newEntryColor === hex}
+                  />
+                ))}
+              </div>
+            </div>
             <div className="editor-actions">
+              <div className="share-row">
               <label className="share-checkbox">
                 <input
                   type="checkbox"
                   checked={shareWithTherapist}
+                  disabled={editingEntry?.isShared || saving}
                   onChange={(e) => {
+                    if (editingEntry?.isShared) return;
                     if (e.target.checked && !hasLinkedTherapist) {
                       const shouldRedirect = confirm(
                         'You need to select a therapist first before you can share journal entries.\n\nWould you like to go to the Find Therapist page now?'
@@ -579,23 +663,31 @@ const JournalPage = () => {
                     }
                     setShareWithTherapist(e.target.checked);
                   }}
-                  disabled={saving}
                 />
                 Share this entry with your therapist
-                {!hasLinkedTherapist && (
+                {editingEntry?.isShared && (
+                  <span className="permanent-warning"> (Already shared - cannot be unshared)</span>
+                )}
+                {!editingEntry?.isShared && !hasLinkedTherapist && (
                   <span className="no-therapist-warning"> (Select a therapist first)</span>
                 )}
-                {hasLinkedTherapist && (
+                {!editingEntry?.isShared && hasLinkedTherapist && (
                   <span className="permanent-warning"> (Permanent - cannot be unshared)</span>
                 )}
               </label>
+              </div>
               <div className="editor-buttons">
                 <button 
                   className="cancel-btn" 
                   onClick={() => {
-                    setIsCreatingNew(false);
-                    setNewEntryContent('');
-                    setShareWithTherapist(false);
+                    if (editingEntry) {
+                      handleCancelEdit();
+                    } else {
+                      setIsCreatingNew(false);
+                      setNewEntryContent('');
+                      setNewEntryColor(JOURNAL_DEFAULT_COLOR);
+                      setShareWithTherapist(false);
+                    }
                   }}
                   disabled={saving}
                 >
@@ -616,15 +708,21 @@ const JournalPage = () => {
           <div className="journal-viewer">
             <div className="viewer-header">
               <div>
-                <h2>Entry from {selectedEntry.date}</h2>
+                <h2 className="entry-view-title">Entry from {formatDate(selectedEntry.date)}</h2>
                 {selectedEntry.isShared && (
                   <span className="shared-indicator large">Shared with Therapist</span>
                 )}
               </div>
               <div className="viewer-actions">
+                <button
+                  className="edit-btn"
+                  onClick={() => handleEditEntry(selectedEntry)}
+                >
+                  ✏️ Edit
+                </button>
                 {!selectedEntry.isShared && (
                   <button
-                    className="toggle-share-btn"
+                    className="share-btn toggle-share-btn"
                     onClick={() => handleToggleShare(selectedEntry)}
                     disabled={!hasLinkedTherapist}
                     title={!hasLinkedTherapist ? 'Select a therapist first to share entries' : 'Share this entry (permanent action)'}
@@ -643,9 +741,7 @@ const JournalPage = () => {
                 </button>
               </div>
             </div>
-            <div className="viewer-content">
-              <p>{selectedEntry.content}</p>
-            </div>
+            <div className="entry-content">{selectedEntry.content}</div>
             {selectedEntry.isShared && selectedEntry.sharedAt && (
               <div className="viewer-footer">
                 <p className="shared-info">

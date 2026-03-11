@@ -31,11 +31,18 @@ const MessageBubble = ({ message, currentUserId }) => {
     });
   };
 
+  // Defensive: content may be missing due to fetch/realtime payload differences
+  const content = message.content ?? message.Content ?? message.body ?? message.message ?? '';
+  const displayContent = typeof content === 'string' && content.trim() ? content : null;
+
+  const messageClass = isTherapist ? 'therapist' : 'student';
   return (
-    <div className={`message-bubble ${isCurrentUser ? 'message-sent' : 'message-received'} ${isTherapist ? 'therapist-message' : 'student-message'}`}>
-      <div className="message-content">
-        <p className="message-text">{message.content}</p>
-        <span className="message-time">{formatTime(message.created_at)}</span>
+    <div className={`message message-bubble ${messageClass}`}>
+      <div className="bubble message-content">
+        <p className="message-text">
+          {displayContent ?? <span className="message-empty">(Message could not be loaded)</span>}
+        </p>
+        <span className="timestamp message-time">{formatTime(message.created_at)}</span>
       </div>
     </div>
   );

@@ -193,7 +193,9 @@ const SignUpPage = () => {
     <div className="signup-page">
       <div className="signup-shell">
         <section className="signup-left-panel">
-          <div className="signup-logo">SafeTalk</div>
+          <div className="signup-logo">
+            <img src="/SafeTalk_White.svg" alt="SafeTalk" className="safetalk-logo" />
+          </div>
           <div className="signup-lottie">
             <LazyLottie path={SIGNUP_LOTTIE_PATH} loop={true} />
           </div>

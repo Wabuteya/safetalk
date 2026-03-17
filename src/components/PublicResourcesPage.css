@@ -49,6 +49,12 @@
   cursor: pointer;
 }
 
+.resources-navbar .logo .safetalk-logo {
+  height: 38px;
+  width: auto;
+  display: block;
+}
+
 .resources-navbar .auth-buttons {
   display: flex;
   gap: 0.5rem;

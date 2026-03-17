@@ -18,11 +18,14 @@
 }
 
 .sidebar-logo {
-  color: white;
-  font-size: 20px;
-  font-weight: 800;
   padding: 24px 20px 16px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.sidebar-logo .safetalk-logo {
+  height: 34px;
+  width: auto;
+  display: block;
 }
 
 .sidebar-username {

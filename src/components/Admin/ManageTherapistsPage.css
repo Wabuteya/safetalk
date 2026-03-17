@@ -1,118 +1,307 @@
 .manage-therapists-layout {
-    width: 100%;
-  }
-  
-  .admin-page-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2rem;
-  }
-  
-  .admin-add-new-btn {
-    background-color: #607D8B; /* Admin theme color */
-    color: white;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 5px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-  }
-  .admin-add-new-btn:hover {
-    background-color: #455A64;
-  }
-  
-  /* Modal Styles */
-  .admin-modal-backdrop {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.6);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 2000;
-  }
-  .admin-modal-content {
-    background-color: white;
-    padding: 2rem;
-    border-radius: 10px;
-    max-width: 500px;
-    width: 100%;
-  }
-  .admin-modal-content h2 { margin-top: 0; }
-  .admin-modal-content p { color: #555; line-height: 1.6; }
-  .admin-form-group {
-    margin-bottom: 1rem;
-  }
-  .admin-form-group label {
-    display: block;
-    font-weight: bold;
-    margin-bottom: 0.5rem;
-  }
-  .admin-form-group input {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    box-sizing: border-box;
-  }
-  .admin-modal-actions {
-    margin-top: 1.5rem;
-    text-align: right;
-  }
-  .admin-btn {
-    padding: 0.6rem 1.2rem;
-    border-radius: 5px;
-    cursor: pointer;
-    border: none;
-    font-weight: bold;
-  }
-  .admin-btn.cancel { background-color: #f0f0f0; border: 1px solid #ccc; }
-  .admin-btn.confirm { background-color: #607D8B; color: white; margin-left: 0.5rem; }
-  
-  /* Table Styles */
-  .admin-table-container {
-    background-color: #ffffff;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-  .admin-table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  .admin-table th, .admin-table td {
-    padding: 1rem;
-    text-align: left;
-    border-bottom: 1px solid #eee;
-  }
-  .admin-table th {
-    background-color: #f8f9fa;
-  }
-  .status-badge {
-    padding: 4px 8px;
-    border-radius: 10px;
-    font-size: 0.8rem;
-    font-weight: bold;
-    color: white;
-  }
-  .status-badge.status-active { background-color: #28a745; }
-  .status-badge.status-pending-setup { background-color: #ffc107; color: #333; }
-  
-  .admin-table .actions-cell {
-    display: flex;
-    gap: 0.5rem;
-  }
-  .admin-table .action-btn {
-    padding: 0.4rem 0.8rem;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  .admin-table .action-btn.edit { background-color: #17a2b8; color: white; }
-  .admin-table .action-btn.delete { background-color: #dc3545; color: white; }
+  width: 100%;
+}
+
+.page-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.admin-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.add-therapist-btn {
+  background: #F5A800;
+  color: #111827;
+  border: none;
+  border-radius: 8px;
+  padding: 11px 20px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.add-therapist-btn:hover {
+  background: #D98F00;
+  box-shadow: 0 6px 16px rgba(245, 168, 0, 0.3);
+}
+
+/* Table controls - search and filter */
+.table-controls {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+
+.table-controls .search-input {
+  flex: 1;
+  min-width: 200px;
+}
+
+.search-input {
+  width: 100%;
+  border: 1.5px solid #E5E7EB;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 14px;
+  outline: none;
+}
+
+.search-input:focus {
+  border-color: #003DA5;
+  box-shadow: 0 0 0 3px rgba(0, 61, 165, 0.08);
+}
+
+.filter-select {
+  border: 1.5px solid #E5E7EB;
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 13px;
+  color: #374151;
+  background: white;
+  outline: none;
+  cursor: pointer;
+  min-width: 150px;
+}
+
+.filter-select:focus {
+  border-color: #003DA5;
+}
+
+/* Table card container */
+.therapists-table-card {
+  background: white;
+  border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.therapists-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.therapists-table th {
+  background: #F8FAFF;
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  color: #9CA3AF;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 2px solid #E5E7EB;
+}
+
+.therapists-table td {
+  padding: 12px 16px;
+  font-size: 14px;
+  color: #374151;
+  border-bottom: 1px solid #F3F4F6;
+  vertical-align: middle;
+}
+
+.therapists-table tr:last-child td {
+  border-bottom: none;
+}
+
+.therapists-table tbody tr:hover {
+  background: #F8FAFF;
+}
+
+.therapist-name {
+  font-weight: 600;
+  color: #111827;
+  font-size: 14px;
+}
+
+.therapist-email {
+  color: #6B7280;
+  font-size: 13px;
+}
+
+.caseload-count {
+  background: #EFF6FF;
+  color: #003DA5;
+  border: 1px solid #BFDBFE;
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Status badges */
+.status-badge {
+  display: inline-block;
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.status-badge.status-active {
+  background: #F0FDF4;
+  color: #15803D;
+  border: 1px solid #BBF7D0;
+}
+
+.status-badge.status-inactive {
+  background: #FFF5F5;
+  color: #7B1D1D;
+  border: 1px solid #FECACA;
+}
+
+/* Action buttons */
+.actions-cell {
+  white-space: nowrap;
+}
+
+.therapists-table .actions-cell {
+  display: flex;
+  gap: 6px;
+}
+
+.reset-password-btn {
+  background: #EFF6FF;
+  color: #003DA5;
+  border: 1px solid #BFDBFE;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.reset-password-btn:hover {
+  background: #003DA5;
+  color: white;
+  border-color: #003DA5;
+}
+
+.deactivate-btn {
+  background: #FFF0F0;
+  color: #DC2626;
+  border: 1px solid #FECACA;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.deactivate-btn:hover {
+  background: #DC2626;
+  color: white;
+  border-color: #DC2626;
+}
+
+.reactivate-btn {
+  background: #F0FDF4;
+  color: #15803D;
+  border: 1px solid #BBF7D0;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.reactivate-btn:hover {
+  background: #15803D;
+  color: white;
+  border-color: #15803D;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+}
+
+/* Modal Styles */
+.admin-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.admin-modal-content {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 10px;
+  max-width: 500px;
+  width: 100%;
+}
+
+.admin-modal-content h2 {
+  margin-top: 0;
+}
+
+.admin-modal-content p {
+  color: #555;
+  line-height: 1.6;
+}
+
+.admin-form-group {
+  margin-bottom: 1rem;
+}
+
+.admin-form-group label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.admin-form-group input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+
+.admin-modal-actions {
+  margin-top: 1.5rem;
+  text-align: right;
+}
+
+.admin-btn {
+  padding: 0.6rem 1.2rem;
+  border-radius: 5px;
+  cursor: pointer;
+  border: none;
+  font-weight: bold;
+}
+
+.admin-btn.cancel {
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+}
+
+.admin-btn.confirm {
+  background-color: #607D8B;
+  color: white;
+  margin-left: 0.5rem;
+}

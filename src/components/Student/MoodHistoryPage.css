@@ -197,6 +197,31 @@
   }
 
   .history-entry,
+  .mood-entries-grouped {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .mood-entry-group {
+    border-bottom: 1px solid #E5E7EB;
+    padding-bottom: 1rem;
+  }
+
+  .mood-entry-group:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .mood-group-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #6B7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 0.75rem 0;
+  }
+
   .mood-history-entry {
     background: white;
     border-left: 4px solid;

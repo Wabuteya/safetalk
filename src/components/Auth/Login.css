@@ -46,11 +46,13 @@
 }
 
 .left-panel-logo {
-  font-size: 1.5rem;
-  font-weight: 800;
-  color: white;
-  letter-spacing: -0.02em;
   margin-bottom: 2rem;
+}
+
+.left-panel-logo .safetalk-logo {
+  height: 42px;
+  width: auto;
+  display: block;
 }
 
 .hero-chip {

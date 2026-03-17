@@ -15,7 +15,9 @@ const LandingPage = () => {
     <div className="landing-page">
       <header className="header">
         <nav className="navbar">
-          <div className="logo">SafeTalk</div>
+          <div className="logo">
+            <img src="/SafeTalk_Colour.svg" alt="SafeTalk" className="safetalk-logo" />
+          </div>
           <ul className="nav-links">
             <li>
               <a href="#features">Features</a>
@@ -89,7 +91,9 @@ const LandingPage = () => {
         </section>
 
         <section id="about" className="about-section">
-          <div className="about-logo">SafeTalk</div>
+          <div className="about-logo">
+            <img src="/SafeTalk_White.svg" alt="SafeTalk" className="safetalk-logo" />
+          </div>
           <h2>About SafeTalk</h2>
           <p>
             SafeTalk is a dedicated platform designed to bridge the gap between students and mental health

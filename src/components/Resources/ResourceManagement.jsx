@@ -319,8 +319,8 @@ const ResourceManagement = ({ userRole }) => {
               ))}
             </select>
           </div>
-          <div className="table-card">
-            <table className="resources-table">
+          <div className="content-table-card table-card">
+            <table className="content-table resources-table">
               <thead>
                 <tr>
                   <th>Title</th>
@@ -364,7 +364,7 @@ const ResourceManagement = ({ userRole }) => {
                       <div className="tags-container">
                         {resource.tags && resource.tags.length > 0 ? (
                           resource.tags.map((tag, idx) => (
-                            <span key={idx} className="tag">
+                            <span key={idx} className="tag-badge tag">
                               {tag === 'academice' ? 'academics' : tag}
                             </span>
                           ))

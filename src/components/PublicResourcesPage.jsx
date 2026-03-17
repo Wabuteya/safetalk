@@ -104,7 +104,7 @@ const PublicResourcesPage = () => {
       <header className="resources-header">
         <nav className="resources-navbar">
           <div className="logo" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
-            SafeTalk
+            <img src="/SafeTalk_Colour.svg" alt="SafeTalk" className="safetalk-logo" />
           </div>
           <div className="auth-buttons">
             <button className="login-btn" onClick={() => navigate('/login')}>

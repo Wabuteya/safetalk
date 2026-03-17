@@ -110,6 +110,7 @@ const TherapistSideNav = ({ closeSidebar }) => {
   return (
     <nav className="sidebar therapist-sidebar">
       <div className="sidebar-header">
+        <img src="/SafeTalk_White.svg" alt="SafeTalk" className="safetalk-logo" />
         <h3>Therapist Portal</h3>
       </div>
       <div className="sidebar-profile">

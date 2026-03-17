@@ -1,27 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
+import { useUser } from '../../contexts/UserContext';
 // Reusing some widget styles
 import '../Student/Dashboard.css';
 import './AdminDashboard.css';
 
 const AdminDashboardHome = () => {
+  const { user } = useUser();
   const [studentsCount, setStudentsCount] = useState(0);
   const [therapistsCount, setTherapistsCount] = useState(0);
   const [sessionsThisWeek, setSessionsThisWeek] = useState(0);
+  const [crisisThisMonth, setCrisisThisMonth] = useState(0);
+  const [journalEntriesCount, setJournalEntriesCount] = useState(null);
+  const [resourcesCount, setResourcesCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!user) {
+      setLoading(true);
+      return;
+    }
+
     const fetchAnalytics = async () => {
       try {
         setLoading(true);
-
-        // Verify user is admin
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-          console.error('No user found');
-          setLoading(false);
-          return;
-        }
         console.log('Current user:', user);
         console.log('User role:', user.user_metadata?.role);
 
@@ -34,8 +36,12 @@ const AdminDashboardHome = () => {
         startOfWeek.setHours(0, 0, 0, 0);
         const startOfWeekISO = startOfWeek.toISOString().split('T')[0];
 
-        // Fetch all data in parallel - using select('*') like ManageTherapistsPage does
-        const [studentsResult, therapistsResult, allTherapistsResult, sessionsResult] = await Promise.all([
+        // Start of this month for crisis count
+        const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        const startOfMonthISO = startOfMonth.toISOString().split('T')[0];
+
+        // Fetch all data in parallel
+        const [studentsResult, therapistsResult, allTherapistsResult, sessionsResult, crisisResult, journalsResult, resourcesResult] = await Promise.all([
           // Total students count
           supabase
             .from('student_profiles')
@@ -54,7 +60,20 @@ const AdminDashboardHome = () => {
             .from('appointments')
             .select('*')
             .gte('appointment_date', startOfWeekISO)
-            .in('status', ['scheduled', 'completed'])
+            .in('status', ['scheduled', 'completed']),
+          // Crisis alerts this month
+          supabase
+            .from('crisis_events')
+            .select('id')
+            .gte('triggered_at', startOfMonth.toISOString()),
+          // Journal entries total
+          supabase
+            .from('journal_entries')
+            .select('id'),
+          // Resources published
+          supabase
+            .from('resources')
+            .select('id')
         ]);
 
         // Log results for debugging
@@ -93,8 +112,25 @@ const AdminDashboardHome = () => {
           console.error('Error fetching sessions:', sessionsResult.error);
         } else {
           const count = sessionsResult.data?.length || 0;
-          console.log(`Found ${count} sessions this week`);
           setSessionsThisWeek(count);
+        }
+
+        if (crisisResult.error) {
+          console.error('Error fetching crisis events:', crisisResult.error);
+        } else {
+          setCrisisThisMonth(crisisResult.data?.length || 0);
+        }
+
+        if (journalsResult.error) {
+          console.error('Error fetching journal entries:', journalsResult.error);
+        } else {
+          setJournalEntriesCount(journalsResult.data?.length ?? 0);
+        }
+
+        if (resourcesResult.error) {
+          console.error('Error fetching resources:', resourcesResult.error);
+        } else {
+          setResourcesCount(resourcesResult.data?.length || 0);
         }
       } catch (err) {
         console.error('Error fetching analytics:', err);
@@ -104,7 +140,7 @@ const AdminDashboardHome = () => {
     };
 
     fetchAnalytics();
-  }, []);
+  }, [user]);
 
   if (loading) {
     return (
@@ -130,16 +166,34 @@ const AdminDashboardHome = () => {
 
       <div className="analytics-grid">
         <div className="stat-card students">
-          <div className="stat-card-title">Total Students</div>
-          <div className="stat-card-value">{studentsCount.toLocaleString()}</div>
+          <p className="stat-card-label">Total Students</p>
+          <p className="stat-card-value">{studentsCount.toLocaleString()}</p>
+          <p className="stat-card-context">registered on platform</p>
         </div>
         <div className="stat-card therapists">
-          <div className="stat-card-title">Active Therapists</div>
-          <div className="stat-card-value">{therapistsCount.toLocaleString()}</div>
+          <p className="stat-card-label">Active Therapists</p>
+          <p className="stat-card-value">{therapistsCount.toLocaleString()}</p>
+          <p className="stat-card-context">currently active</p>
         </div>
         <div className="stat-card sessions">
-          <div className="stat-card-title">Sessions This Week</div>
-          <div className="stat-card-value">{sessionsThisWeek.toLocaleString()}</div>
+          <p className="stat-card-label">Sessions This Week</p>
+          <p className="stat-card-value">{sessionsThisWeek.toLocaleString()}</p>
+          <p className="stat-card-context">appointments held</p>
+        </div>
+        <div className="stat-card crisis">
+          <p className="stat-card-label">Crisis Alerts This Month</p>
+          <p className="stat-card-value" style={{ color: '#DC2626' }}>{crisisThisMonth.toLocaleString()}</p>
+          <p className="stat-card-context">all resolved</p>
+        </div>
+        <div className="stat-card journals">
+          <p className="stat-card-label">Journal Entries</p>
+          <p className="stat-card-value" style={{ color: '#003DA5' }}>{journalEntriesCount !== null ? journalEntriesCount.toLocaleString() : '—'}</p>
+          <p className="stat-card-context">across all students</p>
+        </div>
+        <div className="stat-card resources">
+          <p className="stat-card-label">Resources Published</p>
+          <p className="stat-card-value" style={{ color: '#7B1D1D' }}>{resourcesCount.toLocaleString()}</p>
+          <p className="stat-card-context">available to students</p>
         </div>
       </div>
     </div>

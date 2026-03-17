@@ -12,6 +12,9 @@ const ManageStudentsPage = () => {
   const [changeRequestFilter, setChangeRequestFilter] = useState('all');
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+  const [therapists, setTherapists] = useState([]);
+  const [selectedTherapistId, setSelectedTherapistId] = useState('');
   const [isChangeRequestModalOpen, setIsChangeRequestModalOpen] = useState(false);
   const [selectedChangeRequest, setSelectedChangeRequest] = useState(null);
   const [changeRequestAction, setChangeRequestAction] = useState('');
@@ -43,7 +46,7 @@ const ManageStudentsPage = () => {
       const [profilesResult, relationsResult, changeRequestsResult] = await Promise.all([
         supabase
           .from('student_profiles')
-          .select('user_id, alias, created_at')
+          .select('user_id, alias, created_at, account_status')
           .order('created_at', { ascending: false }),
         supabase
           .from('therapist_student_relations')
@@ -249,6 +252,41 @@ const ManageStudentsPage = () => {
     setIsViewModalOpen(true);
   };
 
+  const handleAssignTherapist = async (student) => {
+    setSelectedStudent(student);
+    setSelectedTherapistId('');
+    try {
+      const { data, error } = await supabase
+        .from('therapist_profiles')
+        .select('user_id, full_name')
+        .eq('is_live', true)
+        .order('full_name');
+      if (error) throw error;
+      setTherapists(data || []);
+      setIsAssignModalOpen(true);
+    } catch (err) {
+      console.error('Error fetching therapists:', err);
+      alert('Failed to load therapists. Please try again.');
+    }
+  };
+
+  const handleConfirmAssign = async () => {
+    if (!selectedStudent || !selectedTherapistId) return;
+    try {
+      const { error } = await supabase
+        .from('therapist_student_relations')
+        .insert({ student_id: selectedStudent.id, therapist_id: selectedTherapistId });
+      if (error) throw error;
+      await fetchStudents();
+      setIsAssignModalOpen(false);
+      setSelectedStudent(null);
+      setSelectedTherapistId('');
+    } catch (err) {
+      console.error('Error assigning therapist:', err);
+      alert(err.message || 'Failed to assign therapist. Please try again.');
+    }
+  };
+
   const handleChangeRequestAction = (student, request) => {
     setSelectedStudent(student);
     setSelectedChangeRequest(request);
@@ -330,7 +368,7 @@ const ManageStudentsPage = () => {
   return (
     <div className="manage-students-page">
       <div className="page-header">
-        <h1>Manage Students</h1>
+        <h1 className="page-title">Manage Students</h1>
         <p>View and manage all registered student accounts</p>
       </div>
 
@@ -340,34 +378,28 @@ const ManageStudentsPage = () => {
         </div>
       )}
 
-      {/* Summary Cards */}
-      <div className="summary-cards">
-        <div className="summary-card">
-          <div className="summary-card-value">{summaryStats.total}</div>
-          <div className="summary-card-label">Total Students</div>
+      {/* Stats Grid - 4 in a row */}
+      <div className="stats-grid">
+        <div className="stat-card total">
+          <p className="stat-value">{summaryStats.total}</p>
+          <p className="stat-label">Total Students</p>
         </div>
-        <div className="summary-card">
-          <div className="summary-card-value">{summaryStats.active}</div>
-          <div className="summary-card-label">Active Students</div>
+        <div className="stat-card active">
+          <p className="stat-value">{summaryStats.active}</p>
+          <p className="stat-label">Active Students</p>
         </div>
-        <div className="summary-card">
-          <div className="summary-card-value">{summaryStats.suspended}</div>
-          <div className="summary-card-label">Suspended Students</div>
+        <div className="stat-card suspended">
+          <p className="stat-value">{summaryStats.suspended}</p>
+          <p className="stat-label">Suspended</p>
         </div>
-        <div className="summary-card">
-          <div className="summary-card-value">{summaryStats.withoutTherapist}</div>
-          <div className="summary-card-label">Without Assigned Therapist</div>
+        <div className="stat-card unassigned">
+          <p className="stat-value">{summaryStats.withoutTherapist}</p>
+          <p className="stat-label">Without Therapist</p>
         </div>
-        {summaryStats.pendingChangeRequests > 0 && (
-          <div className="summary-card summary-card-highlight">
-            <div className="summary-card-value">{summaryStats.pendingChangeRequests}</div>
-            <div className="summary-card-label">Pending Change Requests</div>
-          </div>
-        )}
       </div>
 
       {/* Search and Filters */}
-      <div className="filters-container">
+      <div className="filters-container table-controls">
         <div className="search-box">
           <input
             type="text"
@@ -429,7 +461,7 @@ const ManageStudentsPage = () => {
       </div>
 
       {/* Students Table */}
-      <div className="table-container">
+      <div className="students-table-card table-container">
         {paginatedStudents.length === 0 ? (
           <div className="empty-state">
             <p>No students found matching your criteria.</p>
@@ -451,7 +483,7 @@ const ManageStudentsPage = () => {
               <tbody>
                 {paginatedStudents.map((student) => (
                   <tr key={student.id}>
-                    <td>{student.alias}</td>
+                    <td><span className="student-alias">{student.alias}</span></td>
                     <td>
                       <span className={`status-badge status-${student.accountStatus}`}>
                         {student.accountStatus.charAt(0).toUpperCase() + student.accountStatus.slice(1)}
@@ -474,14 +506,41 @@ const ManageStudentsPage = () => {
                     <td>{formatDate(student.dateJoined)}</td>
                     <td>{formatDateTime(student.lastLogin)}</td>
                     <td className="actions-cell">
-                      <div className="action-buttons">
+                      <div className="row-actions">
                         <button
-                          className="action-btn view"
+                          className="view-btn"
                           onClick={() => handleViewAccount(student)}
                           title="View Account"
                         >
                           View
                         </button>
+                        {!student.therapistAssigned && (
+                          <button
+                            className="assign-btn"
+                            onClick={() => handleAssignTherapist(student)}
+                            title="Assign Therapist"
+                          >
+                            Assign
+                          </button>
+                        )}
+                        {student.accountStatus === 'active' && (
+                          <button
+                            className="suspend-btn"
+                            onClick={() => handleSuspendAccount(student.id)}
+                            title="Suspend Account"
+                          >
+                            Suspend
+                          </button>
+                        )}
+                        {student.accountStatus === 'suspended' && (
+                          <button
+                            className="reactivate-btn"
+                            onClick={() => handleReactivateAccount(student.id)}
+                            title="Reactivate Account"
+                          >
+                            Reactivate
+                          </button>
+                        )}
                         {student.changeRequestStatus === 'pending' && student.changeRequest && (
                           <button
                             className="action-btn change-request"
@@ -491,26 +550,8 @@ const ManageStudentsPage = () => {
                             Change Request
                           </button>
                         )}
-                        {student.accountStatus === 'active' && (
-                          <button
-                            className="action-btn suspend"
-                            onClick={() => handleSuspendAccount(student.id)}
-                            title="Suspend Account"
-                          >
-                            Suspend
-                          </button>
-                        )}
-                        {student.accountStatus === 'suspended' && (
-                          <button
-                            className="action-btn reactivate"
-                            onClick={() => handleReactivateAccount(student.id)}
-                            title="Reactivate Account"
-                          >
-                            Reactivate
-                          </button>
-                        )}
                         <button
-                          className="action-btn deactivate"
+                          className="deactivate-btn"
                           onClick={() => handleDeactivateAccount(student.id)}
                           title="Deactivate Account"
                         >
@@ -600,6 +641,46 @@ const ManageStudentsPage = () => {
                 onClick={() => setIsViewModalOpen(false)}
               >
                 Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Assign Therapist Modal */}
+      {isAssignModalOpen && selectedStudent && (
+        <div className="modal-overlay" onClick={() => setIsAssignModalOpen(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Assign Therapist</h2>
+              <button className="modal-close-btn" onClick={() => setIsAssignModalOpen(false)}>×</button>
+            </div>
+            <div className="modal-body">
+              <p><strong>Student:</strong> {selectedStudent.alias}</p>
+              <div className="form-group">
+                <label htmlFor="therapist-select">Select Therapist</label>
+                <select
+                  id="therapist-select"
+                  value={selectedTherapistId}
+                  onChange={(e) => setSelectedTherapistId(e.target.value)}
+                  className="filter-select"
+                  style={{ width: '100%', marginTop: '8px' }}
+                >
+                  <option value="">Choose a therapist...</option>
+                  {therapists.map((t) => (
+                    <option key={t.user_id} value={t.user_id}>{t.full_name || 'Therapist'}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button className="btn-cancel" onClick={() => setIsAssignModalOpen(false)}>Cancel</button>
+              <button
+                className="btn-confirm-approve"
+                onClick={handleConfirmAssign}
+                disabled={!selectedTherapistId}
+              >
+                Assign
               </button>
             </div>
           </div>

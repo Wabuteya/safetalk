@@ -16,6 +16,23 @@ export const UserProvider = ({ children }) => {
       
       if (event === 'SIGNED_IN' && session?.user) {
         console.log('User signed in, updating context');
+        const role = session.user.user_metadata?.role;
+        
+        // For students: check account_status before allowing access (covers Google OAuth, etc.)
+        if (role === 'student') {
+          const { data: profile, error: profileError } = await supabase
+            .from('student_profiles')
+            .select('user_id, alias, account_status')
+            .eq('user_id', session.user.id)
+            .maybeSingle();
+
+          if (!profileError && profile && (profile.account_status === 'suspended' || profile.account_status === 'deactivated')) {
+            await supabase.auth.signOut();
+            setLoading(false);
+            return;
+          }
+        }
+
         // Clear old profile data first to avoid stale data
         setUserProfile(null);
         setUser(session.user);
@@ -24,7 +41,6 @@ export const UserProvider = ({ children }) => {
         // Fetch profile after sign in (non-blocking, with retry logic)
         const fetchProfile = async (retries = 3) => {
           try {
-            const role = session.user.user_metadata?.role;
             console.log('User role:', role);
             
             if (role === 'student') {
@@ -130,31 +146,31 @@ export const UserProvider = ({ children }) => {
           
           if (session?.user) {
             console.log('Session found on attempt', attempt + 1, 'user:', session.user.user_metadata?.role);
-            setUser(session.user);
-            setLoading(false);
-            userFound = true;
-            
-            // Fetch profile in background (non-blocking)
             const role = session.user.user_metadata?.role;
+            
+            // For students: await profile fetch and check account_status before allowing access
             if (role === 'student') {
-              supabase
+              const { data: profile, error } = await supabase
                 .from('student_profiles')
-                .select('user_id, alias')
+                .select('user_id, alias, account_status')
                 .eq('user_id', session.user.id)
-              .maybeSingle()
-              .then(({ data: profile, error }) => {
-                if (!error && profile) {
-                  setUserProfile(profile);
-                }
-                })
-              .catch((err) => {
-                // Silently handle errors - profile fetch is not critical
-                // Network errors are expected on first attempt
-                if (!err.message?.includes('fetch') && !err.message?.includes('network')) {
-                  console.warn('Error fetching student profile:', err);
-                }
-              });
+                .maybeSingle();
+
+              if (!error && profile && (profile.account_status === 'suspended' || profile.account_status === 'deactivated')) {
+                await supabase.auth.signOut();
+                setLoading(false);
+                break;
+              }
+              setUser(session.user);
+              setLoading(false);
+              userFound = true;
+              if (!error && profile) {
+                setUserProfile(profile);
+              }
             } else if (role === 'therapist') {
+              setUser(session.user);
+              setLoading(false);
+              userFound = true;
               supabase
                 .from('therapist_profiles')
                 .select('user_id, full_name')
@@ -173,9 +189,17 @@ export const UserProvider = ({ children }) => {
                 }
               });
             } else if (role === 'admin') {
+              setUser(session.user);
+              setLoading(false);
+              userFound = true;
               setUserProfile({ user_id: session.user.id });
+            } else {
+              // Fallback for unknown roles - preserve existing behavior
+              setUser(session.user);
+              setLoading(false);
+              userFound = true;
             }
-            break; // Found user, exit loop
+            if (userFound) break; // Found user, exit loop
           }
         } catch (err) {
           // Network errors are common on first attempt, continue retrying

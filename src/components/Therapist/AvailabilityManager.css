@@ -4,18 +4,17 @@
   margin: 0 auto;
 }
 
-.availability-header {
-  margin-bottom: 2rem;
+.availability-title {
+  color: #003DA5;
+  font-weight: 800;
+  font-size: 1.3rem;
+  margin-bottom: 4px;
 }
 
-.availability-header h2 {
-  margin: 0 0 0.5rem 0;
-  color: #333;
-}
-
-.availability-header p {
-  color: #666;
-  margin: 0;
+.availability-subtitle {
+  color: #6B7280;
+  font-size: 13.5px;
+  margin-bottom: 24px;
 }
 
 .availability-days {
@@ -24,40 +23,54 @@
   gap: 1.5rem;
 }
 
-.day-slot {
-  background-color: #ffffff;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  padding: 1.5rem;
+.day-card {
+  background: white;
+  border-radius: 12px;
+  padding: 18px 22px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  margin-bottom: 12px;
+  border-left: 4px solid #E5E7EB;
+  transition: all 0.2s;
 }
 
-.day-header {
+/* Day colors applied via inline style; has-slots kept for potential future use */
+
+.day-card-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
+  justify-content: space-between;
+  margin-bottom: 12px;
 }
 
-.day-header h3 {
-  margin: 0;
-  color: #333;
-  font-size: 1.2rem;
+.day-name {
+  color: #003DA5;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.no-slots-text {
+  color: #D1D5DB;
+  font-size: 13px;
+  text-align: center;
+  padding: 8px 0;
+  font-style: italic;
 }
 
 .add-slot-btn {
-  background-color: #4F8EC5;
+  background: #003DA5;
   color: white;
   border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 700;
   cursor: pointer;
-  font-size: 0.9rem;
   transition: all 0.2s;
 }
 
 .add-slot-btn:hover {
-  background-color: #3d6fa0;
-  transform: translateY(-1px);
+  filter: brightness(0.9);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
 .time-slots {
@@ -69,69 +82,79 @@
 .time-slot-row {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 0.75rem;
-  background-color: #f8f9fa;
-  border-radius: 6px;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 8px 12px;
+  background: #F8FAFF;
+  border-radius: 8px;
+  border: 1px solid #E5E7EB;
 }
 
 .time-input {
-  padding: 0.5rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 0.95rem;
+  border: 1.5px solid #E5E7EB;
+  border-radius: 8px;
+  padding: 7px 12px;
+  font-size: 13px;
+  color: #374151;
+  outline: none;
+  background: white;
+}
+
+.time-input:focus {
+  border-color: #003DA5;
+  box-shadow: 0 0 0 3px rgba(0, 61, 165, 0.08);
 }
 
 .time-separator {
-  color: #666;
-  font-weight: 500;
+  color: #9CA3AF;
+  font-weight: 600;
+  font-size: 13px;
 }
 
 .remove-slot-btn {
-  background-color: #dc3545;
-  color: white;
-  border: none;
-  padding: 0.4rem 0.8rem;
-  border-radius: 4px;
+  background: white;
+  color: #6B7280;
+  border: 1.5px solid #E5E7EB;
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-size: 12px;
+  font-weight: 600;
   cursor: pointer;
-  font-size: 0.85rem;
-  transition: all 0.2s;
   margin-left: auto;
+  transition: all 0.15s;
 }
 
 .remove-slot-btn:hover {
-  background-color: #c82333;
-}
-
-.no-slots {
-  color: #999;
-  font-style: italic;
-  padding: 1rem;
-  text-align: center;
+  background: #FFF0F0;
+  border-color: #FECACA;
+  color: #DC2626;
 }
 
 .availability-actions {
   margin-top: 2rem;
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
 }
 
 .save-availability-btn {
-  background-color: #28a745;
+  background: #003DA5;
   color: white;
   border: none;
-  padding: 0.75rem 2rem;
-  border-radius: 6px;
-  font-size: 1rem;
-  font-weight: 600;
+  border-radius: 10px;
+  padding: 14px 32px;
+  font-size: 15px;
+  font-weight: 700;
   cursor: pointer;
+  width: 100%;
+  max-width: 300px;
+  margin: 20px auto 0;
+  display: block;
   transition: all 0.2s;
 }
 
 .save-availability-btn:hover:not(:disabled) {
-  background-color: #218838;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+  background: #002580;
+  box-shadow: 0 6px 20px rgba(0, 61, 165, 0.3);
 }
 
 .save-availability-btn:disabled {
@@ -155,4 +178,10 @@
   border-radius: 6px;
   margin-bottom: 1rem;
   border: 1px solid #c3e6cb;
+}
+
+.loading-container {
+  text-align: center;
+  padding: 3rem;
+  color: #666;
 }

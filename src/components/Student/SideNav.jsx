@@ -19,7 +19,7 @@ import { createCrisisEvent } from '../../utils/crisisEvents';
 import CrisisSupportModal from './CrisisSupportModal';
 import CrisisResponseModal from './CrisisResponseModal';
 
-const SideNav = () => {
+const SideNav = ({ closeSidebar }) => {
   const navigate = useNavigate();
   const { user, userProfile } = useUser();
   const { postCrisis, activatePostCrisis } = usePostCrisis();
@@ -118,43 +118,39 @@ const SideNav = () => {
   return (
     <>
     <nav className="sidebar">
-      <div className="sidebar-header">
-        <h3>SafeTalk </h3>
-      </div>
-      <div className="sidebar-profile">
-        <p className="sidebar-alias">{userAlias}</p>
-      </div>
+      <div className="sidebar-logo">SafeTalk</div>
+      <div className="sidebar-username">{userAlias}</div>
       <ul className="sidebar-nav">
-        <li className="nav-section-heading">DASHBOARD</li>
+        <li className="nav-section-label">DASHBOARD</li>
         <li>
-          <NavLink to="/student-dashboard" end>
+          <NavLink to="/student-dashboard" end onClick={closeSidebar}>
             <AiOutlineDashboard className="nav-icon" />
             <span>Dashboard</span>
           </NavLink>
         </li>
-        <li className="nav-section-heading">WELLNESS</li>
+        <li className="nav-section-label">WELLNESS</li>
         <li>
-          <NavLink to="/student-dashboard/journal">
+          <NavLink to="/student-dashboard/journal" onClick={closeSidebar}>
             <FaBook className="nav-icon" />
             <span>My Journal</span>
           </NavLink>
         </li>
         <li>
-          <NavLink to="/student-dashboard/mood-history">
+          <NavLink to="/student-dashboard/mood-history" onClick={closeSidebar}>
             <FaHeart className="nav-icon" />
             <span>Mood History</span>
           </NavLink>
         </li>
-        <li className="nav-section-heading">SUPPORT</li>
+        <li className="nav-section-label">SUPPORT</li>
         <li>
-          <NavLink to="/student-dashboard/therapists">
+          <NavLink to="/student-dashboard/therapists" onClick={closeSidebar}>
             <FaUserMd className="nav-icon" />
             <span>Find a Therapist</span>
           </NavLink>
         </li>
         {linkedTherapistId && (
           <li>
-            <NavLink to={`/student-dashboard/chat/${linkedTherapistId}`}>
+            <NavLink to={`/student-dashboard/chat/${linkedTherapistId}`} onClick={closeSidebar}>
               <FaComments className="nav-icon" />
               <span>Chat</span>
               {unreadCount > 0 && (
@@ -166,7 +162,7 @@ const SideNav = () => {
           </li>
         )}
         <li>
-          <NavLink to="/student-dashboard/resources">
+          <NavLink to="/student-dashboard/resources" onClick={closeSidebar}>
             <FaLightbulb className="nav-icon" />
             <span>Support Resources</span>
           </NavLink>
@@ -176,16 +172,19 @@ const SideNav = () => {
             <button
               type="button"
               className="sidebar-chat-indicator"
-              onClick={() => navigate(`/student-dashboard/chat/${postCrisis.therapistId}`)}
+              onClick={() => {
+                closeSidebar?.();
+                navigate(`/student-dashboard/chat/${postCrisis.therapistId}`);
+              }}
             >
               <span className="chat-indicator-dot" aria-hidden />
               <span>Chat with therapist — new message</span>
             </button>
           </li>
         )}
-        <li className="nav-section-heading">ACCOUNT</li>
+        <li className="nav-section-label">ACCOUNT</li>
         <li>
-          <NavLink to="/student-dashboard/profile">
+          <NavLink to="/student-dashboard/profile" onClick={closeSidebar}>
             <FaUserCircle className="nav-icon" />
             <span>My Profile</span>
           </NavLink>

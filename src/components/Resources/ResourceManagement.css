@@ -4,35 +4,34 @@
   margin: 0 auto;
 }
 
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-}
 
-.page-header h1 {
-  margin: 0;
-  color: #333;
-  font-size: 2rem;
+.page-title {
+  color: #111827;
+  font-weight: 800;
+  font-size: 1.75rem;
+  margin-bottom: 16px;
+  text-align: center;
 }
 
 .add-resource-btn {
+  background: #F5A800;
+  color: #111827;
+  border: none;
+  border-radius: 8px;
+  padding: 11px 24px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
+  gap: 8px;
+  margin: 0 auto 24px;
+  transition: all 0.2s;
 }
 
 .add-resource-btn:hover {
-  background-color: #0056b3;
+  background: #D98F00;
+  box-shadow: 0 6px 16px rgba(245, 168, 0, 0.35);
 }
 
 .error-banner {
@@ -55,11 +54,48 @@
   margin-bottom: 1rem;
 }
 
-.resources-table-container {
-  background: white;
+.table-controls {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.search-input {
+  flex: 1;
+  border: 1.5px solid #E5E7EB;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  overflow-x: auto;
+  padding: 10px 16px;
+  font-size: 14px;
+  outline: none;
+}
+
+.search-input:focus {
+  border-color: #003DA5;
+  box-shadow: 0 0 0 3px rgba(0, 61, 165, 0.08);
+}
+
+.filter-select {
+  border: 1.5px solid #E5E7EB;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 14px;
+  color: #374151;
+  background: white;
+  min-width: 180px;
+  outline: none;
+  cursor: pointer;
+}
+
+.filter-select:focus {
+  border-color: #003DA5;
+  outline: none;
+}
+
+.table-card {
+  background: white;
+  border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
 }
 
 .resources-table {
@@ -67,66 +103,111 @@
   border-collapse: collapse;
 }
 
-.resources-table thead {
-  background-color: #f8f9fa;
+.resources-table thead tr {
+  background: #F8FAFF;
+  border-bottom: 2px solid #E5E7EB;
 }
 
 .resources-table th {
-  padding: 1rem;
+  font-size: 12px;
+  font-weight: 700;
+  color: #9CA3AF;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 14px 18px;
   text-align: left;
-  font-weight: 600;
-  color: #333;
-  border-bottom: 2px solid #dee2e6;
 }
 
-.resources-table td {
-  padding: 1rem;
-  border-bottom: 1px solid #e9ecef;
+.resources-table tbody tr {
+  border-bottom: 1px solid #F3F4F6;
+  transition: background 0.15s;
 }
 
 .resources-table tbody tr:hover {
-  background-color: #f8f9fa;
+  background: #F8FAFF;
 }
 
-.title-cell {
+.resources-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.empty-table-message {
+  text-align: center;
+  padding: 2rem;
+  color: #6B7280;
+  font-size: 14px;
+}
+
+.resources-table td {
+  font-size: 14px;
+  padding: 16px 18px;
+  color: #374151;
+  vertical-align: middle;
+}
+
+.resource-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #111827;
+  text-transform: capitalize;
+}
+
+/* Category badges — UCU system */
+.badge-category {
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+
+/* Stress Management = calm amber, not alarming red */
+.badge-stress {
+  background: #FFFBEB;
+  color: #92600A;
+  border: 1px solid #FDE68A;
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.badge-anxiety { background: #FFFBEB; color: #92600A; }
+.badge-sleep { background: #EFF6FF; color: #003DA5; }
+.badge-academic { background: #F0FDF4; color: #15803D; }
+.badge-depression { background: #F5F3FF; color: #6D28D9; }
+.badge-crisis { background: #FFF0F0; color: #DC2626; }
+
+/* Type badges */
+.badge-type {
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px solid transparent;
+}
+
+.badge-content {
+  background: #EFF6FF;
+  color: #003DA5;
+  border: 1px solid #BFDBFE;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.badge-video { background: #F5F3FF; color: #6D28D9; }
+.badge-link { background: #FFF7ED; color: #C2410C; }
+
+/* Visibility badges */
+.badge-visibility {
+  background: #F9FAFB;
+  color: #374151;
+  border: 1px solid #E5E7EB;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
   font-weight: 500;
-  color: #333;
-}
-
-.type-badge {
-  display: inline-block;
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
-  font-size: 0.85rem;
-  font-weight: 500;
-}
-
-.type-badge.link {
-  background-color: #cfe2ff;
-  color: #084298;
-}
-
-.type-badge.content {
-  background-color: #d1e7dd;
-  color: #0f5132;
-}
-
-.visibility-badge {
-  display: inline-block;
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
-  font-size: 0.85rem;
-  background-color: #e7f1ff;
-  color: #004085;
-}
-
-.category-badge {
-  display: inline-block;
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
-  font-size: 0.85rem;
-  background-color: #f3e8ff;
-  color: #6b21a8;
 }
 
 .tags-container {
@@ -150,38 +231,53 @@
   font-size: 0.9rem;
 }
 
-.actions-cell {
+.action-buttons {
   display: flex;
-  gap: 0.5rem;
-}
-
-.action-btn {
-  padding: 0.5rem;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background-color 0.2s ease;
+  gap: 8px;
 }
 
 .edit-btn {
-  background-color: #e7f1ff;
-  color: #004085;
+  background: #EFF6FF;
+  color: #003DA5;
+  border: 1px solid #BFDBFE;
+  border-radius: 7px;
+  padding: 7px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .edit-btn:hover {
-  background-color: #cfe2ff;
+  background: #003DA5;
+  color: white;
+  border-color: #003DA5;
 }
 
 .delete-btn {
-  background-color: #f8d7da;
-  color: #721c24;
+  background: #FFF0F0;
+  color: #DC2626;
+  border: 1px solid #FECACA;
+  border-radius: 7px;
+  padding: 7px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .delete-btn:hover {
-  background-color: #f5c2c7;
+  background: #DC2626;
+  color: white;
+  border-color: #DC2626;
 }
 
 /* Modal Styles */

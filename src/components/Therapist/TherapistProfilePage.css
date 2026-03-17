@@ -1,0 +1,232 @@
+/* Therapist Profile Page - My Therapist Profile */
+
+.therapist-profile-layout {
+  max-width: 800px;
+}
+
+.therapist-profile-layout .page-title {
+  color: #111827;
+  font-weight: 700;
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+}
+
+.profile-card {
+  background: white;
+  border-radius: 14px;
+  padding: 28px 32px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+  margin-bottom: 16px;
+}
+
+.card-title {
+  color: #111827;
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 4px;
+}
+
+.card-subtitle {
+  color: #6B7280;
+  font-size: 13px;
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+
+.form-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+.form-input {
+  width: 100%;
+  border: 1.5px solid #E5E7EB;
+  border-radius: 8px;
+  padding: 11px 14px;
+  font-size: 14px;
+  color: #111827;
+  outline: none;
+  box-sizing: border-box;
+  transition: all 0.15s;
+  background: white;
+}
+
+.form-input:focus {
+  border-color: #003DA5;
+  box-shadow: 0 0 0 3px rgba(0, 61, 165, 0.08);
+}
+
+.form-input[readonly] {
+  background: #F9FAFB;
+  color: #6B7280;
+  cursor: not-allowed;
+}
+
+.form-input:disabled {
+  background: #F9FAFB;
+  cursor: not-allowed;
+}
+
+.photo-section {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 16px;
+}
+
+.profile-photo {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #003DA5;
+  flex-shrink: 0;
+}
+
+.photo-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.photo-label {
+  font-size: 12px;
+  color: #6B7280;
+}
+
+.upload-btn {
+  background: white;
+  border: 1.5px solid #E5E7EB;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s;
+}
+
+.upload-btn:hover {
+  border-color: #003DA5;
+  color: #003DA5;
+}
+
+.upload-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.therapist-profile-layout input[type="file"] {
+  display: none;
+}
+
+.form-textarea {
+  width: 100%;
+  border: 1.5px solid #E5E7EB;
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 14px;
+  color: #111827;
+  outline: none;
+  box-sizing: border-box;
+  min-height: 120px;
+  resize: vertical;
+  line-height: 1.6;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+
+.form-textarea:focus {
+  border-color: #003DA5;
+  box-shadow: 0 0 0 3px rgba(0, 61, 165, 0.08);
+}
+
+.save-profile-btn {
+  background: #F5A800;
+  color: #111827;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.save-profile-btn:hover:not(:disabled) {
+  background: #D98F00;
+  box-shadow: 0 6px 16px rgba(245, 168, 0, 0.3);
+}
+
+.save-profile-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Account & Security section */
+.security-card {
+  background: white;
+  border-radius: 14px;
+  padding: 28px 32px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+}
+
+.email-wrapper {
+  position: relative;
+  margin-bottom: 16px;
+}
+
+.email-wrapper .form-input {
+  padding-right: 40px;
+}
+
+.lock-icon {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9CA3AF;
+  font-size: 14px;
+  pointer-events: none;
+}
+
+.change-password-btn {
+  background: white;
+  border: 1.5px solid #003DA5;
+  color: #003DA5;
+  border-radius: 8px;
+  padding: 11px 22px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.change-password-btn:hover {
+  background: #003DA5;
+  color: white;
+}
+
+/* Form group spacing */
+.therapist-profile-layout .form-group {
+  margin-bottom: 20px;
+}
+
+.therapist-profile-layout .form-group:last-of-type {
+  margin-bottom: 24px;
+}
+
+.form-hint {
+  font-size: 12px;
+  color: #6B7280;
+  margin-top: 4px;
+}

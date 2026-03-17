@@ -22,12 +22,30 @@ import './StudentDetailView.css';
 
 const moodLabel = (value) => MOOD_OPTIONS.find((o) => o.value === value)?.label || value;
 
+const MOOD_COLORS = {
+  difficult: '#7B1D1D',
+  low: '#F59E0B',
+  okay: '#3B82F6',
+  good: '#10B981',
+  great: '#003DA5',
+};
+
+const ENTRY_BORDER_COLORS = {
+  Good: '#10B981',
+  Okay: '#3B82F6',
+  Low: '#F59E0B',
+  Difficult: '#7B1D1D',
+  Great: '#003DA5',
+};
+
 // Appointments List Component for Student Detail View
 const AppointmentsList = ({ studentId, studentAlias, onAppointmentCountChange }) => {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [deleting, setDeleting] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [appointmentToDelete, setAppointmentToDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     fetchAppointments();
@@ -68,36 +86,6 @@ const AppointmentsList = ({ studentId, studentAlias, onAppointmentCountChange })
     }
   };
 
-  const handleDeleteAppointment = async (appointmentId) => {
-    if (!window.confirm('Are you sure you want to cancel this appointment? This action cannot be undone.')) {
-      return;
-    }
-
-    try {
-      setDeleting(appointmentId);
-      const { error: updateError } = await supabase
-        .from('appointments')
-        .update({ status: 'cancelled_by_therapist' })
-        .eq('id', appointmentId);
-
-      if (updateError) throw updateError;
-
-      // Remove from local state (or update status)
-      setAppointments(prev => prev.filter(apt => apt.id !== appointmentId));
-      
-      // Update count
-      if (onAppointmentCountChange) {
-        const newCount = appointments.length - 1;
-        onAppointmentCountChange(newCount);
-      }
-    } catch (err) {
-      console.error('Error deleting appointment:', err);
-      alert('Failed to delete appointment. Please try again.');
-    } finally {
-      setDeleting(null);
-    }
-  };
-
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       weekday: 'long',
@@ -114,21 +102,50 @@ const AppointmentsList = ({ studentId, studentAlias, onAppointmentCountChange })
     return `${displayHours}:${String(minutes).padStart(2, '0')} ${period}`;
   };
 
+  const handleDeleteClick = (apt) => {
+    setAppointmentToDelete(apt);
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteCancel = () => {
+    setShowDeleteModal(false);
+    setAppointmentToDelete(null);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!appointmentToDelete) return;
+    try {
+      setDeleting(true);
+      const { error: deleteError } = await supabase
+        .from('appointments')
+        .delete()
+        .eq('id', appointmentToDelete.id);
+
+      if (deleteError) throw deleteError;
+
+      setAppointments(prev => prev.filter(apt => apt.id !== appointmentToDelete.id));
+      if (onAppointmentCountChange) {
+        onAppointmentCountChange(appointments.length - 1);
+      }
+      setShowDeleteModal(false);
+      setAppointmentToDelete(null);
+    } catch (err) {
+      console.error('Error deleting appointment:', err);
+      alert('Failed to delete appointment. Please try again.');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const getStatusBadge = (status) => {
-    const statusColors = {
-      scheduled: '#28a745',
-      rescheduled: '#17a2b8',
-      completed: '#17a2b8',
-      cancelled: '#dc3545',
-      cancelled_by_student: '#dc3545',
-      cancelled_by_therapist: '#dc3545',
-      no_show: '#ffc107'
-    };
-    return (
-      <span className="status-badge" style={{ backgroundColor: statusColors[status] || '#6c757d' }}>
-        {status.charAt(0).toUpperCase() + status.slice(1)}
-      </span>
-    );
+    const confirmedStatuses = ['scheduled', 'rescheduled'];
+    const completedStatuses = ['completed'];
+    const cancelledStatuses = ['cancelled', 'cancelled_by_student', 'cancelled_by_therapist', 'no_show'];
+    let badgeClass = 'cancelled';
+    if (confirmedStatuses.includes(status)) badgeClass = 'confirmed';
+    else if (completedStatuses.includes(status)) badgeClass = 'completed';
+    const label = status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    return <span className={`status-badge ${badgeClass}`}>{label}</span>;
   };
 
   if (loading) {
@@ -150,27 +167,30 @@ const AppointmentsList = ({ studentId, studentAlias, onAppointmentCountChange })
 
   return (
     <div className="appointments-list-view">
-      <h2>Appointments with {studentAlias || 'Student'}</h2>
+      <h2 className="appointments-page-title">Appointments with {studentAlias || 'Student'}</h2>
       
       {upcoming.length > 0 && (
         <div className="appointments-section">
-          <h3>Upcoming Appointments</h3>
+          <h3 className="section-heading upcoming">Upcoming Appointments</h3>
           <div className="appointments-grid">
             {upcoming.map(apt => (
-              <div key={apt.id} className="appointment-card">
-                <div className="appointment-header">
-                  <h4>{formatDate(apt.appointment_date)}</h4>
+              <div key={apt.id} className="upcoming-card">
+                <div className="appointment-date">
+                  {formatDate(apt.appointment_date)}
                   {getStatusBadge(apt.status)}
                 </div>
-                <div className="appointment-details">
-                  <p><strong>Time:</strong> {formatTime(apt.start_time)} - {formatTime(apt.end_time)}</p>
-                  {apt.student_notes && (
-                    <p><strong>Student Notes:</strong> {apt.student_notes}</p>
-                  )}
-                  {apt.notes && (
-                    <p><strong>Therapist Notes:</strong> {apt.notes}</p>
-                  )}
+                <div className="appointment-time">
+                  <strong>{formatTime(apt.start_time)}</strong> – {formatTime(apt.end_time)}
                 </div>
+                {apt.student_notes && (
+                  <div className="student-notes-row">
+                    <div className="notes-label">Student Notes (Sensitive)</div>
+                    <div className="notes-content">{apt.student_notes}</div>
+                  </div>
+                )}
+                {apt.notes && (
+                  <p className="therapist-notes"><strong>Therapist Notes:</strong> {apt.notes}</p>
+                )}
               </div>
             ))}
           </div>
@@ -179,40 +199,59 @@ const AppointmentsList = ({ studentId, studentAlias, onAppointmentCountChange })
 
       {past.length > 0 && (
         <div className="appointments-section">
-          <h3>Past Appointments</h3>
+          <h3 className="section-heading past">Past Appointments</h3>
           <div className="appointments-grid">
-            {past.map(apt => {
-              const isPast = new Date(apt.appointment_date) < new Date(new Date().toISOString().split('T')[0]);
-              return (
-                <div key={apt.id} className="appointment-card past">
-                  <div className="appointment-header">
-                    <h4>{formatDate(apt.appointment_date)}</h4>
-                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                      {getStatusBadge(apt.status)}
-                      {isPast && (
-                        <button
-                          onClick={() => handleDeleteAppointment(apt.id)}
-                          disabled={deleting === apt.id}
-                          className="delete-appointment-btn"
-                          title="Delete appointment"
-                        >
-                          {deleting === apt.id ? 'Deleting...' : '🗑️'}
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                  <div className="appointment-details">
-                    <p><strong>Time:</strong> {formatTime(apt.start_time)} - {formatTime(apt.end_time)}</p>
-                    {apt.student_notes && (
-                      <p><strong>Student Notes:</strong> {apt.student_notes}</p>
-                    )}
-                    {apt.notes && (
-                      <p><strong>Therapist Notes:</strong> {apt.notes}</p>
-                    )}
-                  </div>
+            {past.map(apt => (
+              <div key={apt.id} className="past-card">
+                <div className="appointment-date">
+                  {formatDate(apt.appointment_date)}
+                  {getStatusBadge(apt.status)}
                 </div>
-              );
-            })}
+                <div className="appointment-time">
+                  <strong>{formatTime(apt.start_time)}</strong> – {formatTime(apt.end_time)}
+                </div>
+                {apt.student_notes && (
+                  <div className="student-notes-row">
+                    <div className="notes-label">Student Notes (Sensitive)</div>
+                    <div className="notes-content">{apt.student_notes}</div>
+                  </div>
+                )}
+                {apt.notes && (
+                  <p className="therapist-notes"><strong>Therapist Notes:</strong> {apt.notes}</p>
+                )}
+                <div className="past-card-actions">
+                  <button type="button" className="view-details-btn">View Details →</button>
+                  <button
+                    type="button"
+                    className="delete-appointment-btn"
+                    onClick={() => handleDeleteClick(apt)}
+                    disabled={deleting}
+                    title="Delete appointment record"
+                  >
+                    🗑️
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {showDeleteModal && (
+        <div className="delete-appointment-modal-overlay" role="dialog" aria-modal="true">
+          <div className="delete-appointment-modal">
+            <h3>Delete appointment record?</h3>
+            <p>
+              Are you sure you want to delete this appointment record? This action cannot be undone and will remove it from both your records and the student&apos;s history.
+            </p>
+            <div className="delete-appointment-modal-actions">
+              <button type="button" className="delete-modal-cancel" onClick={handleDeleteCancel} disabled={deleting}>
+                Cancel
+              </button>
+              <button type="button" className="delete-modal-confirm" onClick={handleDeleteConfirm} disabled={deleting}>
+                {deleting ? 'Deleting...' : 'Delete Record'}
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -493,10 +532,10 @@ const StudentDetailView = () => {
         <button onClick={() => navigate(backTarget)} className="back-btn">
           {backLabel}
         </button>
-        <h1>{student.alias}</h1>
+        <h1 className="page-title">{student.alias}</h1>
       </div>
 
-      <div className="tabs-container">
+      <div className="tabs-row tabs-container">
         <button
           className={`tab-btn ${activeTab === 'overview' ? 'active' : ''}`}
           onClick={() => setActiveTab('overview')}
@@ -540,25 +579,26 @@ const StudentDetailView = () => {
       <div className="tab-content">
         {activeTab === 'overview' && (
           <div className="overview-tab">
-            <div className="info-card">
-              <h3>Student Information</h3>
+            <div className="profile-section-card info-card">
+              <h3 className="section-title">Student Information</h3>
               <div className="info-row">
-                <strong>Alias:</strong> {student.alias}
+                <span className="info-label">Alias</span>
+                <span className="info-value">{student.alias}</span>
               </div>
               <div className="info-row">
-                <strong>Status:</strong>
+                <span className="info-label">Status</span>
                 <span className={`status-badge ${student.status}`}>{student.status}</span>
               </div>
               {!contactRevealed ? (
                 <>
                   <div className="privacy-notice">
-                    <p>🔒 Full student details (name, contact, gender) are hidden for privacy protection.</p>
+                    <strong>🔒 Full student details are hidden for privacy protection.</strong>
                     <p>Details are only accessible during emergency/crisis situations when immediate intervention is required.</p>
                   </div>
                   <div className="emergency-reveal">
                     <button
                       type="button"
-                      className="reveal-contact-btn"
+                      className="reveal-btn reveal-contact-btn"
                       onClick={() => setShowRevealContactConfirm(true)}
                       disabled={revealContactLoading}
                     >
@@ -570,14 +610,16 @@ const StudentDetailView = () => {
                 <div className="emergency-contact-revealed">
                   <p className="emergency-contact-heading">Emergency contact (revealed)</p>
                   <div className="info-row">
-                    <strong>Name:</strong>{' '}
-                    {[contactDetails?.first_name, contactDetails?.last_name].filter(Boolean).join(' ') || '—'}
+                    <span className="info-label">Name</span>
+                    <span className="info-value">{[contactDetails?.first_name, contactDetails?.last_name].filter(Boolean).join(' ') || '—'}</span>
                   </div>
                   <div className="info-row">
-                    <strong>Contact:</strong> {contactDetails?.contact || '—'}
+                    <span className="info-label">Contact</span>
+                    <span className="info-value">{contactDetails?.contact || '—'}</span>
                   </div>
                   <div className="info-row">
-                    <strong>Gender:</strong> {contactDetails?.gender || '—'}
+                    <span className="info-label">Gender</span>
+                    <span className="info-value">{contactDetails?.gender || '—'}</span>
                   </div>
                 </div>
               )}
@@ -601,28 +643,26 @@ const StudentDetailView = () => {
                 </div>
               </div>
             )}
-            <div className="info-card">
-              <h3>Bio</h3>
-              <p>Bio information is not available to protect student privacy.</p>
+            <div className="profile-section-card info-card">
+              <h3 className="section-title">Bio</h3>
+              <p className="bio-text">Bio information is not available to protect student privacy.</p>
             </div>
-            <div className="info-card">
-              <h3>Risk Indicators</h3>
+            <div className="profile-section-card info-card">
+              <h3 className="section-title">Risk Indicators</h3>
               {student.risks && student.risks.length > 0 ? (
-                <ul>
-                  {student.risks.map((risk, index) => (
-                    <li key={index}>{risk}</li>
-                  ))}
-                </ul>
+                student.risks.map((risk, index) => (
+                  <div key={index} className="risk-badge">{risk}</div>
+                ))
               ) : (
-                <p>No risk indicators identified.</p>
+                <div className="no-risk">✓ No risk indicators identified.</div>
               )}
             </div>
-            <div className="info-card mood-context-card">
-              <h3>Mood (context only)</h3>
-              <p className="mood-context-notice">
+            <div className="profile-section-card info-card mood-context-card">
+              <h3 className="section-title">Mood (context only)</h3>
+              <p className="mood-disclaimer">
                 Read-only. {isOnPoolCrisisAccess
                   ? 'Visible during crisis intervention. Mood data is for contextual awareness only.'
-                  : 'Visible only because this student is attached to you. Mood data is for contextual awareness only. It does not generate alerts, affect priority, or trigger escalation.'}
+                  : 'Mood data is for contextual awareness only. It does not generate alerts, affect priority, or trigger escalation.'}
               </p>
               {moodHistory.length === 0 ? (
                 <p>No mood entries logged yet.</p>
@@ -669,9 +709,9 @@ const StudentDetailView = () => {
                             <Line
                               type="monotone"
                               dataKey="value"
-                              stroke="#2196f3"
+                              stroke="#003DA5"
                               strokeWidth={2}
-                              dot={{ r: 3, fill: '#2196f3' }}
+                              dot={{ r: 3, fill: '#003DA5' }}
                               activeDot={{ r: 5 }}
                             />
                           </LineChart>
@@ -693,7 +733,7 @@ const StudentDetailView = () => {
                                 );
                               }}
                             />
-                            <Bar dataKey="value" fill="#2196f3" radius={[4, 4, 0, 0]} />
+                            <Bar dataKey="value" fill="#003DA5" radius={[4, 4, 0, 0]} />
                           </BarChart>
                         )}
                       </ResponsiveContainer>
@@ -704,11 +744,12 @@ const StudentDetailView = () => {
                       const count = moodHistory.filter((e) => e.mood === opt.value).length;
                       const pct = moodHistory.length ? (count / moodHistory.length) * 100 : 0;
                       const value = MOOD_VALUES[opt.value];
+                      const barColor = MOOD_COLORS[opt.value] || '#003DA5';
                       return (
                         <div key={opt.value} className="mood-trend-row">
                           <span className="mood-trend-label">{opt.label} ({value})</span>
                           <div className="mood-trend-bar-wrap">
-                            <div className="mood-trend-bar" style={{ width: `${pct}%` }} />
+                            <div className="mood-trend-bar" style={{ width: `${pct}%`, background: barColor }} />
                           </div>
                           <span className="mood-trend-count">{count}</span>
                         </div>
@@ -716,15 +757,23 @@ const StudentDetailView = () => {
                     })}
                   </div>
                   <h4 className="mood-history-heading">Recent entries</h4>
-                  <ul className="therapist-mood-entries">
-                    {moodHistory.slice(0, 10).map((entry) => (
-                      <li key={entry.id}>
-                        <span className="mood-entry-date">{formatDateTime(entry.logged_at)}</span>
-                        <span className="mood-entry-mood">{moodLabel(entry.mood)} ({MOOD_VALUES[entry.mood] ?? '—'}/5)</span>
-                        {entry.note && <span className="mood-entry-note"> — {entry.note}</span>}
-                      </li>
-                    ))}
-                  </ul>
+                  <div className="therapist-mood-entries">
+                    {moodHistory.slice(0, 10).map((entry) => {
+                      const moodLabelText = moodLabel(entry.mood);
+                      const borderColor = ENTRY_BORDER_COLORS[moodLabelText] || '#9CA3AF';
+                      return (
+                        <div
+                          key={entry.id}
+                          className="recent-entry"
+                          style={{ borderLeftColor: borderColor }}
+                        >
+                          <span className="entry-timestamp mood-entry-date">{formatDateTime(entry.logged_at)}</span>
+                          <span className="entry-mood-value mood-entry-mood">{moodLabelText} ({MOOD_VALUES[entry.mood] ?? '—'}/5)</span>
+                          {entry.note && <span className="mood-entry-note"> — {entry.note}</span>}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </>
               )}
             </div>
@@ -805,11 +854,15 @@ const StudentDetailView = () => {
 
         {activeTab === 'journals' && (
           <div className="journals-tab">
+            <div className="journal-notice">
+              📖 <strong>Shared journals only.</strong> You can only see entries
+              the student has explicitly chosen to share with you.
+            </div>
             {sharedJournals.length === 0 ? (
-              <div className="empty-state">
-                <div className="empty-icon">📝</div>
-                <h2>No Shared Journals</h2>
-                <p>This student hasn't shared any journal entries yet.</p>
+              <div className="empty-state journals-empty">
+                <p>🔒</p>
+                <h3>No shared journals yet</h3>
+                <p>{student?.alias || 'This student'} hasn&apos;t shared any journal entries with you yet.</p>
               </div>
             ) : (
               <div className="journals-list">
@@ -822,19 +875,16 @@ const StudentDetailView = () => {
                           ⚠️ High-Risk Sentiment Detected
                         </div>
                       )}
-                      <div className="journal-header">
-                        <div>
-                          <h3>Entry from {formatDate(journal.entry_date)}</h3>
-                          <p className="journal-meta">
-                            Shared: {formatDateTime(journal.shared_at)}
-                            {journal.therapist_viewed_at && (
-                              <> • Viewed: {formatDateTime(journal.therapist_viewed_at)}</>
-                            )}
-                          </p>
-                        </div>
+                      <div className="entry-header">
+                        <span className="entry-date">Entry from {formatDate(journal.entry_date)}</span>
+                        <span className="shared-badge">
+                          {journal.shared_at
+                            ? `Shared on ${formatDate(journal.shared_at)}`
+                            : '✓ Shared by student'}
+                        </span>
                       </div>
-                      <div className="journal-content">
-                        <p>{journal.content}</p>
+                      <div className="entry-content">
+                        {journal.content}
                       </div>
                     </div>
                   );

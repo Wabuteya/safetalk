@@ -18,77 +18,69 @@
   border-bottom: 1px solid #eee;
 }
 
-.my-therapist-header h1 {
+.page-title {
+  color: #003DA5;
+  font-weight: 800;
+  font-size: 1.75rem;
   margin: 0;
-  color: #333;
 }
 
+.change-btn,
 .request-change-btn {
-  background-color: transparent;
-  color: #dc3545;
-  border: 1px solid #dc3545;
-  padding: 0.5rem 1rem;
-  border-radius: 5px;
-  font-weight: bold;
+  background: white;
+  border: 2px solid #7B1D1D;
+  color: #7B1D1D;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-weight: 700;
+  font-size: 14px;
   cursor: pointer;
-  transition: background-color 0.25s ease, transform 0.2s ease, box-shadow 0.2s ease;
-  font-size: 0.9rem;
+  transition: all 0.2s;
 }
 
+.change-btn:hover,
 .request-change-btn:hover {
-  background-color: #dc3545;
+  background: #7B1D1D;
   color: white;
-  transform: translateY(-2px);
-  box-shadow: 0 10px 18px -10px rgba(220, 53, 69, 0.3);
 }
 
-/* Profile Header - matching TherapistProfilePage style */
+/* Therapist Card */
+.therapist-card,
 .my-therapist-profile-layout .profile-header {
-  background-color: #ffffff;
-  padding: 2rem;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  background: white;
+  border-radius: 14px;
+  padding: 28px;
+  border-top: 4px solid #003DA5;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07);
   display: flex;
   align-items: center;
-  gap: 2rem;
-  margin-bottom: 2rem;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  gap: 28px;
+  margin-bottom: 20px;
 }
 
-.my-therapist-profile-layout .profile-header:hover {
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-}
-
+.therapist-photo,
 .my-therapist-profile-layout .profile-photo {
-  width: 150px;
-  height: 150px;
+  width: 100px;
+  height: 100px;
   border-radius: 50%;
   object-fit: cover;
-  border: 4px solid #4F8EC5;
-  transition: transform 0.25s ease, border-color 0.25s ease;
+  border: 3px solid #003DA5;
+  box-shadow: 0 4px 12px rgba(0, 61, 165, 0.2);
 }
 
-.my-therapist-profile-layout .profile-header:hover .profile-photo {
-  transform: scale(1.02);
-  border-color: #3d6fa0;
-}
-
-.my-therapist-profile-layout .profile-photo-placeholder {
-  width: 150px;
-  height: 150px;
+.my-therapist-profile-layout .profile-photo-placeholder.therapist-photo-placeholder,
+.therapist-photo-placeholder {
+  width: 100px;
+  height: 100px;
+  min-width: 100px;
+  min-height: 100px;
   border-radius: 50%;
-  border: 4px solid #4F8EC5;
+  border: 3px solid #003DA5;
   background-color: #f8f9fa;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.25s ease, border-color 0.25s ease, background-color 0.25s ease;
-}
-
-.my-therapist-profile-layout .profile-header:hover .profile-photo-placeholder {
-  transform: scale(1.02);
-  border-color: #3d6fa0;
-  background-color: #e8f4f8;
+  box-shadow: 0 4px 12px rgba(0, 61, 165, 0.2);
 }
 
 .photo-placeholder-icon {
@@ -100,132 +92,150 @@
   flex: 1;
 }
 
+.therapist-name,
 .my-therapist-profile-layout .profile-header-info h2 {
-  margin: 0 0 0.5rem 0;
-  color: #333;
+  color: #111827;
+  font-size: 1.3rem;
+  font-weight: 800;
+  margin: 0 0 2px 0;
 }
 
-.my-therapist-profile-layout .profile-title {
-  font-size: 1.1rem;
-  color: #555;
-  margin: 0 0 1rem 0;
+.therapist-title {
+  color: #6B7280;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.assigned-since {
+  font-size: 12px;
+  color: #9CA3AF;
+  font-style: italic;
+  margin: 0 0 10px 0;
 }
 
 /* Status Display */
+.status-row,
 .therapist-status-display {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 1.5rem;
-  padding: 0.5rem 1rem;
-  background-color: #f8f9fa;
-  border-radius: 5px;
-  display: inline-flex;
+  gap: 8px;
+  margin-bottom: 16px;
 }
 
-.therapist-status-display .status-dot {
-  height: 12px;
-  width: 12px;
+.status-dot {
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
 }
 
-.therapist-status-display .status-text {
-  font-size: 0.9rem;
-  color: #555;
-  font-weight: 500;
-  font-style: italic;
+.status-dot.online { background: #22C55E; }
+.status-dot.offline { background: #9CA3AF; }
+.status-dot.busy { background: #F59E0B; }
+
+.status-text {
+  font-size: 13px;
+  color: #6B7280;
 }
 
-/* Profile Actions - matching TherapistDashboard button animations */
-.my-therapist-profile-layout .profile-actions {
+/* Action Buttons */
+.profile-actions {
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
 }
 
-.my-therapist-profile-layout .action-btn {
-  padding: 0.75rem 1.5rem;
+.chat-btn {
+  background: #003DA5;
+  color: white;
   border: none;
-  border-radius: 5px;
-  font-weight: bold;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background-color 0.25s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-weight: 700;
+  font-size: 14px;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
-.my-therapist-profile-layout .action-btn.chat-btn {
-  background-color: #4F8EC5;
-  color: white;
+.chat-btn:hover {
+  background: #002580;
+  box-shadow: 0 6px 16px rgba(0, 61, 165, 0.3);
 }
 
-.my-therapist-profile-layout .action-btn.chat-btn:hover {
-  background-color: #3d6fa0;
-  transform: translateY(-2px);
-  box-shadow: 0 10px 18px -10px rgba(0, 0, 0, 0.2);
+.book-btn {
+  background: #F5A800;
+  color: #111827;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
-.my-therapist-profile-layout .action-btn.chat-btn:active {
-  transform: translateY(0);
+.book-btn:hover {
+  background: #D98F00;
+  box-shadow: 0 6px 16px rgba(245, 168, 0, 0.35);
 }
 
-.my-therapist-profile-layout .action-btn.appointment-btn {
-  background-color: #28a745;
-  color: white;
-}
-
-.my-therapist-profile-layout .action-btn.appointment-btn:hover {
-  background-color: #218838;
-  transform: translateY(-2px);
-  box-shadow: 0 10px 18px -10px rgba(0, 0, 0, 0.2);
-}
-
-.my-therapist-profile-layout .action-btn.appointment-btn:active {
-  transform: translateY(0);
-}
-
-/* Profile Details - matching TherapistProfilePage */
-.my-therapist-profile-layout .profile-details {
+/* Profile Details - Info Cards */
+.profile-details {
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 2rem;
 }
 
-.my-therapist-profile-layout .detail-card {
-  background-color: #ffffff;
-  padding: 2rem;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+.info-card,
+.detail-card {
+  background: white;
+  border-radius: 14px;
+  padding: 24px 28px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  border-top: 3px solid #EEF2FF;
 }
 
-.my-therapist-profile-layout .detail-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 16px 28px -8px rgba(0, 0, 0, 0.15);
+.info-card-title {
+  color: #003DA5;
+  font-weight: 700;
+  font-size: 16px;
+  margin: 0 0 12px 0;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #F3F4F6;
 }
 
-.my-therapist-profile-layout .detail-card h3 {
-  margin-top: 0;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 0.75rem;
-  color: #333;
-}
-
-.my-therapist-profile-layout .detail-card p {
+.info-card-text {
+  color: #374151;
+  font-size: 14px;
   line-height: 1.7;
-  color: #555;
+  margin: 0;
 }
 
-.my-therapist-profile-layout .detail-card ul {
-  list-style: none;
-  padding: 0;
+.detail-row {
+  display: flex;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid #F9FAFB;
+  font-size: 14px;
 }
 
-.my-therapist-profile-layout .detail-card ul li {
-  margin-bottom: 0.75rem;
-  color: #555;
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  font-weight: 600;
+  color: #374151;
+  min-width: 110px;
+}
+
+.detail-value {
+  color: #6B7280;
 }
 
 @media (max-width: 768px) {
@@ -633,10 +643,12 @@
   border-bottom: 1px solid #eee;
 }
 
+.modal-title,
 .modal-header h2 {
+  color: #003DA5;
+  font-weight: 800;
+  font-size: 1.25rem;
   margin: 0;
-  color: #333;
-  font-size: 1.5rem;
 }
 
 .modal-close-btn {
@@ -662,18 +674,27 @@
   padding: 1.5rem;
 }
 
-.warning-message {
-  background-color: #fff3cd;
-  border: 1px solid #ffc107;
-  border-radius: 5px;
-  padding: 1rem;
-  margin-bottom: 1.5rem;
-  color: #856404;
+.warning-box {
+  background: #FFFBEB;
+  border: 1.5px solid #F5A800;
+  border-left: 4px solid #F5A800;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
 }
 
-.warning-message strong {
-  display: block;
-  margin-bottom: 0.5rem;
+.warning-title {
+  color: #92600A;
+  font-weight: 700;
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+.warning-text {
+  color: #78450A;
+  font-size: 13.5px;
+  line-height: 1.6;
+  margin: 0;
 }
 
 .form-group {
@@ -687,22 +708,31 @@
   font-weight: 500;
 }
 
+.reason-select,
 .form-select,
 .form-textarea {
   width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  font-size: 1rem;
+  padding: 11px 14px;
+  border: 1.5px solid #D1D5DB;
+  border-radius: 8px;
+  font-size: 14px;
   font-family: inherit;
-  transition: border-color 0.2s ease;
+  color: #374151;
+  transition: border-color 0.2s, box-shadow 0.2s;
   box-sizing: border-box;
 }
 
+.form-textarea {
+  padding: 0.75rem;
+  font-size: 1rem;
+}
+
+.reason-select:focus,
 .form-select:focus,
 .form-textarea:focus {
+  border-color: #003DA5;
+  box-shadow: 0 0 0 3px rgba(0, 61, 165, 0.1);
   outline: none;
-  border-color: #4F8EC5;
 }
 
 .form-textarea {
@@ -732,12 +762,12 @@
 }
 
 .modal-btn {
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 5px;
-  font-weight: bold;
+  padding: 12px 28px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.25s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  transition: all 0.2s;
 }
 
 .modal-btn:disabled {
@@ -746,25 +776,26 @@
 }
 
 .modal-btn.cancel-btn {
-  background-color: #f0f0f0;
-  color: #333;
+  background: white;
+  color: #6B7280;
+  border: 1.5px solid #E5E7EB;
 }
 
 .modal-btn.cancel-btn:hover:not(:disabled) {
-  background-color: #e0e0e0;
-  transform: translateY(-2px);
-  box-shadow: 0 10px 18px -10px rgba(0, 0, 0, 0.2);
+  border-color: #003DA5;
+  color: #003DA5;
 }
 
 .modal-btn.submit-btn {
-  background-color: #dc3545;
+  background: #003DA5;
   color: white;
+  border: none;
+  font-weight: 700;
 }
 
 .modal-btn.submit-btn:hover:not(:disabled) {
-  background-color: #c82333;
-  transform: translateY(-2px);
-  box-shadow: 0 10px 18px -10px rgba(220, 53, 69, 0.3);
+  background: #002580;
+  box-shadow: 0 6px 16px rgba(0, 61, 165, 0.3);
 }
 
 @media (max-width: 768px) {

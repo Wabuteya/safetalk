@@ -1,128 +1,338 @@
 .profile-layout {
-    max-width: 800px;
-  }
-  
-  .profile-section {
-    background-color: #ffffff;
-    padding: 2rem;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-    margin-bottom: 2rem;
-  }
-  
-  .profile-section h2 {
-    margin-top: 0;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 0.75rem;
-    margin-bottom: 1rem;
-  }
-  
-  .section-description {
-    color: #555;
-    font-size: 0.9rem;
-    margin-top: -0.5rem;
-    margin-bottom: 1.5rem;
-  }
-  
-  .alias-display {
-    background-color: #f8f9fa;
-    border: 1px dashed #ccc;
-    border-radius: 5px;
-    padding: 1rem;
-    font-weight: bold;
-    font-size: 1.2rem;
-    color: #007BFF;
-    text-align: center;
-  }
-  
-  .confidential-disclaimer {
-    background-color: #E3F2FD;
-    border-left: 4px solid #007BFF;
-    padding: 1rem;
-    margin-bottom: 1.5rem;
-    border-radius: 5px;
-    font-size: 0.9rem;
-  }
-  
+  max-width: 800px;
+}
+
+.page-title {
+  color: #003DA5;
+  font-weight: 800;
+  font-size: 1.75rem;
+  margin: 0 0 24px 0;
+}
+
+/* Section Cards */
+.profile-card,
+.profile-section {
+  background: white;
+  border-radius: 14px;
+  padding: 28px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  margin-bottom: 20px;
+}
+
+.section-title {
+  color: #003DA5;
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin: 0 0 6px 0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #F3F4F6;
+}
+
+.section-subtitle,
+.section-description {
+  color: #6B7280;
+  font-size: 13.5px;
+  margin: 0 0 16px 0;
+  line-height: 1.6;
+}
+
+/* Anonymous Alias Box */
+.alias-box {
+  background: #EEF2FF;
+  border: 2px solid #003DA5;
+  border-radius: 10px;
+  padding: 16px 24px;
+  text-align: center;
+}
+
+.alias-name {
+  color: #003DA5;
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.alias-note {
+  font-size: 12px;
+  color: #6B7280;
+  margin-top: 4px;
+  font-style: italic;
+}
+
+/* Confidentiality Notice */
+.confidential-notice,
+.confidential-disclaimer {
+  background: #EFF6FF;
+  border-left: 4px solid #003DA5;
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 20px;
+  font-size: 13.5px;
+  color: #374151;
+  line-height: 1.6;
+}
+
+.confidential-notice strong,
+.confidential-disclaimer strong {
+  color: #003DA5;
+}
+
+/* Form */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #374151;
+  font-size: 14px;
+}
+
+.profile-input,
+.form-group input,
+.form-group select {
+  border: 1.5px solid #D1D5DB;
+  border-radius: 8px;
+  padding: 11px 14px;
+  font-size: 14px;
+  width: 100%;
+  box-sizing: border-box;
+  color: #374151;
+  background: white;
+}
+
+.profile-input:focus,
+.form-group input:focus,
+.form-group select:focus {
+  border-color: #003DA5;
+  box-shadow: 0 0 0 3px rgba(0, 61, 165, 0.1);
+  outline: none;
+}
+
+.profile-input[readonly],
+.form-group input[readonly] {
+  background: #F9FAFB;
+  color: #6B7280;
+  cursor: not-allowed;
+}
+
+.form-group input:disabled,
+.form-group select:disabled {
+  background: #F9FAFB;
+  cursor: not-allowed;
+}
+
+.profile-error {
+  color: #DC2626;
+  background-color: #FEF2F2;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-size: 14px;
+}
+
+.profile-success {
+  color: #166534;
+  background-color: #F0FDF4;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-size: 14px;
+}
+
+/* Save Button */
+.save-btn {
+  background: #003DA5;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 0.5rem;
+}
+
+.save-btn:hover:not(:disabled) {
+  background: #002580;
+  box-shadow: 0 6px 16px rgba(0, 61, 165, 0.3);
+}
+
+.save-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Change Password Button */
+.change-password-btn {
+  background: #003DA5;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 0.5rem;
+}
+
+.change-password-btn:hover:not(:disabled) {
+  background: #002580;
+  box-shadow: 0 6px 16px rgba(0, 61, 165, 0.3);
+}
+
+.change-password-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Danger Zone */
+.danger-zone-card,
+.profile-section.danger-zone {
+  background: white;
+  border: 2px solid #EF4444;
+  border-radius: 14px;
+  padding: 28px;
+  margin-bottom: 20px;
+}
+
+.danger-title {
+  color: #DC2626;
+  font-weight: 800;
+  font-size: 1.1rem;
+  margin: 0 0 8px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.danger-description {
+  color: #6B7280;
+  font-size: 13.5px;
+  line-height: 1.6;
+  margin: 0 0 20px 0;
+}
+
+.delete-btn {
+  background: #DC2626;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 11px 24px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.delete-btn:hover {
+  background: #B91C1C;
+  box-shadow: 0 6px 16px rgba(220, 38, 38, 0.3);
+}
+
+/* Delete Confirmation Modal */
+.delete-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.delete-modal {
+  background: white;
+  border-radius: 14px;
+  padding: 28px;
+  max-width: 420px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+.delete-modal h3 {
+  color: #DC2626;
+  margin: 0 0 12px 0;
+  font-size: 1.2rem;
+}
+
+.delete-modal p {
+  color: #6B7280;
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0 0 16px 0;
+}
+
+.delete-modal-input {
+  border: 1.5px solid #D1D5DB;
+  border-radius: 8px;
+  padding: 11px 14px;
+  font-size: 14px;
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 16px;
+}
+
+.delete-modal-input:focus {
+  border-color: #DC2626;
+  outline: none;
+}
+
+.delete-modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.delete-modal-cancel {
+  background: white;
+  border: 1.5px solid #D1D5DB;
+  color: #374151;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.delete-modal-cancel:hover {
+  background: #F9FAFB;
+}
+
+.delete-confirm-btn {
+  background: #DC2626;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.delete-confirm-btn:hover:not(:disabled) {
+  background: #B91C1C;
+  box-shadow: 0 6px 16px rgba(220, 38, 38, 0.3);
+}
+
+.delete-confirm-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
   .form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
+    grid-template-columns: 1fr;
   }
-  
-  .form-group {
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .form-group label {
-    font-weight: bold;
-    margin-bottom: 0.5rem;
-  }
-  
-  .form-group input, .form-group select {
-    padding: 0.75rem;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 1rem;
-  }
-  
-  .form-group input:disabled {
-      background-color: #f8f9fa;
-  }
-  
-  .profile-error {
-    color: #c33;
-    background-color: #fee;
-    padding: 0.75rem;
-    border-radius: 5px;
-    margin-bottom: 1rem;
-  }
-
-  .profile-success {
-    color: #2e7d32;
-    background-color: #e8f5e9;
-    padding: 0.75rem;
-    border-radius: 5px;
-    margin-bottom: 1rem;
-  }
-
-  .save-btn {
-    background-color: #007BFF;
-    color: white;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 5px;
-    font-weight: bold;
-    cursor: pointer;
-    margin-top: 1.5rem;
-  }
-
-  .save-btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-  
-  .danger-zone {
-    border: 2px solid #D32F2F;
-  }
-  
-  .danger-zone h2 {
-      color: #D32F2F;
-  }
-  
-  .delete-btn {
-    background-color: #D32F2F;
-    color: white;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 5px;
-    font-weight: bold;
-    cursor: pointer;
-  }
-  
-  @media (max-width: 600px) {
-      .form-grid {
-          grid-template-columns: 1fr;
-      }
-  }
+}

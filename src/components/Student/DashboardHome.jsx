@@ -84,22 +84,22 @@ const DashboardHome = () => {
   return (
     <div className="dashboard-home">
       <div className="welcome-header">
-        <h1>Welcome, {userAlias}!</h1>
-        <p>Your safe space is ready. What would you like to do today?</p>
+        <h1 className="welcome-title">Welcome, {userAlias}!</h1>
+        <p className="welcome-subtitle">Your safe space is ready. What would you like to do today?</p>
       </div>
 
       <MessageOfTheDay />
 
       {latestMood && (
-        <div className="dashboard-latest-mood">
-          <span className="latest-mood-label">How you're feeling:</span>
-          <span className="latest-mood-value">{moodLabel(latestMood.mood)}</span>
+        <div className="dashboard-latest-mood mood-bar">
+          <span className="latest-mood-label mood-label">How you're feeling:</span>
+          <span className="latest-mood-value mood-value">{moodLabel(latestMood.mood)}</span>
           {latestMood.note && (
             <p className="latest-mood-note">&ldquo;{latestMood.note}&rdquo;</p>
           )}
           <button
             type="button"
-            className="latest-mood-link"
+            className="latest-mood-link view-history-link"
             onClick={() => navigate('/student-dashboard/mood-history')}
           >
             View mood history
@@ -109,36 +109,50 @@ const DashboardHome = () => {
 
       <div className="dashboard-grid">
         <div 
-          className="widget-card journal" 
+          className="dashboard-card widget-card journal" 
           onClick={() => navigate('/student-dashboard/journal')}
         >
-          <h3>My Journal</h3>
+          <div className="dashboard-card-sticker">
+            <img
+              className="card-sticker-image"
+              src="/Sticker/Hand%20holding%20pen-amico.png"
+              alt=""
+              aria-hidden="true"
+            />
+          </div>
+          <h3 className="card-title">My Journal</h3>
           {loadingJournalCount ? (
-            <p>Loading...</p>
+            <p className="card-description">Loading...</p>
           ) : (
-            <p>
+            <p className="card-description">
               {journalCount === 0 
                 ? 'Write down your thoughts. Your privacy is our priority.'
                 : `You have ${journalCount} ${journalCount === 1 ? 'entry' : 'entries'} in your journal.`
               }
             </p>
           )}
-          <button onClick={(e) => {
-            e.stopPropagation();
-            navigate('/student-dashboard/journal');
-          }}>Write a New Entry</button>
+          <button onClick={(e) => { e.stopPropagation(); navigate('/student-dashboard/journal'); }} className="card-btn">
+            Write a New Entry
+          </button>
         </div>
 
         <div 
-          className="widget-card resources"
+          className="dashboard-card widget-card resources"
           onClick={() => navigate('/student-dashboard/resources')}
         >
-          <h3>Support Resources</h3>
-          <p>Explore articles and tools to support your wellness journey.</p>
-          <button onClick={(e) => {
-            e.stopPropagation();
-            navigate('/student-dashboard/resources');
-          }}>Explore Resources</button>
+          <div className="dashboard-card-sticker">
+            <img
+              className="card-sticker-image"
+              src="/Sticker/Book%20lover-amico.png"
+              alt=""
+              aria-hidden="true"
+            />
+          </div>
+          <h3 className="card-title">Support Resources</h3>
+          <p className="card-description">Explore articles and tools to support your wellness journey.</p>
+          <button onClick={(e) => { e.stopPropagation(); navigate('/student-dashboard/resources'); }} className="card-btn">
+            Explore Resources
+          </button>
         </div>
         
         <UpcomingAppointmentsWidget />

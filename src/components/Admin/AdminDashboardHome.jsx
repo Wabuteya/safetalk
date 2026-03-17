@@ -125,21 +125,21 @@ const AdminDashboardHome = () => {
 
   return (
     <div className="admin-home">
-      <h1>System Analytics</h1>
-      <p>A high-level overview of platform activity.</p>
+      <h1 className="analytics-title">System Analytics</h1>
+      <p className="analytics-subtitle">A high-level overview of platform activity.</p>
 
-      <div className="dashboard-grid">
-        <div className="widget-card analytics-card">
-          <h3>Total Students</h3>
-          <p className="analytics-value">{studentsCount.toLocaleString()}</p>
+      <div className="analytics-grid">
+        <div className="stat-card students">
+          <div className="stat-card-title">Total Students</div>
+          <div className="stat-card-value">{studentsCount.toLocaleString()}</div>
         </div>
-        <div className="widget-card analytics-card">
-          <h3>Active Therapists</h3>
-          <p className="analytics-value">{therapistsCount.toLocaleString()}</p>
+        <div className="stat-card therapists">
+          <div className="stat-card-title">Active Therapists</div>
+          <div className="stat-card-value">{therapistsCount.toLocaleString()}</div>
         </div>
-        <div className="widget-card analytics-card">
-          <h3>Sessions This Week</h3>
-          <p className="analytics-value">{sessionsThisWeek.toLocaleString()}</p>
+        <div className="stat-card sessions">
+          <div className="stat-card-title">Sessions This Week</div>
+          <div className="stat-card-value">{sessionsThisWeek.toLocaleString()}</div>
         </div>
       </div>
     </div>

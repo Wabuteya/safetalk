@@ -203,31 +203,29 @@ const AppointmentsPage = () => {
         </div>
       )}
 
-      <div className="page-header">
-        <h1>My Appointments</h1>
-        <div className="tabs-container">
+      <h1 className="page-title">My Appointments</h1>
+      <div className="view-tabs">
+        <button
+          className={`view-tab-btn ${activeTab === 'calendar' ? 'active' : ''}`}
+          onClick={() => setActiveTab('calendar')}
+        >
+          Calendar
+        </button>
+        <button
+          className={`view-tab-btn ${activeTab === 'availability' ? 'active' : ''}`}
+          onClick={() => setActiveTab('availability')}
+        >
+          Set Availability
+        </button>
+        {activeTab === 'calendar' && (
           <button
-            className={`tab-btn ${activeTab === 'calendar' ? 'active' : ''}`}
-            onClick={() => setActiveTab('calendar')}
+            onClick={fetchAppointments}
+            className="view-tab-btn refresh-btn"
+            title="Refresh appointments"
           >
-            Calendar
+            ↻ Refresh
           </button>
-          <button
-            className={`tab-btn ${activeTab === 'availability' ? 'active' : ''}`}
-            onClick={() => setActiveTab('availability')}
-          >
-            Set Availability
-          </button>
-          {activeTab === 'calendar' && (
-            <button
-              onClick={fetchAppointments}
-              className="refresh-btn"
-              title="Refresh appointments"
-            >
-              ↻ Refresh
-            </button>
-          )}
-        </div>
+        )}
       </div>
 
       {error && <div className="error-banner">{error}</div>}
@@ -247,29 +245,31 @@ const AppointmentsPage = () => {
 
       {activeTab === 'calendar' && (
         <>
-        <div className="emergency-cancel-section">
+        <div className="emergency-banner">
           <label htmlFor="emergency-cancel-date">Emergency cancel all appointments on:</label>
           <input
             id="emergency-cancel-date"
             type="date"
+            className="emergency-date-input"
             value={emergencyCancelDate}
             onChange={(e) => setEmergencyCancelDate(e.target.value)}
             min={new Date().toISOString().split('T')[0]}
           />
           <button
             type="button"
-            className="emergency-cancel-btn"
+            className="cancel-all-btn"
             onClick={handleEmergencyBulkCancel}
             disabled={!emergencyCancelDate || emergencyCancelling}
           >
             {emergencyCancelling ? 'Cancelling…' : 'Cancel All for Date'}
           </button>
         </div>
-        <div className="calendar-container">
+        <div className="calendar-wrapper">
           {loading ? (
             <div className="loading-container">Loading appointments...</div>
           ) : (
             <Calendar
+              className="appointments-calendar"
               localizer={localizer}
               events={events}
               startAccessor="start"

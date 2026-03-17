@@ -9,7 +9,7 @@ import {
 } from 'react-icons/fa';
 import { supabase } from '../../supabaseClient';
 
-const AdminSideNav = () => {
+const AdminSideNav = ({ closeSidebar }) => {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -46,33 +46,33 @@ const AdminSideNav = () => {
       <ul className="sidebar-nav">
         <li className="nav-section-heading">DASHBOARD</li>
         <li>
-          <NavLink to="/admin-dashboard" end>
+          <NavLink to="/admin-dashboard" end onClick={closeSidebar}>
             <AiOutlineDashboard className="nav-icon" />
             <span>Analytics</span>
           </NavLink>
         </li>
         <li className="nav-section-heading">USER MANAGEMENT</li>
         <li>
-          <NavLink to="/admin-dashboard/users">
+          <NavLink to="/admin-dashboard/users" onClick={closeSidebar}>
             <FaUserGraduate className="nav-icon" />
             <span>Manage Students</span>
           </NavLink>
         </li>
         <li>
-          <NavLink to="/admin-dashboard/therapists">
+          <NavLink to="/admin-dashboard/therapists" onClick={closeSidebar}>
             <FaUserMd className="nav-icon" />
             <span>Manage Therapists</span>
           </NavLink>
         </li>
         <li className="nav-section-heading">SYSTEM</li>
         <li>
-          <NavLink to="/admin-dashboard/content">
+          <NavLink to="/admin-dashboard/content" onClick={closeSidebar}>
             <FaRegNewspaper className="nav-icon" />
             <span>Manage Content</span>
           </NavLink>
         </li>
         <li>
-          <NavLink to="/admin-dashboard/health">
+          <NavLink to="/admin-dashboard/health" onClick={closeSidebar}>
             <FaHeartbeat className="nav-icon" />
             <span>System Health</span>
           </NavLink>

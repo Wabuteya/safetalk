@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
 import { useUser } from '../../contexts/UserContext';
 import { useUnreadMessages } from '../../contexts/UnreadMessagesContext';
+import { DefaultAvatar } from '../../utils/defaultAvatar';
 import MessageBubble from './MessageBubble';
 import './Chat.css';
 
@@ -12,7 +13,7 @@ import './Chat.css';
  * Supports real-time messaging with Supabase subscriptions
  * Falls back to async polling if real-time fails
  */
-const ChatScreen = ({ conversationId, otherUserId, otherUserName, userRole, showBackButton = true }) => {
+const ChatScreen = ({ conversationId, otherUserId, otherUserName, otherUserPhotoUrl, userRole, showBackButton = true }) => {
   const { user } = useUser();
   const { refresh: refreshUnread } = useUnreadMessages();
   const navigate = useNavigate();
@@ -22,8 +23,11 @@ const ChatScreen = ({ conversationId, otherUserId, otherUserName, userRole, show
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
   const [isOnline, setIsOnline] = useState(false);
+  const [isOtherTyping, setIsOtherTyping] = useState(false);
   const messagesEndRef = useRef(null);
   const subscriptionRef = useRef(null);
+  const presenceChannelRef = useRef(null);
+  const typingTimeoutRef = useRef(null);
 
   // Scroll to bottom when new messages arrive
   const scrollToBottom = () => {
@@ -34,6 +38,13 @@ const ChatScreen = ({ conversationId, otherUserId, otherUserName, userRole, show
     scrollToBottom();
   }, [messages]);
 
+  // Normalize message shape (handles Supabase realtime payload vs REST response differences)
+  const normalizeMessage = useCallback((msg) => {
+    if (!msg) return null;
+    const content = msg.content ?? msg.Content ?? msg.body ?? msg.message ?? '';
+    return { ...msg, content: typeof content === 'string' ? content : String(content ?? '') };
+  }, []);
+
   // Fetch initial messages and mark as read
   const fetchMessages = useCallback(async () => {
     if (!conversationId || !user) return;
@@ -41,12 +52,13 @@ const ChatScreen = ({ conversationId, otherUserId, otherUserName, userRole, show
     try {
       const { data, error } = await supabase
         .from('messages')
-        .select('*')
+        .select('id, conversation_id, sender_id, sender_role, content, read_status, created_at, updated_at')
         .eq('conversation_id', conversationId)
         .order('created_at', { ascending: true });
 
       if (error) throw error;
-      setMessages(data || []);
+      const normalized = (data || []).map(normalizeMessage).filter(Boolean);
+      setMessages(normalized);
 
       // Mark all unread messages FROM THE OTHER USER as read
       // For therapist: mark messages FROM student as read
@@ -71,7 +83,7 @@ const ChatScreen = ({ conversationId, otherUserId, otherUserName, userRole, show
     } finally {
       setLoading(false);
     }
-  }, [conversationId, user, refreshUnread]);
+  }, [conversationId, user, refreshUnread, normalizeMessage]);
 
   // Check therapist availability
   const checkAvailability = useCallback(async () => {
@@ -139,7 +151,25 @@ const ChatScreen = ({ conversationId, otherUserId, otherUserName, userRole, show
     }
   }, [user]);
 
-  // Set up real-time subscription for new messages
+  // Typing indicator: broadcast when user types, listen for other user
+  const broadcastTyping = useCallback((typing) => {
+    const ch = presenceChannelRef.current;
+    if (ch && user) {
+      ch.track({ user_id: user.id, typing });
+    }
+  }, [user]);
+
+  const handleInputChange = useCallback((e) => {
+    setNewMessage(e.target.value);
+    broadcastTyping(true);
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    typingTimeoutRef.current = setTimeout(() => {
+      broadcastTyping(false);
+      typingTimeoutRef.current = null;
+    }, 2000);
+  }, [broadcastTyping]);
+
+  // Set up real-time subscription for new messages + presence for typing
   useEffect(() => {
     if (!conversationId || !user) return;
 
@@ -150,7 +180,22 @@ const ChatScreen = ({ conversationId, otherUserId, otherUserName, userRole, show
     // Set user as online
     updatePresence(true);
 
-    // Subscribe to new messages
+    // Presence channel for typing indicator
+    const presenceChannel = supabase.channel(`chat-presence:${conversationId}`)
+      .on('presence', { event: 'sync' }, () => {
+        const state = presenceChannel.presenceState();
+        const others = Object.values(state).flat().filter((p) => p.user_id !== user.id);
+        const someoneTyping = others.some((p) => p.typing === true);
+        setIsOtherTyping(someoneTyping);
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED' && user) {
+          await presenceChannel.track({ user_id: user.id, typing: false });
+        }
+      });
+    presenceChannelRef.current = presenceChannel;
+
+    // Messages channel
     const channel = supabase
       .channel(`conversation:${conversationId}`)
       .on(
@@ -162,29 +207,27 @@ const ChatScreen = ({ conversationId, otherUserId, otherUserName, userRole, show
           filter: `conversation_id=eq.${conversationId}`
         },
         (payload) => {
-          console.log('New message received:', payload);
-          setMessages((prev) => [...prev, payload.new]);
+          const newMsg = normalizeMessage(payload.new);
+          if (newMsg) setMessages((prev) => [...prev, newMsg]);
         }
       )
-      .subscribe((status) => {
-        console.log('Subscription status:', status);
-        if (status === 'SUBSCRIBED') {
-          console.log('Successfully subscribed to messages');
-        }
-      });
+      .subscribe();
 
     subscriptionRef.current = channel;
 
     // Check availability periodically (fallback)
-    const availabilityInterval = setInterval(checkAvailability, 30000); // Every 30 seconds
+    const availabilityInterval = setInterval(checkAvailability, 30000);
 
     // Cleanup on unmount
     return () => {
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      presenceChannel.track({ user_id: user.id, typing: false });
+      presenceChannel.unsubscribe();
       channel.unsubscribe();
       clearInterval(availabilityInterval);
       updatePresence(false);
     };
-  }, [conversationId, user, fetchMessages, checkAvailability, updatePresence]);
+  }, [conversationId, user, fetchMessages, checkAvailability, updatePresence, normalizeMessage]);
 
   // Handle window visibility changes (update presence)
   useEffect(() => {
@@ -208,6 +251,7 @@ const ChatScreen = ({ conversationId, otherUserId, otherUserName, userRole, show
     e.preventDefault();
     if (!newMessage.trim() || !conversationId || !user || sending) return;
 
+    broadcastTyping(false);
     const messageContent = newMessage.trim();
     setNewMessage('');
     setSending(true);
@@ -228,7 +272,8 @@ const ChatScreen = ({ conversationId, otherUserId, otherUserName, userRole, show
       if (error) throw error;
 
       // Message will be added via real-time subscription, but add immediately for better UX
-      setMessages((prev) => [...prev, data]);
+      const normalized = normalizeMessage(data);
+      if (normalized) setMessages((prev) => [...prev, normalized]);
 
       // Update conversation updated_at
       await supabase
@@ -256,30 +301,39 @@ const ChatScreen = ({ conversationId, otherUserId, otherUserName, userRole, show
     <div className="chat-screen">
       {/* Chat Header */}
       <div className="chat-header">
-        {/* Back button only shown when explicitly requested (e.g., for student standalone chat) */}
         {showBackButton && (
           <button className="back-button" onClick={() => navigate(-1)}>
             ← Back
           </button>
         )}
+        {otherUserPhotoUrl ? (
+          <img src={otherUserPhotoUrl} alt="" className={userRole === 'therapist' ? 'student-avatar' : 'therapist-avatar'} />
+        ) : userRole === 'therapist' ? (
+          <div className="student-avatar">
+            {otherUserName?.charAt(0)?.toUpperCase() || '?'}
+          </div>
+        ) : (
+          <div className="therapist-avatar therapist-avatar-placeholder">
+            <DefaultAvatar size={40} />
+          </div>
+        )}
         <div className="chat-header-info">
-          <h2>{otherUserName}</h2>
-          <div className="availability-status">
-            <span className={`status-dot ${isOnline ? 'online' : 'offline'}`}></span>
+          <h2 className={userRole === 'therapist' ? 'student-name therapist-name' : 'therapist-name'}>{otherUserName}</h2>
+          <div className="student-status therapist-status availability-status">
+            <span className={`status-dot ${isOnline ? 'online' : ''}`}></span>
             <span>{isOnline ? 'Online' : 'Offline'}</span>
           </div>
         </div>
       </div>
 
-      {/* Emergency Disclaimer – students only; therapists don't need this reminder */}
-      {userRole === 'student' && (
-        <div className="chat-disclaimer">
-          <strong>⚠️ Important:</strong> Messaging is not for emergencies. Use Crisis Support for immediate help.
-        </div>
-      )}
+      {/* Warning Banner */}
+      <div className="warning-banner">
+        ⚠️ <strong>Important:</strong> Messaging is not for emergencies.{' '}
+        {userRole === 'therapist' ? 'Use Crisis Management for immediate help.' : 'Use Crisis Support for immediate help.'}
+      </div>
 
-      {/* Messages Container */}
-      <div className="messages-container">
+      {/* Messages Area */}
+      <div className="messages-area messages-container">
         {messages.length === 0 ? (
           <div className="empty-messages">
             <p>No messages yet. Start the conversation!</p>
@@ -293,10 +347,17 @@ const ChatScreen = ({ conversationId, otherUserId, otherUserName, userRole, show
             />
           ))
         )}
+        {isOtherTyping && (
+          <div className="typing-indicator">
+            <div className="typing-bubble">
+              <span></span><span></span><span></span>
+            </div>
+            <p>{otherUserName} is typing...</p>
+          </div>
+        )}
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Error Banner */}
       {error && (
         <div className="chat-error">
           {error}
@@ -304,22 +365,23 @@ const ChatScreen = ({ conversationId, otherUserId, otherUserName, userRole, show
         </div>
       )}
 
-      {/* Message Input */}
-      <form className="message-input-form" onSubmit={handleSendMessage}>
+      {/* Message Input Bar */}
+      <form className="chat-input-bar message-input-form" onSubmit={handleSendMessage}>
         <input
           type="text"
           className="message-input"
           placeholder="Type your message..."
           value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
+          onChange={handleInputChange}
           disabled={sending}
         />
         <button
           type="submit"
-          className="send-button"
+          className="send-btn send-button"
           disabled={!newMessage.trim() || sending}
+          title="Send"
         >
-          {sending ? 'Sending...' : 'Send'}
+          {sending ? '…' : '➤'}
         </button>
       </form>
     </div>

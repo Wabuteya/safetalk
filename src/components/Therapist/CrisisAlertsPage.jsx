@@ -21,6 +21,14 @@ const formatTime = (iso) =>
 
 const formatSource = (source) => (source ? source.replace(/_/g, ' ') : '—');
 
+const capitalizeName = (name) =>
+  name
+    ? name
+        .split(' ')
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join(' ')
+    : '—';
+
 const CrisisAlertsPage = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -32,6 +40,16 @@ const CrisisAlertsPage = () => {
   const [loading, setLoading] = useState(true);
   const [selectedId, setSelectedId] = useState(null);
   const [actingId, setActingId] = useState(null);
+  const [statusFilter, setStatusFilter] = useState('all'); // 'all' | 'active' | 'resolved'
+
+  const activeCount = alerts.filter((a) => a.status !== 'resolved').length;
+  const resolvedCount = alerts.filter((a) => a.status === 'resolved').length;
+  const filteredAlerts =
+    statusFilter === 'active'
+      ? alerts.filter((a) => a.status !== 'resolved')
+      : statusFilter === 'resolved'
+        ? alerts.filter((a) => a.status === 'resolved')
+        : alerts;
 
   const refreshAlerts = useCallback(async (therapistId) => {
     if (!therapistId) return;
@@ -116,22 +134,47 @@ const CrisisAlertsPage = () => {
 
   return (
     <div className="crisis-alerts-layout">
-      <header className="crisis-alerts-page-header">
-        <h1>Crisis Management</h1>
-        <p className="crisis-alerts-subtitle">Centralized view of all crisis events. Open an alert to acknowledge and take action.</p>
-      </header>
+      <h1 className="page-title">Crisis Management</h1>
+      <p className="page-subtitle">Centralized view of all crisis events. Open an alert to acknowledge and take action.</p>
 
-      <div className="crisis-alerts-main">
+      <div className="crisis-banner">
+        🚨 <strong>Crisis alerts require prompt attention.</strong> Active alerts should be acknowledged within 15 minutes.
+      </div>
+
+      <div className="crisis-layout">
         <div className="crisis-alerts-list-panel">
-          <h2 className="crisis-alerts-list-title">All alerts ({alerts.length})</h2>
+          <div className="alert-filters">
+            <button
+              type="button"
+              className={`filter-tab ${statusFilter === 'all' ? 'active' : ''}`}
+              onClick={() => setStatusFilter('all')}
+            >
+              All ({alerts.length})
+            </button>
+            <button
+              type="button"
+              className={`filter-tab urgent ${statusFilter === 'active' ? 'active' : ''}`}
+              onClick={() => setStatusFilter('active')}
+            >
+              Active ({activeCount})
+            </button>
+            <button
+              type="button"
+              className={`filter-tab ${statusFilter === 'resolved' ? 'active' : ''}`}
+              onClick={() => setStatusFilter('resolved')}
+            >
+              Resolved ({resolvedCount})
+            </button>
+          </div>
+
           {alerts.length === 0 ? (
             <div className="crisis-alerts-empty">
               <p>No crisis alerts.</p>
               <p className="subtext">Alerts will appear here when students use Crisis Support or when crises are created.</p>
             </div>
           ) : (
-            <div className="crisis-alerts-table-wrap">
-              <table className="crisis-alerts-table">
+            <div className="crisis-table-wrapper">
+              <table className="crisis-table">
                 <thead>
                   <tr>
                     <th>Student</th>
@@ -144,26 +187,28 @@ const CrisisAlertsPage = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {alerts.map((alert) => (
+                  {filteredAlerts.map((alert) => (
                     <tr
                       key={alert.id}
-                      className={`crisis-alerts-row ${selectedId === alert.id ? 'selected' : ''} status-${alert.status}`}
+                      className={`${selectedId === alert.id ? 'selected' : ''} ${alert.status !== 'resolved' ? 'active-alert' : ''}`}
                       onClick={() => openAlert(alert)}
                     >
                       <td>{alert.studentAlias}</td>
-                      <td>—</td>
+                      <td>
+                        <span className="risk-badge high">High</span>
+                      </td>
                       <td>{formatSource(alert.source)}</td>
                       <td>{formatTime(alert.triggered_at)}</td>
                       <td>
-                        <span className={`crisis-alerts-status-badge status-${alert.displayStatus?.toLowerCase()}`}>
+                        <span className={`status-badge ${alert.displayStatus?.toLowerCase()}`}>
                           {alert.displayStatus}
                         </span>
                       </td>
-                      <td>{alert.assignedTherapistName}</td>
+                      <td>{capitalizeName(alert.assignedTherapistName)}</td>
                       <td onClick={(e) => e.stopPropagation()}>
                         <button
                           type="button"
-                          className="crisis-alerts-btn-open"
+                          className="open-alert-btn"
                           onClick={() => openAlert(alert)}
                           disabled={actingId === alert.id}
                         >
@@ -178,59 +223,73 @@ const CrisisAlertsPage = () => {
           )}
         </div>
 
-        <div className="crisis-alerts-detail-panel">
+        <div className="alert-details-panel">
+          <h2 className="panel-title">Alert details</h2>
           {selectedAlert ? (
-            <>
-              <h2 className="crisis-alerts-detail-title">Alert details</h2>
-              <div className="crisis-alerts-detail-card">
-                <div className="crisis-alerts-detail-row">
-                  <span className="label">Student</span>
-                  <span>{selectedAlert.studentAlias}</span>
-                </div>
-                <div className="crisis-alerts-detail-row">
-                  <span className="label">Risk level</span>
-                  <span>—</span>
-                </div>
-                <div className="crisis-alerts-detail-row">
-                  <span className="label">Trigger source</span>
-                  <span>{formatSource(selectedAlert.source)}</span>
-                </div>
-                <div className="crisis-alerts-detail-row">
-                  <span className="label">Time triggered</span>
-                  <span>{formatTime(selectedAlert.triggered_at)}</span>
-                </div>
-                <div className="crisis-alerts-detail-row">
-                  <span className="label">Current status</span>
-                  <span className={`crisis-alerts-status-badge status-${selectedAlert.displayStatus?.toLowerCase()}`}>
-                    {selectedAlert.displayStatus}
-                  </span>
-                </div>
-                <div className="crisis-alerts-detail-row">
-                  <span className="label">Assigned therapist</span>
-                  <span>{selectedAlert.assignedTherapistName}</span>
-                </div>
-                {selectedAlert.acknowledged_at && (
-                  <div className="crisis-alerts-detail-row">
-                    <span className="label">Acknowledged at</span>
-                    <span>{formatTime(selectedAlert.acknowledged_at)}</span>
-                  </div>
-                )}
-                {selectedAlert.resolved_at && (
-                  <div className="crisis-alerts-detail-row">
-                    <span className="label">Resolved at</span>
-                    <span>{formatTime(selectedAlert.resolved_at)}</span>
-                  </div>
-                )}
+            <div className="alert-detail-content">
+              <div className="detail-row">
+                <span className="detail-label">Student</span>
+                <span className="detail-value">{selectedAlert.studentAlias}</span>
+              </div>
+              <div className="detail-row">
+                <span className="detail-label">Risk Level</span>
+                <span className={`risk-badge ${(selectedAlert.riskLevel || 'high').toLowerCase()}`}>
+                  {selectedAlert.riskLevel || 'High'}
+                </span>
+              </div>
+              <div className="detail-row">
+                <span className="detail-label">Trigger</span>
+                <span className="detail-value">{formatSource(selectedAlert.source)}</span>
+              </div>
+              <div className="detail-row">
+                <span className="detail-label">Time</span>
+                <span className="detail-value">{formatTime(selectedAlert.triggered_at)}</span>
+              </div>
+              <div className="detail-row">
+                <span className="detail-label">Status</span>
+                <span className={`status-badge ${selectedAlert.displayStatus?.toLowerCase()}`}>
+                  {selectedAlert.displayStatus}
+                </span>
+              </div>
+              <div className="detail-row">
+                <span className="detail-label">Therapist</span>
+                <span className="detail-value">{capitalizeName(selectedAlert.assignedTherapistName)}</span>
               </div>
 
-              <div className="crisis-alerts-detail-actions">
-                <button type="button" className="crisis-alerts-btn-case" onClick={openStudentCase}>
-                  Open student case
+              <div className="panel-actions">
+                {selectedAlert.status !== 'resolved' &&
+                  (selectedAlert.acknowledged_at ? (
+                    <button type="button" className="acknowledge-btn" disabled>
+                      ✓ Acknowledged
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="acknowledge-btn"
+                      onClick={async () => {
+                        if (!user?.id) return;
+                        setActingId(selectedAlert.id);
+                        try {
+                          await acknowledgeCrisisEvent(selectedAlert.id, user.id);
+                          await refreshAlerts(user.id);
+                        } catch (err) {
+                          console.error('Acknowledge failed:', err);
+                        } finally {
+                          setActingId(null);
+                        }
+                      }}
+                      disabled={!!actingId}
+                    >
+                      {actingId === selectedAlert.id ? '…' : '✓ Acknowledge'}
+                    </button>
+                  ))}
+                <button type="button" className="reveal-identity-btn" onClick={openStudentCase}>
+                  🔓 Reveal Student Identity
                 </button>
-                {selectedAlert.status !== 'resolved' && (
+                {selectedAlert.status !== 'resolved' && selectedAlert.acknowledged_at && (
                   <button
                     type="button"
-                    className="crisis-alerts-btn-resolve"
+                    className="acknowledge-btn"
                     onClick={handleResolve}
                     disabled={!!actingId}
                   >
@@ -238,12 +297,10 @@ const CrisisAlertsPage = () => {
                   </button>
                 )}
               </div>
-            </>
+            </div>
           ) : (
-            <div className="crisis-alerts-no-selection">
-              <h2 className="crisis-alerts-detail-title">Alert details</h2>
-              <p>Select an alert from the list to view details and take action.</p>
-              <p className="subtext">Opening an alert marks it as Acknowledged if it is still Active.</p>
+            <div className="panel-empty-state">
+              Select an alert from the list to view details and take action.
             </div>
           )}
         </div>

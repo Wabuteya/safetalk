@@ -6,7 +6,7 @@ import { FaComments } from 'react-icons/fa';
 import './CaseloadPage.css';
 import './StatusSelector.css'; // For status dot colors
 
-const StudentSummaryCard = ({ student }) => {
+const StudentSummaryCard = ({ student, borderColor }) => {
   const navigate = useNavigate();
   const { user } = useUser();
   const [conversationId, setConversationId] = useState(null);
@@ -119,71 +119,57 @@ const StudentSummaryCard = ({ student }) => {
       state: { openChatTab: true }
     });
   };
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'online':
-        return '#28a745';
-      case 'away':
-        return '#ffc107';
-      case 'offline':
-      default:
-        return '#6c757d';
-    }
-  };
+  const statusClass = student.status === 'online' ? 'online' : student.status === 'away' ? 'away' : 'offline';
 
   return (
-    <div className="student-card">
-      <div className="student-card-header">
+    <div
+      className="student-card"
+      style={borderColor ? { borderTopColor: borderColor } : undefined}
+    >
+      <div className="card-header">
         <h3 className="student-alias">{student.alias}</h3>
-        {student.status && (
-          <div className="student-status">
-            <span 
-              className="status-dot" 
-              style={{ backgroundColor: getStatusColor(student.status) }}
-            ></span>
-            <span className="status-text">{student.status}</span>
-          </div>
-        )}
+        <div className="status-badge">
+          <span className={`status-dot ${statusClass}`} />
+          <span>{(student.status || 'offline').charAt(0).toUpperCase() + (student.status || 'offline').slice(1)}</span>
+        </div>
       </div>
-      
-      <div className="student-card-details">
-        <div className="detail-item">
-          <strong>Last Message:</strong> {student.lastContact || 'No messages yet'}
+
+      <div className="stats-grid">
+        <div className="stat-item">
+          <div className="stat-label">Journals Shared</div>
+          <div className="stat-value">{student.journalsShared || 0}</div>
         </div>
-        <div className="detail-item">
-          <strong>Journals Shared:</strong> {student.journalsShared || 0}
+        <div className="stat-item">
+          <div className="stat-label">New Journals</div>
+          <div className="stat-value">{student.newJournals || 0}</div>
         </div>
-        <div className="detail-item">
-          <strong>Appointments:</strong> {student.appointmentsCount || 0}
+        <div className="stat-item appointments">
+          <div className="stat-label">Appointments</div>
+          <div className="stat-value">{student.appointmentsCount || 0}</div>
         </div>
-        <div className="detail-item">
-          <strong>Notes:</strong> {student.notesCount || 0}
+        <div className="stat-item">
+          <div className="stat-label">Notes</div>
+          <div className="stat-value">{student.notesCount || 0}</div>
         </div>
-        {student.newJournals > 0 && (
-          <div className="new-journal-indicator">
-            {student.newJournals} New Journal{student.newJournals > 1 ? 's' : ''}
-          </div>
-        )}
-        {student.appointmentsCount > 0 && (
-          <div className="appointment-indicator">
-            {student.appointmentsCount} Appointment{student.appointmentsCount > 1 ? 's' : ''}
-          </div>
-        )}
-        {student.notesCount > 0 && (
-          <div className="notes-indicator">
-            {student.notesCount} Note{student.notesCount > 1 ? 's' : ''}
-          </div>
-        )}
       </div>
-      
-      <div className="student-card-actions">
-        <button 
-          className="chat-btn-card"
-          onClick={handleChatClick}
+
+      {student.appointmentsCount > 0 && (
+        <div
+          className="appointments-pill"
+          onClick={() => navigate(`/therapist-dashboard/student/${student.id}`)}
+          onKeyDown={(e) => e.key === 'Enter' && navigate(`/therapist-dashboard/student/${student.id}`)}
+          role="button"
+          tabIndex={0}
         >
+          {student.appointmentsCount} Appointment{student.appointmentsCount !== 1 ? 's' : ''}
+        </div>
+      )}
+
+      <div className="card-actions">
+        <button type="button" className="chat-btn" onClick={handleChatClick}>
           <FaComments /> Chat {unreadCount > 0 && <span className="unread-badge-small">{unreadCount}</span>}
         </button>
-        <Link to={`/therapist-dashboard/student/${student.id}`} className="view-progress-btn">
+        <Link to={`/therapist-dashboard/student/${student.id}`} className="profile-btn">
           View Profile
         </Link>
       </div>

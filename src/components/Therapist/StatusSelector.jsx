@@ -35,7 +35,7 @@ const StatusSelector = ({ userId }) => {
     return (
         <div className="status-selector">
             <span className={`status-dot ${currentStatus}`}></span>
-            <select value={currentStatus} onChange={(e) => handleStatusChange(e.target.value)}>
+            <select className="status-select" value={currentStatus} onChange={(e) => handleStatusChange(e.target.value)}>
                 <option value="online">Online</option>
                 <option value="away">Away</option>
                 <option value="offline">Offline</option>

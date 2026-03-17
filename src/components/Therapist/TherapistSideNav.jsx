@@ -15,7 +15,7 @@ import { useCrisisRealtime } from '../../contexts/CrisisRealtimeContext';
 import { useUnreadMessages } from '../../contexts/UnreadMessagesContext';
 import StatusSelector from './StatusSelector.jsx';
 
-const TherapistSideNav = () => {
+const TherapistSideNav = ({ closeSidebar }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { crisisCount = 0 } = useCrisisRealtime() || {};
@@ -113,33 +113,33 @@ const TherapistSideNav = () => {
         <h3>Therapist Portal</h3>
       </div>
       <div className="sidebar-profile">
-        <p className="sidebar-alias">{therapistName}</p>
+        <p className="therapist-name sidebar-alias">{therapistName}</p>
         {/* --- ADD THE NEW COMPONENT HERE --- */}
         {user && <StatusSelector userId={user.id} />}
       </div>
       <ul className="sidebar-nav">
         <li className="nav-section-heading">DASHBOARD</li>
         <li>
-          <NavLink to="/therapist-dashboard" end>
+          <NavLink to="/therapist-dashboard" end onClick={closeSidebar}>
             <AiOutlineDashboard className="nav-icon" />
             <span>Dashboard Home</span>
           </NavLink>
         </li>
         <li className="nav-section-heading">CLIENT MANAGEMENT</li>
         <li>
-          <NavLink to="/therapist-dashboard/caseload">
+          <NavLink to="/therapist-dashboard/caseload" onClick={closeSidebar}>
             <FaClipboardList className="nav-icon" />
             <span>My Caseload</span>
           </NavLink>
         </li>
         <li>
-          <NavLink to="/therapist-dashboard/appointments">
+          <NavLink to="/therapist-dashboard/appointments" onClick={closeSidebar}>
             <FaCalendarCheck className="nav-icon" />
             <span>Appointments</span>
           </NavLink>
         </li>
         <li>
-          <NavLink to="/therapist-dashboard/live-chat">
+          <NavLink to="/therapist-dashboard/live-chat" onClick={closeSidebar}>
             <FaComments className="nav-icon" />
             <span>Live Chat</span>
             {unreadCount > 0 && (
@@ -151,13 +151,13 @@ const TherapistSideNav = () => {
         </li>
         <li className="nav-section-heading">RESOURCES</li>
         <li>
-          <NavLink to="/therapist-dashboard/resources">
+          <NavLink to="/therapist-dashboard/resources" onClick={closeSidebar}>
             <FaLightbulb className="nav-icon" />
             <span>Manage Resources</span>
           </NavLink>
         </li>
         <li>
-          <NavLink to="/therapist-dashboard/alerts" className={({ isActive }) => (isActive ? 'active' : '')}>
+          <NavLink to="/therapist-dashboard/alerts" className={({ isActive }) => (isActive ? 'active' : '')} onClick={closeSidebar}>
             <FaBell className="nav-icon" />
             <span>Crisis Management</span>
             {crisisCount > 0 && !isOnCrisisPage && (
@@ -169,7 +169,7 @@ const TherapistSideNav = () => {
         </li>
         <li className="nav-section-heading">ACCOUNT</li>
         <li>
-          <NavLink to="/therapist-dashboard/profile">
+          <NavLink to="/therapist-dashboard/profile" onClick={closeSidebar}>
             <FaUserCircle className="nav-icon" />
             <span>My Profile</span>
           </NavLink>

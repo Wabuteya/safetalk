@@ -16,6 +16,22 @@ import './MoodHistoryPage.css';
 
 const moodLabel = (value) => MOOD_OPTIONS.find((o) => o.value === value)?.label || value;
 
+const moodColors = {
+  'Difficult': '#7B1D1D',
+  'Low': '#F59E0B',
+  'Okay': '#3B82F6',
+  'Good': '#10B981',
+  'Great': '#003DA5',
+};
+
+const moodBorderColors = {
+  'Difficult': '#7B1D1D',
+  'Low': '#F59E0B',
+  'Okay': '#3B82F6',
+  'Good': '#10B981',
+  'Great': '#003DA5',
+};
+
 const formatDate = (iso) => {
   const d = new Date(iso);
   return d.toLocaleDateString('en-US', {
@@ -101,7 +117,7 @@ const MoodHistoryPage = () => {
     return (
       <div className="mood-history-layout">
         <div className="page-header">
-          <h1>Your Mood History</h1>
+          <h1 className="page-title">Your Mood History</h1>
         </div>
         <p>Loading mood history…</p>
       </div>
@@ -111,13 +127,13 @@ const MoodHistoryPage = () => {
   return (
     <div className="mood-history-layout">
       <div className="page-header">
-        <h1>Your Mood History</h1>
+        <h1 className="page-title">Your Mood History</h1>
         <div className="time-filters">
           {[7, 30, 90].map((days) => (
             <button
               key={days}
               type="button"
-              className={range === days ? 'active' : ''}
+              className={`filter-btn ${range === days ? 'active' : ''}`}
               onClick={() => setRange(days)}
             >
               Last {days} days
@@ -134,20 +150,20 @@ const MoodHistoryPage = () => {
         </div>
       ) : (
         <>
-          <div className="mood-trends-section chart-container">
+          <div className="mood-trends-section chart-container chart-card">
             <div className="chart-header">
-              <h3>Mood over time</h3>
-              <div className="chart-type-toggle">
+              <h3 className="card-section-title">Mood over time</h3>
+              <div className="chart-type-toggle chart-toggle">
                 <button
                   type="button"
-                  className={chartType === 'line' ? 'active' : ''}
+                  className={`toggle-btn ${chartType === 'line' ? 'active' : ''}`}
                   onClick={() => setChartType('line')}
                 >
                   Line
                 </button>
                 <button
                   type="button"
-                  className={chartType === 'bar' ? 'active' : ''}
+                  className={`toggle-btn ${chartType === 'bar' ? 'active' : ''}`}
                   onClick={() => setChartType('bar')}
                 >
                   Bar
@@ -159,46 +175,47 @@ const MoodHistoryPage = () => {
               <ResponsiveContainer width="100%" height={280}>
                 {chartType === 'line' ? (
                   <LineChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
-                    <XAxis dataKey="date" tick={{ fontSize: 12 }} />
-                    <YAxis domain={[1, 5]} ticks={[1, 2, 3, 4, 5]} tick={{ fontSize: 12 }} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#F0F0F0" />
+                    <XAxis dataKey="date" tick={{ fill: '#9CA3AF', fontSize: 12 }} />
+                    <YAxis domain={[1, 5]} ticks={[1, 2, 3, 4, 5]} tick={{ fill: '#9CA3AF', fontSize: 12 }} />
                     <Tooltip content={<CustomTooltip />} />
                     <Line
                       type="monotone"
                       dataKey="value"
-                      stroke="#2196f3"
-                      strokeWidth={2}
-                      dot={{ r: 4, fill: '#2196f3' }}
-                      activeDot={{ r: 6 }}
+                      stroke="#003DA5"
+                      strokeWidth={2.5}
+                      dot={{ fill: '#003DA5', strokeWidth: 2, r: 5 }}
+                      activeDot={{ r: 7, fill: '#003DA5' }}
                     />
                   </LineChart>
                 ) : (
                   <BarChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
-                    <XAxis dataKey="date" tick={{ fontSize: 12 }} />
-                    <YAxis domain={[1, 5]} ticks={[1, 2, 3, 4, 5]} tick={{ fontSize: 12 }} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#F0F0F0" />
+                    <XAxis dataKey="date" tick={{ fill: '#9CA3AF', fontSize: 12 }} />
+                    <YAxis domain={[1, 5]} ticks={[1, 2, 3, 4, 5]} tick={{ fill: '#9CA3AF', fontSize: 12 }} />
                     <Tooltip content={<CustomTooltip />} />
-                    <Bar dataKey="value" fill="#2196f3" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="value" fill="#003DA5" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 )}
               </ResponsiveContainer>
             </div>
           </div>
 
-          <div className="mood-overview-section chart-container">
-            <h3>Mood overview</h3>
+          <div className="mood-overview-section chart-container overview-card">
+            <h3 className="card-section-title">Mood overview</h3>
             <div className="mood-trend-bars">
               {[...MOOD_OPTIONS].reverse().map((opt) => {
                 const count = trendCounts[opt.value] || 0;
                 const pct = filtered.length ? (count / filtered.length) * 100 : 0;
                 const value = MOOD_VALUES[opt.value];
+                const barColor = moodColors[opt.label] || '#003DA5';
                 return (
                   <div key={opt.value} className="mood-trend-row">
                     <span className="mood-trend-label">{opt.label} ({value})</span>
                     <div className="mood-trend-bar-wrap">
                       <div
                         className="mood-trend-bar"
-                        style={{ width: `${pct}%` }}
+                        style={{ width: `${pct}%`, backgroundColor: barColor }}
                       />
                     </div>
                     <span className="mood-trend-count">{count}</span>
@@ -208,20 +225,24 @@ const MoodHistoryPage = () => {
             </div>
           </div>
 
-          <div className="mood-history-list insights-container">
-            <h3>History</h3>
+          <div className="mood-history-list insights-container history-card">
+            <h3 className="card-section-title">History</h3>
             <ul className="mood-history-entries">
-              {filtered.map((entry) => (
-                <li key={entry.id} className="mood-history-entry">
-                  <span className="mood-entry-date">{formatDate(entry.logged_at)}</span>
-                  <span className={`mood-entry-mood mood-${entry.mood}`}>
-                    {moodLabel(entry.mood)} ({MOOD_VALUES[entry.mood] ?? '—'}/5)
-                  </span>
-                  {entry.note && (
-                    <p className="mood-entry-note">&ldquo;{entry.note}&rdquo;</p>
-                  )}
-                </li>
-              ))}
+              {filtered.map((entry) => {
+                const label = moodLabel(entry.mood);
+                const borderColor = moodBorderColors[label] || '#003DA5';
+                return (
+                  <li key={entry.id} className="history-entry mood-history-entry" style={{ borderLeftColor: borderColor }}>
+                    <span className="entry-timestamp mood-entry-date">{formatDate(entry.logged_at)}</span>
+                    <span className="entry-mood mood-entry-mood">
+                      {label} ({MOOD_VALUES[entry.mood] ?? '—'}/5)
+                    </span>
+                    {entry.note && (
+                      <p className="mood-entry-note">&ldquo;{entry.note}&rdquo;</p>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           </div>
         </>

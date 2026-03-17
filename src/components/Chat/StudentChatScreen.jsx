@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
 import { useUser } from '../../contexts/UserContext';
 import ChatScreen from './ChatScreen';
+import { getTherapistPhotoUrl } from '../../utils/defaultAvatar';
 
 /**
  * StudentChatScreen Wrapper
@@ -84,16 +85,18 @@ const StudentChatScreen = () => {
           }
         }
 
-        // Get therapist name
+        // Get therapist profile (name + photo)
         const { data: therapistProfile } = await supabase
           .from('therapist_profiles')
-          .select('full_name')
+          .select('full_name, profile_photo_url, image_url')
           .eq('user_id', therapistId)
           .single();
 
+        const photoUrl = getTherapistPhotoUrl(therapistProfile?.profile_photo_url, therapistProfile?.image_url);
         setConversation({
           ...convData,
-          therapistName: therapistProfile?.full_name || 'Therapist'
+          therapistName: therapistProfile?.full_name || 'Therapist',
+          otherUserPhotoUrl: photoUrl || null
         });
       } catch (err) {
         console.error('Error fetching/creating conversation:', err);
@@ -139,6 +142,7 @@ const StudentChatScreen = () => {
       conversationId={conversation.id}
       otherUserId={conversation.therapist_id}
       otherUserName={conversation.therapistName}
+      otherUserPhotoUrl={conversation.otherUserPhotoUrl}
       userRole="student"
     />
   );

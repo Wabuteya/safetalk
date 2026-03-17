@@ -4,6 +4,14 @@ import { useUser } from '../../contexts/UserContext';
 import StudentSummaryCard from './StudentSummaryCard.jsx';
 import './CaseloadPage.css';
 
+const CASELOAD_COLORS = [
+  '#003DA5', // UCU Blue
+  '#7B1D1D', // UCU Maroon
+  '#F5A800', // UCU Gold
+  '#1D6A7B', // Teal variant
+  '#2D7B1D', // Green variant
+];
+
 const CaseloadPage = () => {
   const { user } = useUser();
   const [searchTerm, setSearchTerm] = useState('');
@@ -166,10 +174,11 @@ const CaseloadPage = () => {
   return (
     <div className="caseload-layout">
       <div className="page-header">
-        <h1>My Caseload</h1>
-        <div className="search-bar">
+        <h1 className="page-title">My Caseload</h1>
+        <div className="search-wrapper">
           <input
             type="text"
+            className="search-input"
             placeholder="Search by alias..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -191,8 +200,12 @@ const CaseloadPage = () => {
         </div>
       ) : (
         <div className="caseload-grid">
-          {filteredStudents.map(student => (
-            <StudentSummaryCard key={student.id} student={student} />
+          {filteredStudents.map((student, index) => (
+            <StudentSummaryCard
+              key={student.id}
+              student={student}
+              borderColor={CASELOAD_COLORS[index % CASELOAD_COLORS.length]}
+            />
           ))}
         </div>
       )}

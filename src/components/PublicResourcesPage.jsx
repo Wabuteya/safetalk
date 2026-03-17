@@ -1,6 +1,22 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { LazyLottie } from './LazyLottie';
 import './PublicResourcesPage.css';
+
+const BREATHING_LOTTIE_PATH = '/Lottie/Deep%20Breathing.json';
+const SOS_LOTTIE_PATH = '/Lottie/Sos%20animation.json';
+const YOGA_LOTTIE_PATH = '/Lottie/yoga%20for%20life.json';
+const STUDENT_BOOKS_LOTTIE_PATH = '/Lottie/Student%20with%20books.json';
+const SLEEPING_LOTTIE_PATH = '/Lottie/Sleeping.json';
+const MEDITATION_LOTTIE_PATH = '/Lottie/Meditation.json';
+const RELAX_LOTTIE_PATH = '/Lottie/relax.json';
+
+const LOTTIE_BY_CATEGORY = {
+  coping: RELAX_LOTTIE_PATH,
+  'exam-stress': STUDENT_BOOKS_LOTTIE_PATH,
+  sleep: SLEEPING_LOTTIE_PATH,
+  anxiety: MEDITATION_LOTTIE_PATH
+};
 
 const PublicResourcesPage = () => {
   const navigate = useNavigate();
@@ -52,7 +68,7 @@ const PublicResourcesPage = () => {
       id: 'sleep',
       icon: '😴',
       title: 'Sleep & Rest',
-      description: 'Evidence-based strategies to improve your sleep quality and rest.',
+      description: 'Tips to improve sleep quality and rest.',
       tips: [
         'Consistent schedule: Go to bed and wake up at the same time daily',
         'Create a routine: Wind down 30-60 minutes before bed',
@@ -66,8 +82,8 @@ const PublicResourcesPage = () => {
     {
       id: 'anxiety',
       icon: '🧘',
-      title: 'Anxiety Management Basics',
-      description: 'Fundamental strategies to understand and manage anxiety in your daily life.',
+      title: 'Anxiety Basics',
+      description: 'Strategies to understand and manage anxiety.',
       tips: [
         'Recognize triggers: Identify situations, thoughts, or events that increase your anxiety',
         'Practice deep breathing: Use the 4-7-8 technique or box breathing when anxiety rises',
@@ -102,16 +118,18 @@ const PublicResourcesPage = () => {
       </header>
 
       <main className="resources-main">
-        <div className="resources-container">
-          {/* Section 1: Immediate Support */}
-          <section className="support-section immediate-support">
+        {/* Section 1: Hero / Immediate Support - Photo + UCU Blue Overlay */}
+        <section className="support-section immediate-support">
+          <div className="resources-container">
             <div className="section-header">
               <h2>Feeling overwhelmed right now?</h2>
               <p className="section-subtitle">Quick techniques you can use immediately</p>
             </div>
             <div className="support-grid">
-              <div className="support-card">
-                <div className="card-icon">🌬️</div>
+              <div className="support-card support-card--with-sticker">
+                <div className="support-card-sticker card-sticker">
+                  <LazyLottie path={BREATHING_LOTTIE_PATH} loop={true} />
+                </div>
                 <h3>Breathing Exercise</h3>
                 <div className="breathing-exercise">
                   <p><strong>4-7-8 Breathing Technique:</strong></p>
@@ -125,8 +143,10 @@ const PublicResourcesPage = () => {
                 </div>
               </div>
 
-              <div className="support-card">
-                <div className="card-icon">🌍</div>
+              <div className="support-card support-card--with-sticker">
+                <div className="support-card-sticker card-sticker">
+                  <LazyLottie path={YOGA_LOTTIE_PATH} loop={true} />
+                </div>
                 <h3>Grounding Technique</h3>
                 <div className="grounding-technique">
                   <p><strong>5-4-3-2-1 Grounding Method:</strong></p>
@@ -141,8 +161,10 @@ const PublicResourcesPage = () => {
                 </div>
               </div>
 
-              <div className="support-card emergency-contacts">
-                <div className="card-icon">🚨</div>
+              <div className="support-card emergency-contacts support-card--with-sticker">
+                <div className="support-card-sticker card-sticker">
+                  <LazyLottie path={SOS_LOTTIE_PATH} loop={true} />
+                </div>
                 <h3>Emergency Contacts</h3>
                 <div className="emergency-list">
                   <p><strong>If you're in immediate danger, call:</strong></p>
@@ -158,10 +180,12 @@ const PublicResourcesPage = () => {
                 </div>
               </div>
             </div>
-          </section>
+          </div>
+        </section>
 
-          {/* Section 2: Self-Help Tools */}
-          <section className="support-section self-help-tools">
+        {/* Section 2: Self-Help Tools - Solid #F0F4FF */}
+        <section className="support-section self-help-tools">
+          <div className="resources-container">
             <div className="section-header">
               <h2>Self-Help Tools</h2>
               <p className="section-subtitle">Explore strategies to support your mental well-being</p>
@@ -169,13 +193,19 @@ const PublicResourcesPage = () => {
             <div className="tools-grid">
               {selfHelpCategories.map((category) => {
                 const isExpanded = expandedCard === category.id;
+                const borderClass = ['coping', 'sleep'].includes(category.id) ? 'tool-card--blue' : 'tool-card--maroon';
+                const lottiePath = LOTTIE_BY_CATEGORY[category.id];
                 return (
                   <div 
                     key={category.id} 
-                    className={`tool-card ${isExpanded ? 'expanded' : ''}`}
+                    className={`tool-card ${borderClass} ${isExpanded ? 'expanded' : ''} tool-card--with-sticker`}
                   >
+                    {lottiePath && (
+                      <div className="tool-card-sticker card-sticker">
+                        <LazyLottie path={lottiePath} loop={true} />
+                      </div>
+                    )}
                     <div className="tool-card-header">
-                      <div className="tool-icon">{category.icon}</div>
                       <div className="tool-card-content">
                         <h3>{category.title}</h3>
                         <p className="tool-description">{category.description}</p>
@@ -187,7 +217,7 @@ const PublicResourcesPage = () => {
                       aria-expanded={isExpanded}
                       type="button"
                     >
-                      {isExpanded ? 'Hide tips' : 'View tips'}
+                      {isExpanded ? 'Hide tips ▴' : 'Show tips ▾'}
                     </button>
                     {isExpanded && expandedCard === category.id ? (
                       <div 
@@ -207,10 +237,11 @@ const PublicResourcesPage = () => {
                 );
               })}
             </div>
-          </section>
+          </div>
+        </section>
 
-          {/* Section 3: Professional CTA */}
-          <section className="cta-section">
+        {/* Section 3: CTA - Solid UCU Blue */}
+        <section className="cta-section">
             <div className="cta-container">
               <h2 className="cta-headline">Get personalized support tailored to you</h2>
               <p className="cta-description">
@@ -225,8 +256,7 @@ const PublicResourcesPage = () => {
                 </button>
               </div>
             </div>
-          </section>
-        </div>
+        </section>
       </main>
 
       <footer className="resources-footer">

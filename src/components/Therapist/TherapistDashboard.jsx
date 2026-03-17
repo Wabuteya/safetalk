@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import TherapistSideNav from './TherapistSideNav.jsx';
+import DashboardLayout from '../layout/DashboardLayout';
 import { CrisisRealtimeProvider } from '../../contexts/CrisisRealtimeContext';
 import { supabase } from '../../supabaseClient';
 import './TherapistDashboard.css';
@@ -184,15 +185,8 @@ const TherapistDashboard = () => {
 
     if (loading) {
         return (
-            <div className="therapist-dashboard-layout">
-                <div style={{ 
-                    display: 'flex', 
-                    justifyContent: 'center', 
-                    alignItems: 'center', 
-                    minHeight: '100vh',
-                    fontSize: '1.1rem',
-                    color: '#5b6888'
-                }}>
+            <div className="dashboard-layout-root" style={{ alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ fontSize: '1.1rem', color: '#5b6888' }}>
                     Loading your dashboard...
                 </div>
             </div>
@@ -201,14 +195,11 @@ const TherapistDashboard = () => {
 
     return (
         <CrisisRealtimeProvider>
-            <div className="therapist-dashboard-layout">
-                <TherapistSideNav />
-                <div className="therapist-main-content">
-                    <main className="therapist-page-content">
-                        <Outlet />
-                    </main>
+            <DashboardLayout sidebar={<TherapistSideNav />} title="Therapist Portal">
+                <div className="therapist-page-content main-content">
+                    <Outlet />
                 </div>
-            </div>
+            </DashboardLayout>
         </CrisisRealtimeProvider>
     );
 };

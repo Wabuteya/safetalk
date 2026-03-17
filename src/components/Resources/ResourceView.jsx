@@ -1,8 +1,23 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../../supabaseClient';
 import { useUser } from '../../contexts/UserContext';
-import { FaExternalLinkAlt, FaBook, FaVideo, FaFileAlt } from 'react-icons/fa';
+import { FaExternalLinkAlt, FaVideo, FaBookOpen } from 'react-icons/fa';
 import './ResourceView.css';
+
+const TAG_COLORS = {
+  stress: { bg: '#FFF0F0', text: '#7B1D1D', border: '#FECACA' },
+  stress_management: { bg: '#FFF0F0', text: '#7B1D1D', border: '#FECACA' },
+  academic: { bg: '#EEF2FF', text: '#003DA5', border: '#BFDBFE' },
+  academice: { bg: '#EEF2FF', text: '#003DA5', border: '#BFDBFE' },
+  anxiety: { bg: '#FFFBEB', text: '#92600A', border: '#FDE68A' },
+  depression: { bg: '#F5F3FF', text: '#6D28D9', border: '#DDD6FE' },
+  sleep: { bg: '#F0FDF4', text: '#166534', border: '#BBF7D0' },
+  emotional_regulation: { bg: '#F5F3FF', text: '#6D28D9', border: '#DDD6FE' },
+  crisis_support: { bg: '#FFF0F0', text: '#7B1D1D', border: '#FECACA' },
+  default: { bg: '#F3F4F6', text: '#374151', border: '#E5E7EB' },
+};
+
+const FILTER_CATEGORIES = ['All', 'Stress', 'Anxiety', 'Sleep', 'Academic'];
 
 /**
  * ResourceView Component
@@ -16,6 +31,8 @@ const ResourceView = () => {
   const [hasMediumRiskJournal, setHasMediumRiskJournal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeFilter, setActiveFilter] = useState('All');
 
   // Fetch student's assessment data for prioritization
   const fetchAssessment = useCallback(async () => {
@@ -223,52 +240,95 @@ const ResourceView = () => {
   }, [allResources, assessment]);
 
   const getResourceIcon = (resource) => {
-    if (resource.link) {
-      return <FaExternalLinkAlt />;
-    }
-    if (resource.content?.toLowerCase().includes('video') || resource.title?.toLowerCase().includes('video')) {
-      return <FaVideo />;
-    }
-    return <FaFileAlt />;
+    const isVideo = resource.content?.toLowerCase().includes('video') || resource.title?.toLowerCase().includes('video');
+    if (isVideo) return <FaVideo size={18} />;
+    if (resource.link) return <FaExternalLinkAlt size={18} />;
+    return <FaBookOpen size={18} />;
   };
 
-  const renderResourceCard = (resource) => (
-    <div key={resource.id} className="resource-card">
-      <div className="resource-header">
-        <div className="resource-icon">{getResourceIcon(resource)}</div>
-        <h3>{resource.title}</h3>
-      </div>
-      {resource.tags && resource.tags.length > 0 && (
-        <div className="resource-tags">
-          {resource.tags.map((tag, idx) => (
-            <span key={idx} className="tag">{tag}</span>
-          ))}
+  const getTagStyle = (tag) => {
+    const key = (tag || '').toLowerCase().replace(/\s+/g, '_');
+    const colors = TAG_COLORS[key] || TAG_COLORS.default;
+    return { backgroundColor: colors.bg, color: colors.text, borderColor: colors.border };
+  };
+
+  const isTherapistResource = (resource) =>
+    resource.visibility_scope === 'therapist_all' || resource.visibility_scope === 'therapist_attached';
+
+  const filterResources = useCallback((resources) => {
+    let filtered = resources;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (r) =>
+          (r.title || '').toLowerCase().includes(q) ||
+          (r.content || '').toLowerCase().includes(q) ||
+          (r.tags || []).some((t) => String(t).toLowerCase().includes(q))
+      );
+    }
+    if (activeFilter !== 'All') {
+      const filterLower = activeFilter.toLowerCase();
+      filtered = filtered.filter(
+        (r) =>
+          (r.tags || []).some((t) => String(t).toLowerCase().includes(filterLower)) ||
+          (r.category || '').toLowerCase().includes(filterLower)
+      );
+    }
+    return filtered;
+  }, [searchQuery, activeFilter]);
+
+  const renderResourceCard = (resource) => {
+    const preview = resource.content
+      ? (resource.content.length > 200 ? `${resource.content.substring(0, 200)}...` : resource.content)
+      : '';
+    const source = isTherapistResource(resource) ? 'therapist' : 'system';
+    const cardContent = (
+      <>
+        <div className="resource-header">
+          <div className="resource-icon">{getResourceIcon(resource)}</div>
+          <h3 className="resource-title">{resource.title || 'Untitled'}</h3>
         </div>
-      )}
-      {resource.content && (
-        <div className="resource-content">
-          <p>{resource.content.length > 200 ? `${resource.content.substring(0, 200)}...` : resource.content}</p>
+        {resource.tags && resource.tags.length > 0 && (
+          <div className="resource-tags">
+            {resource.tags.map((tag, idx) => (
+              <span key={idx} className="tag" style={getTagStyle(tag)}>
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+        {preview && <p className="resource-preview">{preview}</p>}
+        <div className="card-footer">
+          <span className={`source-badge ${source}`}>
+            {source === 'therapist' ? '🩺 Therapist Resource' : '⚙️ System Resource'}
+          </span>
+          <span className="view-btn">View →</span>
         </div>
-      )}
-      {resource.link && (
-        <a
-          href={resource.link}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="resource-link"
-        >
-          <FaExternalLinkAlt /> Open Resource
-        </a>
-      )}
-      <div className="resource-footer">
-        <span className="resource-type">
-          {resource.visibility_scope === 'system' && 'System Resource'}
-          {resource.visibility_scope === 'therapist_all' && 'Therapist Resource'}
-          {resource.visibility_scope === 'therapist_attached' && 'Your Therapist\'s Resource'}
-        </span>
+      </>
+    );
+
+    const card = (
+      <div
+        key={resource.id}
+        className={`resource-card ${isTherapistResource(resource) ? 'therapist-resource' : ''}`}
+        onClick={() => {
+          if (resource.link) window.open(resource.link, '_blank', 'noopener,noreferrer');
+        }}
+        onKeyDown={(e) => {
+          if ((e.key === 'Enter' || e.key === ' ') && resource.link) {
+            e.preventDefault();
+            window.open(resource.link, '_blank', 'noopener,noreferrer');
+          }
+        }}
+        role={resource.link ? 'button' : undefined}
+        tabIndex={resource.link ? 0 : undefined}
+      >
+        {cardContent}
       </div>
-    </div>
-  );
+    );
+
+    return card;
+  };
 
   if (loading) {
     return (
@@ -286,11 +346,27 @@ const ResourceView = () => {
     );
   }
 
+  const renderSection = (title, subtitle, resources) => {
+    const filtered = filterResources(resources);
+    if (filtered.length === 0) return null;
+    return (
+      <section className="resource-section">
+        <div className="section-heading">
+          <h2 className="section-title">{title}</h2>
+        </div>
+        <p className="section-subtitle">{subtitle}</p>
+        <div className="resources-grid">
+          {filtered.map(renderResourceCard)}
+        </div>
+      </section>
+    );
+  };
+
   return (
     <div className="resource-view-container">
       <div className="page-header">
-        <h1>Support Resources</h1>
-        <p>A library of articles, videos, and tools to support your well-being journey.</p>
+        <h1 className="page-title">Support Resources</h1>
+        <p className="page-subtitle">A library of articles, videos, and tools to support your well-being journey.</p>
       </div>
 
       {allResources.length === 0 ? (
@@ -301,49 +377,54 @@ const ResourceView = () => {
         </div>
       ) : (
         <>
-          {/* Medium-risk: show eligible resources (system + therapist_all + therapist_attached for assigned) */}
+          <div className="resources-toolbar">
+            <input
+              type="text"
+              placeholder="🔍 Search resources..."
+              className="resource-search"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <div className="filter-chips">
+              {FILTER_CATEGORIES.map((cat) => (
+                <button
+                  key={cat}
+                  type="button"
+                  className={`chip ${activeFilter === cat ? 'active' : ''}`}
+                  onClick={() => setActiveFilter(cat)}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {hasMediumRiskJournal ? (
-            <section className="resource-section medium-risk-recommended">
-              <h2 className="section-title">✨ Recommended for You</h2>
-              <p className="section-description">Resources that may help based on your recent journal entries</p>
-              <div className="resources-grid">
-                {allResources.map(renderResourceCard)}
-              </div>
-            </section>
+            renderSection(
+              '✨ Recommended for You',
+              'Resources that may help based on your recent journal entries',
+              allResources
+            )
           ) : (
             <>
-              {/* Tags-based recommendation (assessment match - for search/filter UI only) */}
-              {prioritizedResources.recommended.length > 0 && (
-                <section className="resource-section">
-                  <h2 className="section-title">✨ Recommended for You</h2>
-                  <p className="section-description">Resources that match your areas of interest</p>
-                  <div className="resources-grid">
-                    {prioritizedResources.recommended.map(renderResourceCard)}
-                  </div>
-                </section>
-              )}
-
-              {/* Therapist Resources (if attached) */}
-              {prioritizedResources.therapist.length > 0 && (
-                <section className="resource-section">
-                  <h2 className="section-title">👤 Your Therapist&apos;s Resources</h2>
-                  <p className="section-description">Resources shared specifically with you</p>
-                  <div className="resources-grid">
-                    {prioritizedResources.therapist.map(renderResourceCard)}
-                  </div>
-                </section>
-              )}
-
-              {/* General Resources */}
-              {prioritizedResources.general.length > 0 && (
-                <section className="resource-section">
-                  <h2 className="section-title">📚 General Resources</h2>
-                  <p className="section-description">Helpful resources available to all students</p>
-                  <div className="resources-grid">
-                    {prioritizedResources.general.map(renderResourceCard)}
-                  </div>
-                </section>
-              )}
+              {prioritizedResources.recommended.length > 0 &&
+                renderSection(
+                  '✨ Recommended for You',
+                  'Resources that match your areas of interest',
+                  prioritizedResources.recommended
+                )}
+              {prioritizedResources.therapist.length > 0 &&
+                renderSection(
+                  '👤 Your Therapist\'s Resources',
+                  'Resources shared specifically with you',
+                  prioritizedResources.therapist
+                )}
+              {prioritizedResources.general.length > 0 &&
+                renderSection(
+                  '📚 General Resources',
+                  'Helpful resources available to all students',
+                  prioritizedResources.general
+                )}
             </>
           )}
         </>

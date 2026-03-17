@@ -11,77 +11,109 @@
     flex-wrap: wrap; /* Allows filters to wrap on small screens */
   }
   
-  .page-header h1 {
-    margin: 0;
-    color: #333;
-  }
-  
-  .time-filters button {
-    background-color: transparent;
-    border: 1px solid #ccc;
-    border-radius: 20px;
-    padding: 0.5rem 1rem;
-    margin-left: 0.5rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-  }
-  
-  .time-filters button:hover {
-    background-color: #f0f0f0;
-  }
-  
-  .time-filters button.active {
-    background-color: #007BFF;
-    color: white;
-    border-color: #007BFF;
-  }
-  
-  .chart-container {
-    background-color: #ffffff;
-    padding: 2rem;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
-  }
+.page-title {
+  color: #003DA5;
+  font-weight: 800;
+  font-size: 1.75rem;
+  margin: 0;
+}
 
-  .mood-trends-section h3,
-  .mood-overview-section h3,
-  .mood-history-list h3 {
-    margin-top: 0;
-  }
+.time-filters {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
 
-  .chart-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    margin-bottom: 0.5rem;
-  }
+.filter-btn {
+  background: white;
+  border: 1.5px solid #D1D5DB;
+  color: #6B7280;
+  border-radius: 20px;
+  padding: 7px 18px;
+  font-weight: 500;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
 
-  .chart-type-toggle {
-    display: flex;
-    gap: 0.25rem;
-  }
+.filter-btn:hover {
+  border-color: #003DA5;
+  color: #003DA5;
+}
 
-  .chart-type-toggle button {
-    padding: 0.35rem 0.75rem;
-    font-size: 0.9rem;
-    border: 1px solid #ccc;
-    background: #fff;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
+.filter-btn.active {
+  background: #003DA5;
+  border-color: #003DA5;
+  color: white;
+  font-weight: 700;
+}
 
-  .chart-type-toggle button:hover {
-    background: #f5f5f5;
-  }
+.chart-card,
+.overview-card,
+.history-card {
+  background: white;
+  border-radius: 14px;
+  padding: 24px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  margin-bottom: 20px;
+}
 
-  .chart-type-toggle button.active {
-    background: #2196f3;
-    color: white;
-    border-color: #2196f3;
-  }
+.chart-container {
+  background-color: #ffffff;
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.card-section-title {
+  color: #111827;
+  font-weight: 700;
+  font-size: 16px;
+  margin: 0 0 16px 0;
+}
+
+.mood-trends-section h3,
+.mood-overview-section h3,
+.mood-history-list h3 {
+  margin-top: 0;
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.chart-toggle {
+  display: flex;
+  border: 1.5px solid #D1D5DB;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.chart-type-toggle {
+  display: flex;
+  gap: 0;
+}
+
+.toggle-btn {
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  background: white;
+  color: #6B7280;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.toggle-btn.active {
+  background: #003DA5;
+  color: white;
+}
 
   .chart-legend {
     font-size: 0.85rem;
@@ -146,10 +178,10 @@
 
   .mood-trend-bar {
     height: 100%;
-    background: #2196f3;
     border-radius: 4px;
     min-width: 2px;
     transition: width 0.3s ease;
+    /* backgroundColor set inline by mood level */
   }
 
   .mood-trend-count {
@@ -164,25 +196,30 @@
     margin: 0;
   }
 
+  .history-entry,
   .mood-history-entry {
-    background: #fff;
-    padding: 1rem 1.25rem;
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-    margin-bottom: 0.75rem;
-    border-left: 4px solid #2196f3;
+    background: white;
+    border-left: 4px solid;
+    border-radius: 0 10px 10px 0;
+    padding: 14px 20px;
+    margin-bottom: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    list-style: none;
   }
 
+  .entry-timestamp,
   .mood-entry-date {
     display: block;
-    font-size: 0.85rem;
-    color: #666;
-    margin-bottom: 0.25rem;
+    font-size: 12px;
+    color: #9CA3AF;
+    margin-bottom: 4px;
   }
 
+  .entry-mood,
   .mood-entry-mood {
-    font-weight: 600;
-    color: #1a1a1a;
+    font-weight: 700;
+    font-size: 15px;
+    color: #111827;
   }
 
   .mood-entry-note {

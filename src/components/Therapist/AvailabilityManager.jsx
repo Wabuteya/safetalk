@@ -12,6 +12,16 @@ const DAYS_OF_WEEK = [
   { value: 6, label: 'Saturday' }
 ];
 
+const DAY_COLORS = {
+  SUNDAY: '#9CA3AF',
+  MONDAY: '#003DA5',
+  TUESDAY: '#7B1D1D',
+  WEDNESDAY: '#003DA5',
+  THURSDAY: '#7B1D1D',
+  FRIDAY: '#F5A800',
+  SATURDAY: '#9CA3AF',
+};
+
 const AvailabilityManager = () => {
   const [availability, setAvailability] = useState({});
   const [loading, setLoading] = useState(true);
@@ -172,59 +182,73 @@ const AvailabilityManager = () => {
 
   return (
     <div className="availability-manager">
-      <div className="availability-header">
-        <h2>Set Your Availability</h2>
-        <p>Define the days and time blocks when students can book appointments with you.</p>
-      </div>
+      <h2 className="availability-title">Set Your Availability</h2>
+      <p className="availability-subtitle">Define the days and time blocks when students can book appointments with you.</p>
 
       {error && <div className="error-banner">{error}</div>}
       {success && <div className="success-banner">{success}</div>}
 
       <div className="availability-days">
-        {DAYS_OF_WEEK.map(day => (
-          <div key={day.value} className="day-slot">
-            <div className="day-header">
-              <h3>{day.label}</h3>
-              <button
-                type="button"
-                onClick={() => handleAddTimeSlot(day.value)}
-                className="add-slot-btn"
-              >
-                + Add Time Slot
-              </button>
-            </div>
+        {DAYS_OF_WEEK.map(day => {
+          const hasSlots = availability[day.value]?.length > 0;
+          const dayKey = day.label.toUpperCase();
+          const dayColor = DAY_COLORS[dayKey] || '#003DA5';
+          const isFriday = dayKey === 'FRIDAY';
+          return (
+            <div
+              key={day.value}
+              className={`day-card ${hasSlots ? 'has-slots' : ''}`}
+              style={{ borderLeftColor: dayColor }}
+            >
+              <div className="day-card-header">
+                <span className="day-name" style={{ color: dayColor }}>
+                  {day.label}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => handleAddTimeSlot(day.value)}
+                  className="add-slot-btn"
+                  style={{
+                    background: dayColor,
+                    color: isFriday ? '#111827' : 'white',
+                  }}
+                >
+                  + Add Time Slot
+                </button>
+              </div>
 
-            <div className="time-slots">
-              {(availability[day.value] || []).map((slot, index) => (
-                <div key={slot.id || index} className="time-slot-row">
-                  <input
-                    type="time"
-                    value={slot.start_time}
-                    onChange={(e) => handleTimeChange(day.value, slot.id, 'start_time', e.target.value)}
-                    className="time-input"
-                  />
-                  <span className="time-separator">to</span>
-                  <input
-                    type="time"
-                    value={slot.end_time}
-                    onChange={(e) => handleTimeChange(day.value, slot.id, 'end_time', e.target.value)}
-                    className="time-input"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveTimeSlot(day.value, slot.id)}
-                    className="remove-slot-btn"
-                  >
-                    Remove
-                  </button>
-                </div>
-              ))}
-              {(!availability[day.value] || availability[day.value].length === 0) && (
-                <p className="no-slots">No time slots added for this day.</p>
-              )}
+              <div className="time-slots">
+                {(availability[day.value] || []).map((slot, index) => (
+                  <div key={slot.id || index} className="time-slot-row">
+                    <input
+                      type="time"
+                      value={slot.start_time}
+                      onChange={(e) => handleTimeChange(day.value, slot.id, 'start_time', e.target.value)}
+                      className="time-input"
+                    />
+                    <span className="time-separator">to</span>
+                    <input
+                      type="time"
+                      value={slot.end_time}
+                      onChange={(e) => handleTimeChange(day.value, slot.id, 'end_time', e.target.value)}
+                      className="time-input"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveTimeSlot(day.value, slot.id)}
+                      className="remove-slot-btn"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+                {(!availability[day.value] || availability[day.value].length === 0) && (
+                  <p className="no-slots-text">No time slots added for this day.</p>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       <div className="availability-actions">

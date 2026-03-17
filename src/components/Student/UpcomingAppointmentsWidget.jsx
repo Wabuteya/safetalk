@@ -82,20 +82,36 @@ const UpcomingAppointmentsWidget = () => {
 
   if (loading) {
     return (
-      <div className="widget-card appointments">
-        <h3>Upcoming Appointments</h3>
-        <p>Loading...</p>
+      <div className="dashboard-card widget-card appointments">
+        <div className="dashboard-card-sticker">
+          <img
+            className="card-sticker-image"
+            src="/Sticker/Reminders-pana.png"
+            alt=""
+            aria-hidden="true"
+          />
+        </div>
+        <h3 className="card-title">Upcoming Appointments</h3>
+        <p className="card-description">Loading...</p>
       </div>
     );
   }
 
   return (
-    <div className="widget-card appointments">
-      <h3>Upcoming Appointments</h3>
+    <div className="dashboard-card widget-card appointments">
+      <div className="dashboard-card-sticker">
+        <img
+          className="card-sticker-image"
+          src="/Sticker/Reminders-pana.png"
+          alt=""
+          aria-hidden="true"
+        />
+      </div>
+      <h3 className="card-title">Upcoming Appointments</h3>
       {appointments.length === 0 ? (
         <>
-          <p>You have no upcoming appointments.</p>
-          <button onClick={handleBookClick}>Book a Session</button>
+          <p className="card-description">You have no upcoming appointments.</p>
+          <button onClick={handleBookClick} className="card-btn appointments">Book a Session</button>
         </>
       ) : (
         <>
@@ -128,7 +144,7 @@ const UpcomingAppointmentsWidget = () => {
               onCancel={() => setRescheduleAppointment(null)}
             />
           )}
-          <button onClick={handleBookClick}>Book Another Session</button>
+          <button onClick={handleBookClick} className="card-btn appointments">Book Another Session</button>
         </>
       )}
     </div>

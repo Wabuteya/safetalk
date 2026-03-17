@@ -13,50 +13,84 @@
   gap: 1.5rem;
 }
 
-/* Therapist Sidebar - Card/Tile Format (matching admin design) */
-.therapist-sidebar {
+/* Therapist Sidebar — UCU Blue (same as student) */
+.therapist-sidebar.sidebar {
   width: 280px;
-  background-color: #ffffff;
-  color: #333333;
+  background: #003DA5;
+  border-radius: 16px;
+  margin: 12px 0 12px 12px;
+  height: calc(100vh - 24px);
+  color: white;
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   overflow: hidden;
-  height: fit-content;
-  max-height: calc(100vh - 3rem);
+  max-height: calc(100vh - 24px);
   position: sticky;
-  top: 1.5rem;
+  top: 12px;
 }
 
 .therapist-sidebar .sidebar-header {
-  padding: 1.5rem 1.25rem;
-  border-bottom: 1px solid #e8e8e8;
-  background-color: #ffffff;
+  padding: 0;
+  background: transparent;
+  border: none;
 }
 
+.therapist-sidebar .sidebar-logo,
 .therapist-sidebar .sidebar-header h3 {
+  color: white;
+  font-weight: 800;
+  font-size: 18px;
+  padding: 24px 20px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
   margin: 0;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #1a1a1a;
-  text-align: left;
+}
+
+.therapist-sidebar .therapist-name,
+.therapist-sidebar .sidebar-profile .sidebar-alias {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 13px;
+  padding: 12px 20px 8px;
+  margin: 0;
 }
 
 .therapist-sidebar .sidebar-profile {
   text-align: left;
-  padding: 1rem 1.25rem;
-  font-weight: 500;
-  color: #666666;
-  border-bottom: 1px solid #e8e8e8;
-  background-color: #ffffff;
+  padding: 0;
+  border: none;
+  background: transparent;
 }
 
-.therapist-sidebar .sidebar-profile .sidebar-alias {
-  margin: 0;
-  font-size: 0.9rem;
-  color: #666666;
+.therapist-sidebar .status-selector {
+  margin: 0 16px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+.therapist-sidebar .status-dot.online { background: #22C55E; width: 8px; height: 8px; border-radius: 50%; }
+.therapist-sidebar .status-dot.busy,
+.therapist-sidebar .status-dot.away { background: #F59E0B; }
+.therapist-sidebar .status-dot.offline { background: #9CA3AF; }
+
+.therapist-sidebar .status-select,
+.therapist-sidebar .status-selector select {
+  background: transparent;
+  border: none;
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  outline: none;
+  flex: 1;
+  cursor: pointer;
+}
+
+.therapist-sidebar .status-selector select option {
+  background: #003DA5;
+  color: white;
 }
 
 .therapist-sidebar .sidebar-nav {
@@ -65,19 +99,19 @@
   margin: 0;
   flex-grow: 1;
   overflow-y: auto;
-  background-color: #ffffff;
+  background: transparent;
 }
 
-/* Section Headings */
-.therapist-sidebar .sidebar-nav li.nav-section-heading {
-  padding: 0.75rem 1.25rem 0.5rem;
-  font-size: 0.75rem;
+.therapist-sidebar .sidebar-nav li.nav-section-heading,
+.therapist-sidebar .nav-section-label {
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 10px;
   font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 16px 20px 4px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: #888888;
-  margin-top: 0.5rem;
   list-style: none;
+  margin: 0;
 }
 
 .therapist-sidebar .sidebar-nav li.nav-section-heading:first-child {
@@ -89,25 +123,20 @@
 }
 
 .therapist-sidebar .sidebar-nav a {
+  color: rgba(255, 255, 255, 0.85);
+  padding: 10px 20px;
   display: flex;
   align-items: center;
-  gap: 0.875rem;
-  padding: 0.875rem 1.25rem;
-  color: #333333;
+  gap: 10px;
+  font-size: 14px;
   text-decoration: none;
-  transition: background-color 0.2s ease;
-  border-radius: 0;
-  font-size: 0.95rem;
+  transition: background 0.15s;
 }
 
-.therapist-sidebar .sidebar-nav a:hover {
-  background-color: #f8f8f8;
-}
-
+.therapist-sidebar .sidebar-nav a:hover,
 .therapist-sidebar .sidebar-nav a.active {
-  background-color: #f0f0f0;
-  color: #1a1a1a;
-  font-weight: 500;
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
 }
 
 .therapist-sidebar .nav-icon {
@@ -116,11 +145,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #4F8EC5;
-}
-
-.therapist-sidebar .sidebar-nav a.active .nav-icon {
-  color: #4F8EC5;
+  color: inherit;
 }
 
 .therapist-sidebar .crisis-nav-badge {
@@ -136,58 +161,55 @@
 }
 
 .therapist-sidebar .unread-messages-badge {
-  background: #0369a1;
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .therapist-sidebar .sidebar-footer {
   padding: 1rem 1.25rem;
   margin-top: auto;
-  border-top: 1px solid #e8e8e8;
-  background-color: #ffffff;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
 }
 
 .therapist-sidebar .logout-btn {
-  width: 100%;
-  padding: 0.75rem;
-  background-color: #8c1f1f;
-  border: none;
+  background: rgba(255, 255, 255, 0.1);
   color: white;
-  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  margin: 12px 16px;
+  padding: 12px;
+  font-weight: 600;
   cursor: pointer;
+  width: calc(100% - 32px);
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  font-size: 0.95rem;
-  font-weight: 500;
-  transition: background-color 0.2s ease, transform 0.15s ease;
 }
 
 .therapist-sidebar .logout-btn:hover {
-  background-color: #6b1515;
-  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .therapist-sidebar .logout-icon {
   font-size: 1rem;
 }
 
-/* Scrollbar styling for the nav */
 .therapist-sidebar .sidebar-nav::-webkit-scrollbar {
   width: 6px;
 }
 
 .therapist-sidebar .sidebar-nav::-webkit-scrollbar-track {
-  background: #f5f5f5;
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .therapist-sidebar .sidebar-nav::-webkit-scrollbar-thumb {
-  background: #d0d0d0;
+  background: rgba(255, 255, 255, 0.2);
   border-radius: 3px;
 }
 
 .therapist-sidebar .sidebar-nav::-webkit-scrollbar-thumb:hover {
-  background: #b0b0b0;
+  background: rgba(255, 255, 255, 0.3);
 }
   
 .therapist-main-content {
@@ -196,21 +218,162 @@
   flex-direction: column;
 }
 
-.therapist-page-content {
-  background: radial-gradient(circle at top left, #d1e9ff, transparent 55%),
-    radial-gradient(circle at bottom right, #fbd3ff, transparent 50%),
-    linear-gradient(135deg, #f5f8ff 0%, #fdfdfd 100%);
-  padding: 2rem 3rem;
+/* Main content — contained card with gradient, not full-bleed */
+.therapist-page-content.main-content {
+  background: linear-gradient(
+    135deg,
+    #E8EEFF 0%,
+    #F0E8E8 50%,
+    #F5E6E6 100%
+  );
+  min-height: calc(100vh - 3rem);
+  padding: 32px 40px;
   flex-grow: 1;
-  border-radius: 12px;
+  border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  margin: 1rem;
+  max-width: 100%;
 }
 
-/* Generic widget/card + button transitions for therapist pages */
+@media (max-width: 767px) {
+  .therapist-page-content {
+    padding: 1rem;
+    margin: 0.5rem;
+    border-radius: 12px;
+  }
+  .therapist-page-content .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Dashboard header */
+.dashboard-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 32px;
+  background: white;
+  border-radius: 14px;
+  padding: 20px 28px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  border-left: 5px solid #003DA5;
+}
+
+.therapist-page-content .therapist-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #003DA5;
+  box-shadow: 0 4px 12px rgba(0, 61, 165, 0.2);
+}
+
+.welcome-title {
+  color: #003DA5;
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin-bottom: 2px;
+}
+
+.welcome-subtitle {
+  color: #6B7280;
+  font-size: 14px;
+}
+
+/* Dashboard grid + cards */
 .therapist-page-content .dashboard-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
 }
+
+.dash-card {
+  background: white;
+  border-radius: 14px;
+  padding: 24px;
+  border-top: 4px solid #003DA5;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.dash-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(0, 61, 165, 0.12);
+}
+
+.dash-card.maroon {
+  border-top-color: #7B1D1D;
+}
+
+.dash-card.maroon:hover {
+  box-shadow: 0 12px 28px rgba(123, 29, 29, 0.12);
+}
+
+.dash-card h3 {
+  color: #003DA5;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.dash-card.maroon h3 {
+  color: #7B1D1D;
+}
+
+.dash-card p {
+  color: #6B7280;
+  font-size: 13.5px;
+  line-height: 1.5;
+  flex: 1;
+}
+
+.card-btn {
+  background: #003DA5;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  align-self: flex-start;
+  transition: background 0.2s;
+}
+
+.card-btn:hover {
+  background: #002580;
+}
+
+.card-btn.maroon {
+  background: #7B1D1D;
+}
+
+.card-btn.maroon:hover {
+  background: #5f1515;
+}
+
+/* Lottie placeholder for dash cards */
+.dash-card-sticker-placeholder {
+  width: 100px;
+  height: 100px;
+  background: transparent;
+  border-radius: 0;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dash-card-sticker-image {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+  display: block;
+}
+
+/* Legacy widget-card compatibility */
 .therapist-page-content .widget-card {
   background-color: #ffffff;
   padding: 1.5rem;
@@ -221,6 +384,13 @@
 .therapist-page-content .widget-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 16px 28px -8px rgba(0,0,0,0.15);
+}
+/* Touch: tap feedback when hover isn't available */
+@media (hover: none) {
+  .therapist-page-content .widget-card:active {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px -8px rgba(0,0,0,0.12);
+  }
 }
 .therapist-page-content .widget-card h3 {
   margin-top: 0;

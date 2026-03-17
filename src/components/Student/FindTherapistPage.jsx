@@ -42,7 +42,7 @@ const FindTherapistPage = () => {
         // Step 1: Check if this student has a relationship
         const { data: relationship, error: relError } = await supabase
           .from('therapist_student_relations')
-          .select('therapist_id')
+          .select('therapist_id, created_at')
           .eq('student_id', user.id)
           .maybeSingle();
 
@@ -76,7 +76,8 @@ const FindTherapistPage = () => {
               bio: therapistProfile.bio || 'No bio available.',
               imageUrl: therapistProfile.image_url || '',
               profilePhotoUrl: therapistProfile.profile_photo_url || '',
-              status: therapistProfile.status || 'offline'
+              status: therapistProfile.status || 'offline',
+              linkedAt: relationship?.created_at || null
             };
             setLinkedTherapist(formattedTherapist);
             setLoading(false);
@@ -312,26 +313,34 @@ const FindTherapistPage = () => {
       navigate(`/student-dashboard/book-appointment/${linkedTherapist.id}`);
     };
 
+    const displayName = linkedTherapist.title
+      ? `${linkedTherapist.title}${linkedTherapist.title.endsWith('.') ? '' : '.'} ${linkedTherapist.name}`
+      : linkedTherapist.name;
+    const assignedSince = linkedTherapist.linkedAt
+      ? new Date(linkedTherapist.linkedAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+      : null;
+    const statusDotClass = linkedTherapist.status === 'away' ? 'busy' : (linkedTherapist.status || 'offline');
+
     return (
       <div className="my-therapist-profile-layout">
         <div className="my-therapist-header">
-          <h1>My Therapist</h1>
+          <h1 className="page-title">My Therapist</h1>
           <button 
             onClick={handleRequestTherapistChange} 
-            className="request-change-btn"
+            className="change-btn request-change-btn"
           >
             Request Therapist Change
           </button>
         </div>
 
-        <div className="profile-header">
+        <div className="therapist-card profile-header">
           {(() => {
             const photoUrl = getTherapistPhotoUrl(linkedTherapist.profilePhotoUrl, linkedTherapist.imageUrl);
             return photoUrl ? (
               <img 
                 src={photoUrl} 
                 alt={linkedTherapist.name} 
-                className="profile-photo"
+                className="therapist-photo profile-photo"
                 onError={(e) => {
                   e.target.style.display = 'none';
                   const placeholder = e.target.nextElementSibling;
@@ -341,19 +350,21 @@ const FindTherapistPage = () => {
             ) : null;
           })()}
           {!getTherapistPhotoUrl(linkedTherapist.profilePhotoUrl, linkedTherapist.imageUrl) && (
-            <div className="profile-photo-placeholder" style={{ display: 'flex' }}>
-              <DefaultAvatar size={150} />
+            <div className="profile-photo-placeholder therapist-photo-placeholder" style={{ display: 'flex' }}>
+              <DefaultAvatar size={100} />
             </div>
           )}
           
           <div className="profile-header-info">
-            <h2>{linkedTherapist.name}</h2>
-            <p className="profile-title">{linkedTherapist.title}</p>
+            <h2 className="therapist-name">{displayName}</h2>
+            {assignedSince && (
+              <p className="assigned-since">Your therapist since {assignedSince}</p>
+            )}
             
             {/* Status Display */}
             {linkedTherapist.status && (
-              <div className="therapist-status-display">
-                <span className={`status-dot ${linkedTherapist.status}`}></span>
+              <div className="status-row therapist-status-display">
+                <span className={`status-dot ${statusDotClass}`}></span>
                 <span className="status-text">
                   {linkedTherapist.status === 'online' 
                     ? 'Online - Available now' 
@@ -367,13 +378,13 @@ const FindTherapistPage = () => {
             {/* Action Buttons */}
             <div className="profile-actions">
               <button 
-                className="action-btn chat-btn" 
+                className="chat-btn action-btn" 
                 onClick={handleStartChat}
               >
                 <FaComments /> Chat
               </button>
               <button 
-                className="action-btn appointment-btn" 
+                className="book-btn action-btn appointment-btn" 
                 onClick={handleBookAppointment}
               >
                 <FaCalendar /> Book Appointment
@@ -383,15 +394,30 @@ const FindTherapistPage = () => {
         </div>
 
         <div className="profile-details">
-          <div className="detail-card">
-            <h3>About Me</h3>
-            <p>{linkedTherapist.bio}</p>
+          <div className="info-card detail-card">
+            <h3 className="info-card-title">About Me</h3>
+            <p className="info-card-text">{linkedTherapist.bio}</p>
           </div>
-          <div className="detail-card">
-            <h3>Details</h3>
-            <ul>
-              <li><strong>Specialties:</strong> {linkedTherapist.specialties && linkedTherapist.specialties.length > 0 ? linkedTherapist.specialties.join(', ') : 'Not specified'}</li>
-            </ul>
+          <div className="info-card detail-card">
+            <h3 className="info-card-title">Details</h3>
+            <div className="info-card-details">
+              <div className="detail-row">
+                <span className="detail-label">Specialties:</span>
+                <span className="detail-value">
+                  {linkedTherapist.specialties && linkedTherapist.specialties.length > 0
+                    ? linkedTherapist.specialties.join(', ')
+                    : 'Not specified'}
+                </span>
+              </div>
+              <div className="detail-row">
+                <span className="detail-label">Languages:</span>
+                <span className="detail-value">English</span>
+              </div>
+              <div className="detail-row">
+                <span className="detail-label">Session type:</span>
+                <span className="detail-value">Chat & Video</span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -400,14 +426,17 @@ const FindTherapistPage = () => {
           <div className="modal-overlay" onClick={handleCloseModal}>
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
               <div className="modal-header">
-                <h2>Request Therapist Change</h2>
+                <h2 className="modal-title">Request Therapist Change</h2>
                 <button className="modal-close-btn" onClick={handleCloseModal}>×</button>
               </div>
               
               <div className="modal-body">
-                <div className="warning-message">
-                  <strong>⚠️ Important:</strong> Changing therapists will reset your progress and archive your current chat history. 
-                  This action requires admin approval.
+                <div className="warning-box">
+                  <div className="warning-title">⚠️ Important</div>
+                  <div className="warning-text">
+                    Changing therapists will reset your progress and archive your current chat history. 
+                    This action requires admin approval.
+                  </div>
                 </div>
 
                 <div className="form-group">
@@ -416,7 +445,7 @@ const FindTherapistPage = () => {
                     id="change-reason"
                     value={changeReason}
                     onChange={(e) => setChangeReason(e.target.value)}
-                    className="form-select"
+                    className="reason-select form-select"
                   >
                     <option value="">Select a reason...</option>
                     <option value="Not a good fit">Not a good fit</option>

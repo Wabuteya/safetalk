@@ -118,7 +118,9 @@ const SideNav = ({ closeSidebar }) => {
   return (
     <>
     <nav className="sidebar">
-      <div className="sidebar-logo">SafeTalk</div>
+      <div className="sidebar-logo">
+        <img src="/SafeTalk_White.svg" alt="SafeTalk" className="safetalk-logo" />
+      </div>
       <div className="sidebar-username">{userAlias}</div>
       <ul className="sidebar-nav">
         <li className="nav-section-label">DASHBOARD</li>

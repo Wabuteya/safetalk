@@ -31,9 +31,10 @@
 }
 
 .therapist-sidebar .sidebar-header {
-  padding: 0;
+  padding: 24px 20px 16px;
   background: transparent;
   border: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .therapist-sidebar .sidebar-logo,
@@ -41,9 +42,18 @@
   color: white;
   font-weight: 800;
   font-size: 18px;
-  padding: 24px 20px 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
   margin: 0;
+}
+
+.therapist-sidebar .sidebar-header .safetalk-logo {
+  height: 30px;
+  width: auto;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.therapist-sidebar .sidebar-header h3 {
+  padding: 0;
 }
 
 .therapist-sidebar .therapist-name,

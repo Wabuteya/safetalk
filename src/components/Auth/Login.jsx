@@ -142,6 +142,25 @@ const Login = () => {
       // Additional wait for Chrome to fully persist session
       await new Promise(resolve => setTimeout(resolve, 300));
 
+      // For students: check account_status before allowing access
+      if (userRole === 'student') {
+        const { data: profile, error: profileError } = await supabase
+          .from('student_profiles')
+          .select('account_status')
+          .eq('user_id', data.user.id)
+          .maybeSingle();
+
+        if (!profileError && profile && (profile.account_status === 'suspended' || profile.account_status === 'deactivated')) {
+          await supabase.auth.signOut();
+          setError(
+            profile.account_status === 'suspended'
+              ? 'Your account has been suspended. Please contact support for assistance.'
+              : 'Your account has been deactivated. Please contact support for assistance.'
+          );
+          return;
+        }
+      }
+
       // Fetch alias from student_profiles table (for students) - non-blocking
       if (userRole === 'student') {
         supabase
@@ -214,7 +233,9 @@ const Login = () => {
     <div className="login-page">
       <div className="login-shell">
         <section className="left-panel">
-          <div className="left-panel-logo">SafeTalk</div>
+          <div className="left-panel-logo">
+            <img src="/SafeTalk_White.svg" alt="SafeTalk" className="safetalk-logo" />
+          </div>
           <span className="hero-chip">SECURE BY DEFAULT</span>
           <h1>Pick up where you left off</h1>
           <p>

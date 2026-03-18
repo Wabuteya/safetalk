@@ -51,6 +51,12 @@
   letter-spacing: -0.02em;
 }
 
+.signup-logo .safetalk-logo {
+  height: 42px;
+  width: auto;
+  display: block;
+}
+
 .signup-lottie {
   width: 100%;
   display: flex;

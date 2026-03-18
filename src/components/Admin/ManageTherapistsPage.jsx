@@ -10,6 +10,8 @@ const ManageTherapistsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
 
   // Fetch therapists from database on component mount
   useEffect(() => {
@@ -19,20 +21,33 @@ const ManageTherapistsPage = () => {
   const fetchTherapists = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('therapist_profiles')
-        .select('*')
-        .order('created_at', { ascending: false });
+      const [profilesResult, relationsResult] = await Promise.all([
+        supabase
+          .from('therapist_profiles')
+          .select('*')
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('therapist_student_relations')
+          .select('therapist_id')
+      ]);
 
+      const { data: profiles, error } = profilesResult;
       if (error) throw error;
 
+      // Build caseload count map
+      const caseloadMap = new Map();
+      (relationsResult.data || []).forEach(rel => {
+        caseloadMap.set(rel.therapist_id, (caseloadMap.get(rel.therapist_id) || 0) + 1);
+      });
+
       // Map database data to display format
-      const mappedTherapists = (data || []).map(profile => ({
+      const mappedTherapists = (profiles || []).map(profile => ({
         id: profile.user_id,
         name: profile.full_name || 'N/A',
         email: profile.email || 'N/A',
-        dateAdded: profile.created_at ? new Date(profile.created_at).toISOString().slice(0, 10) : 'N/A',
-        status: profile.is_live ? 'Active' : 'Pending Setup'
+        dateAdded: profile.created_at ? new Date(profile.created_at).toISOString() : null,
+        status: profile.is_live ? 'Active' : 'Inactive',
+        studentCount: caseloadMap.get(profile.user_id) || 0
       }));
 
       setTherapists(mappedTherapists);
@@ -115,6 +130,32 @@ const ManageTherapistsPage = () => {
     }
   };
 
+  const capitalizeName = (str) => {
+    if (!str || str === 'N/A') return str;
+    return str.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+  };
+
+  const formatDateAdded = (date) => {
+    if (!date) return '—';
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return '—';
+    return d.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  const filteredTherapists = therapists.filter(t => {
+    const matchesSearch = !searchTerm || 
+      t.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      t.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || 
+      (statusFilter === 'active' && t.status === 'Active') ||
+      (statusFilter === 'inactive' && t.status === 'Inactive');
+    return matchesSearch && matchesStatus;
+  });
+
   const handleResetPassword = async (email) => {
     if (!confirm(`Send a password reset email to ${email}?`)) {
       return;
@@ -132,6 +173,40 @@ const ManageTherapistsPage = () => {
     } catch (error) {
       console.error('Error sending password reset:', error);
       setError(error.message || 'Failed to send password reset email.');
+    }
+  };
+
+  const handleDeactivateTherapist = async (therapistId) => {
+    if (!confirm('Are you sure you want to deactivate this therapist? They will no longer appear in the student therapist finder or assignment dropdown.')) return;
+    try {
+      setError('');
+      const { error } = await supabase
+        .from('therapist_profiles')
+        .update({ is_live: false })
+        .eq('user_id', therapistId);
+      if (error) throw error;
+      setSuccess('Therapist deactivated.');
+      await fetchTherapists();
+    } catch (err) {
+      console.error('Error deactivating therapist:', err);
+      setError(err.message || 'Failed to deactivate therapist.');
+    }
+  };
+
+  const handleReactivateTherapist = async (therapistId) => {
+    if (!confirm('Are you sure you want to reactivate this therapist?')) return;
+    try {
+      setError('');
+      const { error } = await supabase
+        .from('therapist_profiles')
+        .update({ is_live: true })
+        .eq('user_id', therapistId);
+      if (error) throw error;
+      setSuccess('Therapist reactivated.');
+      await fetchTherapists();
+    } catch (err) {
+      console.error('Error reactivating therapist:', err);
+      setError(err.message || 'Failed to reactivate therapist.');
     }
   };
 
@@ -233,8 +308,8 @@ const ManageTherapistsPage = () => {
       )}
 
       <div className="admin-page-header">
-        <h1>Manage Therapists</h1>
-        <button className="admin-add-new-btn" onClick={() => setIsModalOpen(true)}>+ Add New Therapist</button>
+        <h1 className="page-title">Manage Therapists</h1>
+        <button className="add-therapist-btn" onClick={() => setIsModalOpen(true)}>+ Add New Therapist</button>
       </div>
 
       {error && !isModalOpen && (
@@ -264,37 +339,84 @@ const ManageTherapistsPage = () => {
         </div>
       )}
 
-      <div className="admin-table-container">
-        {therapists.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '2rem', color: '#666' }}>
+      <div className="table-controls">
+        <input
+          type="text"
+          placeholder="Search by name or email..."
+          className="search-input"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+        <select
+          className="filter-select"
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+        >
+          <option value="all">All Status</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+      </div>
+
+      <div className="therapists-table-card">
+        {filteredTherapists.length === 0 ? (
+          <div className="empty-state">
             <p>No therapists found. Add your first therapist using the button above.</p>
           </div>
         ) : (
-        <table className="admin-table">
+        <table className="therapists-table">
           <thead>
             <tr>
               <th>Name</th>
               <th>Email</th>
+              <th>Caseload</th>
               <th>Date Added</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {therapists.map(therapist => (
+            {filteredTherapists.map(therapist => (
               <tr key={therapist.id}>
-                <td>{therapist.name}</td>
-                <td>{therapist.email}</td>
-                <td>{therapist.dateAdded}</td>
-                <td><span className={`status-badge status-${therapist.status.toLowerCase().replace(' ', '-')}`}>{therapist.status}</span></td>
+                <td>
+                  <span className="therapist-name">
+                    {capitalizeName(therapist.name)}
+                  </span>
+                </td>
+                <td><span className="therapist-email">{therapist.email}</span></td>
+                <td>
+                  <span className="caseload-count">
+                    {therapist.studentCount ?? 0} students
+                  </span>
+                </td>
+                <td>{formatDateAdded(therapist.dateAdded)}</td>
+                <td>
+                  <span className={`status-badge status-${therapist.status.toLowerCase()}`}>
+                    {therapist.status}
+                  </span>
+                </td>
                 <td className="actions-cell">
-                    <button 
-                      className="action-btn edit" 
-                      onClick={() => handleResetPassword(therapist.email)}
+                  <button
+                    className="reset-password-btn"
+                    onClick={() => handleResetPassword(therapist.email)}
+                  >
+                    Reset Password
+                  </button>
+                  {therapist.status === 'Active' ? (
+                    <button
+                      className="deactivate-btn"
+                      onClick={() => handleDeactivateTherapist(therapist.id)}
                     >
-                      Reset Password
+                      Deactivate
                     </button>
-                  <button className="action-btn delete">Deactivate</button>
+                  ) : (
+                    <button
+                      className="reactivate-btn"
+                      onClick={() => handleReactivateTherapist(therapist.id)}
+                    >
+                      Reactivate
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}

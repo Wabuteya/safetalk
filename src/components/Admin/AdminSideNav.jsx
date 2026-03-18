@@ -38,10 +38,11 @@ const AdminSideNav = ({ closeSidebar }) => {
     // Reusing sidebar styles, but with a unique theme class
     <nav className="sidebar admin-sidebar"> 
       <div className="sidebar-header">
-        <h3>Admin Console</h3>
+        <img src="/SafeTalk_Black.svg" alt="SafeTalk" className="safetalk-logo" />
+        <h3 className="admin-console-title">Admin Console</h3>
       </div>
       <div className="sidebar-profile">
-        <p className="sidebar-alias">System Admin</p>
+        <p className="sidebar-alias system-admin-label">System Admin</p>
       </div>
       <ul className="sidebar-nav">
         <li className="nav-section-heading">DASHBOARD</li>
@@ -79,7 +80,7 @@ const AdminSideNav = ({ closeSidebar }) => {
         </li>
       </ul>
       <div className="sidebar-footer">
-        <button className="logout-btn" onClick={handleLogout}>
+        <button className="logout-btn admin-logout-btn" onClick={handleLogout}>
           <FaSignOutAlt className="logout-icon" />
           <span>Log Out</span>
         </button>

@@ -11,7 +11,7 @@ import {
   Bar,
 } from 'recharts';
 import { useUser } from '../../contexts/UserContext';
-import { getMoodHistory, MOOD_OPTIONS, MOOD_VALUES } from '../../utils/moodTracking';
+import { getMoodHistory, MOOD_OPTIONS, MOOD_VALUES, groupMoodEntriesByDate } from '../../utils/moodTracking';
 import './MoodHistoryPage.css';
 
 const moodLabel = (value) => MOOD_OPTIONS.find((o) => o.value === value)?.label || value;
@@ -101,6 +101,11 @@ const MoodHistoryPage = () => {
     return acc;
   }, {});
 
+  const groupedEntries = useMemo(() => {
+    const sorted = [...filtered].sort((a, b) => new Date(b.logged_at).getTime() - new Date(a.logged_at).getTime());
+    return groupMoodEntriesByDate(sorted);
+  }, [filtered]);
+
   const CustomTooltip = ({ active, payload }) => {
     if (!active || !payload || !payload.length) return null;
     const d = payload[0].payload;
@@ -177,7 +182,7 @@ const MoodHistoryPage = () => {
                   <LineChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#F0F0F0" />
                     <XAxis dataKey="date" tick={{ fill: '#9CA3AF', fontSize: 12 }} />
-                    <YAxis domain={[1, 5]} ticks={[1, 2, 3, 4, 5]} tick={{ fill: '#9CA3AF', fontSize: 12 }} />
+                    <YAxis domain={[0, 5]} ticks={[0, 1, 2, 3, 4, 5]} tick={{ fill: '#9CA3AF', fontSize: 12 }} />
                     <Tooltip content={<CustomTooltip />} />
                     <Line
                       type="monotone"
@@ -192,7 +197,7 @@ const MoodHistoryPage = () => {
                   <BarChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#F0F0F0" />
                     <XAxis dataKey="date" tick={{ fill: '#9CA3AF', fontSize: 12 }} />
-                    <YAxis domain={[1, 5]} ticks={[1, 2, 3, 4, 5]} tick={{ fill: '#9CA3AF', fontSize: 12 }} />
+                    <YAxis domain={[0, 5]} ticks={[0, 1, 2, 3, 4, 5]} tick={{ fill: '#9CA3AF', fontSize: 12 }} />
                     <Tooltip content={<CustomTooltip />} />
                     <Bar dataKey="value" fill="#003DA5" radius={[4, 4, 0, 0]} />
                   </BarChart>
@@ -227,23 +232,30 @@ const MoodHistoryPage = () => {
 
           <div className="mood-history-list insights-container history-card">
             <h3 className="card-section-title">History</h3>
-            <ul className="mood-history-entries">
-              {filtered.map((entry) => {
-                const label = moodLabel(entry.mood);
-                const borderColor = moodBorderColors[label] || '#003DA5';
-                return (
-                  <li key={entry.id} className="history-entry mood-history-entry" style={{ borderLeftColor: borderColor }}>
-                    <span className="entry-timestamp mood-entry-date">{formatDate(entry.logged_at)}</span>
-                    <span className="entry-mood mood-entry-mood">
-                      {label} ({MOOD_VALUES[entry.mood] ?? '—'}/5)
-                    </span>
-                    {entry.note && (
-                      <p className="mood-entry-note">&ldquo;{entry.note}&rdquo;</p>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
+            <div className="mood-entries-grouped">
+              {groupedEntries.map((group) => (
+                <div key={group.key} className="mood-entry-group">
+                  <h4 className="mood-group-label">{group.label} ({group.entries.length})</h4>
+                  <ul className="mood-history-entries">
+                    {group.entries.map((entry) => {
+                      const label = moodLabel(entry.mood);
+                      const borderColor = moodBorderColors[label] || '#003DA5';
+                      return (
+                        <li key={entry.id} className="history-entry mood-history-entry" style={{ borderLeftColor: borderColor }}>
+                          <span className="entry-timestamp mood-entry-date">{formatDate(entry.logged_at)}</span>
+                          <span className="entry-mood mood-entry-mood">
+                            {label} ({MOOD_VALUES[entry.mood] ?? '—'}/5)
+                          </span>
+                          {entry.note && (
+                            <p className="mood-entry-note">&ldquo;{entry.note}&rdquo;</p>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              ))}
+            </div>
           </div>
         </>
       )}

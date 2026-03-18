@@ -126,3 +126,50 @@ export async function getMoodHistory(studentId, limit = 90) {
   }
   return data || [];
 }
+
+/**
+ * Group mood entries by date range for display: Today, Yesterday, This week, Last week, This month, Last month, Older.
+ * Returns array of { key, label, entries }.
+ */
+export function groupMoodEntriesByDate(entries) {
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const yesterdayStart = new Date(todayStart);
+  yesterdayStart.setDate(yesterdayStart.getDate() - 1);
+  const weekStart = new Date(todayStart);
+  weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+  const lastWeekStart = new Date(weekStart);
+  lastWeekStart.setDate(lastWeekStart.getDate() - 7);
+
+  const groups = [
+    { key: 'today', label: 'Today', entries: [] },
+    { key: 'yesterday', label: 'Yesterday', entries: [] },
+    { key: 'thisWeek', label: 'This week', entries: [] },
+    { key: 'lastWeek', label: 'Last week', entries: [] },
+    { key: 'thisMonth', label: 'This month', entries: [] },
+    { key: 'lastMonth', label: 'Last month', entries: [] },
+    { key: 'older', label: 'Older', entries: [] },
+  ];
+
+  entries.forEach((entry) => {
+    const d = new Date(entry.logged_at);
+    const entryDate = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    if (entryDate >= todayStart) {
+      groups[0].entries.push(entry);
+    } else if (entryDate >= yesterdayStart) {
+      groups[1].entries.push(entry);
+    } else if (entryDate >= weekStart) {
+      groups[2].entries.push(entry);
+    } else if (entryDate >= lastWeekStart) {
+      groups[3].entries.push(entry);
+    } else if (entryDate >= new Date(now.getFullYear(), now.getMonth(), 1)) {
+      groups[4].entries.push(entry);
+    } else if (entryDate >= new Date(now.getFullYear(), now.getMonth() - 1, 1)) {
+      groups[5].entries.push(entry);
+    } else {
+      groups[6].entries.push(entry);
+    }
+  });
+
+  return groups.filter((g) => g.entries.length > 0);
+}

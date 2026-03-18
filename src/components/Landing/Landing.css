@@ -66,6 +66,19 @@ body {
   color: var(--ucu-blue) !important;
 }
 
+.logo .safetalk-logo {
+  height: 38px;
+  width: auto;
+  display: block;
+}
+
+.about-section .about-logo .safetalk-logo {
+  height: 48px;
+  width: auto;
+  display: block;
+  margin: 0 auto;
+}
+
 .nav-links {
   list-style: none;
   display: flex;

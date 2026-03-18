@@ -42,7 +42,8 @@ Deno.serve(async (req) => {
         user_id: userId,
         full_name: full_name,
         email: email,       // Populate the email field
-        is_live: false      // Default to not live
+        is_live: false,     // Default to not live
+        created_at: new Date().toISOString()
       });
     
     if (profileError) throw profileError;

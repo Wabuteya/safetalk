@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
   LineChart,
@@ -13,7 +13,7 @@ import {
 } from 'recharts';
 import { supabase } from '../../supabaseClient';
 import { useUser } from '../../contexts/UserContext';
-import { getMoodHistory, MOOD_OPTIONS, MOOD_VALUES } from '../../utils/moodTracking';
+import { getMoodHistory, MOOD_OPTIONS, MOOD_VALUES, groupMoodEntriesByDate } from '../../utils/moodTracking';
 import { isHandlingActiveCrisisForStudent } from '../../utils/crisisEvents';
 import TherapistNotes from './TherapistNotes';
 import EmotionalTrends from './EmotionalTrends';
@@ -275,6 +275,10 @@ const StudentDetailView = () => {
   const [sharedJournals, setSharedJournals] = useState([]);
   const [appointmentCount, setAppointmentCount] = useState(0);
   const [noteCount, setNoteCount] = useState(0);
+  const unviewedJournalCount = useMemo(
+    () => sharedJournals.filter((j) => !j.therapist_viewed_at).length,
+    [sharedJournals]
+  );
   const [conversationId, setConversationId] = useState(null);
   const [moodHistory, setMoodHistory] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -285,6 +289,11 @@ const StudentDetailView = () => {
   const [revealContactLoading, setRevealContactLoading] = useState(false);
   const [isOnPoolCrisisAccess, setIsOnPoolCrisisAccess] = useState(false);
   const [moodChartType, setMoodChartType] = useState('line');
+
+  const groupedMoodEntries = useMemo(() => {
+    const sorted = [...moodHistory].sort((a, b) => new Date(b.logged_at).getTime() - new Date(a.logged_at).getTime());
+    return groupMoodEntriesByDate(sorted);
+  }, [moodHistory]);
 
   const moodChartData = useMemo(() => {
     return [...moodHistory]
@@ -464,6 +473,34 @@ const StudentDetailView = () => {
     }
   }, [location.state]);
 
+  // Mark journals as viewed when therapist opens the Journals tab.
+  // Use only activeTab in deps to keep array size stable (avoids React "changed size between renders" error).
+  const lastMarkedTabRef = useRef(null);
+  const markViewedRef = useRef({ studentId, user, sharedJournals });
+  markViewedRef.current = { studentId, user, sharedJournals };
+  useEffect(() => {
+    if (activeTab !== 'journals') return;
+    const { studentId: sid, user: u, sharedJournals: journals } = markViewedRef.current;
+    if (!sid || !u) return;
+    const unviewed = journals.filter((j) => !j.therapist_viewed_at);
+    if (unviewed.length === 0) return;
+    if (lastMarkedTabRef.current === 'journals') return;
+    lastMarkedTabRef.current = 'journals';
+
+    const ids = unviewed.map((j) => j.id);
+    supabase
+      .from('journal_entries')
+      .update({ therapist_viewed_at: new Date().toISOString() })
+      .in('id', ids)
+      .then(({ error }) => {
+        if (!error) {
+          setSharedJournals((prev) =>
+            prev.map((j) => (ids.includes(j.id) ? { ...j, therapist_viewed_at: new Date().toISOString() } : j))
+          );
+        }
+      });
+  }, [activeTab]);
+
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -552,19 +589,19 @@ const StudentDetailView = () => {
           className={`tab-btn ${activeTab === 'journals' ? 'active' : ''}`}
           onClick={() => setActiveTab('journals')}
         >
-          Journals ({sharedJournals.length})
+          Journals {unviewedJournalCount > 0 && <span className="tab-badge">{unviewedJournalCount}</span>}
         </button>
         <button
           className={`tab-btn ${activeTab === 'appointments' ? 'active' : ''}`}
           onClick={() => setActiveTab('appointments')}
         >
-          Appointments {appointmentCount > 0 && <span className="tab-badge">({appointmentCount})</span>}
+          Appointments {(appointmentCount > 0 && activeTab !== 'appointments') && <span className="tab-badge">{appointmentCount}</span>}
         </button>
         <button
           className={`tab-btn ${activeTab === 'notes' ? 'active' : ''}`}
           onClick={() => setActiveTab('notes')}
         >
-          Therapist Notes {noteCount > 0 && <span className="tab-badge">({noteCount})</span>}
+          Therapist Notes {(noteCount > 0 && activeTab !== 'notes') && <span className="tab-badge">{noteCount}</span>}
         </button>
         {user?.user_metadata?.role === 'therapist' && (
           <button
@@ -692,7 +729,7 @@ const StudentDetailView = () => {
                           <LineChart data={moodChartData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
                             <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-                            <YAxis domain={[1, 5]} ticks={[1, 2, 3, 4, 5]} tick={{ fontSize: 11 }} />
+                            <YAxis domain={[0, 5]} ticks={[0, 1, 2, 3, 4, 5]} tick={{ fontSize: 11 }} />
                             <Tooltip
                               content={({ active, payload }) => {
                                 if (!active || !payload?.length) return null;
@@ -719,7 +756,7 @@ const StudentDetailView = () => {
                           <BarChart data={moodChartData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
                             <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-                            <YAxis domain={[1, 5]} ticks={[1, 2, 3, 4, 5]} tick={{ fontSize: 11 }} />
+                            <YAxis domain={[0, 5]} ticks={[0, 1, 2, 3, 4, 5]} tick={{ fontSize: 11 }} />
                             <Tooltip
                               content={({ active, payload }) => {
                                 if (!active || !payload?.length) return null;
@@ -757,22 +794,29 @@ const StudentDetailView = () => {
                     })}
                   </div>
                   <h4 className="mood-history-heading">Recent entries</h4>
-                  <div className="therapist-mood-entries">
-                    {moodHistory.slice(0, 10).map((entry) => {
-                      const moodLabelText = moodLabel(entry.mood);
-                      const borderColor = ENTRY_BORDER_COLORS[moodLabelText] || '#9CA3AF';
-                      return (
-                        <div
-                          key={entry.id}
-                          className="recent-entry"
-                          style={{ borderLeftColor: borderColor }}
-                        >
-                          <span className="entry-timestamp mood-entry-date">{formatDateTime(entry.logged_at)}</span>
-                          <span className="entry-mood-value mood-entry-mood">{moodLabelText} ({MOOD_VALUES[entry.mood] ?? '—'}/5)</span>
-                          {entry.note && <span className="mood-entry-note"> — {entry.note}</span>}
+                  <div className="therapist-mood-entries grouped">
+                    {groupedMoodEntries.map((group) => (
+                      <div key={group.key} className="mood-entry-group">
+                        <h5 className="mood-group-label">{group.label} ({group.entries.length})</h5>
+                        <div className="therapist-mood-entries-list">
+                          {group.entries.map((entry) => {
+                            const moodLabelText = moodLabel(entry.mood);
+                            const borderColor = ENTRY_BORDER_COLORS[moodLabelText] || '#9CA3AF';
+                            return (
+                              <div
+                                key={entry.id}
+                                className="recent-entry"
+                                style={{ borderLeftColor: borderColor }}
+                              >
+                                <span className="entry-timestamp mood-entry-date">{formatDateTime(entry.logged_at)}</span>
+                                <span className="entry-mood-value mood-entry-mood">{moodLabelText} ({MOOD_VALUES[entry.mood] ?? '—'}/5)</span>
+                                {entry.note && <span className="mood-entry-note"> — {entry.note}</span>}
+                              </div>
+                            );
+                          })}
                         </div>
-                      );
-                    })}
+                      </div>
+                    ))}
                   </div>
                 </>
               )}

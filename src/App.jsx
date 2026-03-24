@@ -9,6 +9,7 @@ import Login from './components/Auth/Login';
 import Dashboard from './components/Student/Dashboard';
 import DashboardHome from './components/Student/DashboardHome';
 import Placeholder from './components/Student/Placeholder';
+import SystemHealthPage from './components/Admin/SystemHealthPage';
 import JournalPage from './components/Student/JournalPage';
 import MoodHistoryPage from './components/Student/MoodHistoryPage';
 import FindTherapistPage from './components/Student/FindTherapistPage';
@@ -93,7 +94,7 @@ const AppRoutes = () => {
         <Route path="content" element={<ResourceManagement userRole="admin" />} />
         <Route
           path="health"
-          element={<Placeholder title="System Health Page" />}
+          element={<SystemHealthPage />}
         />
       </Route>
 

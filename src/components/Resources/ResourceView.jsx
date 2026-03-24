@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../../supabaseClient';
 import { useUser } from '../../contexts/UserContext';
 import { FaExternalLinkAlt, FaVideo, FaBookOpen } from 'react-icons/fa';
+import VideoEmbed from '../VideoEmbed';
+import { getLinkType } from '../../utils/videoUtils';
 import './ResourceView.css';
 
 const TAG_COLORS = {
@@ -240,9 +242,15 @@ const ResourceView = () => {
   }, [allResources, assessment]);
 
   const getResourceIcon = (resource) => {
-    const isVideo = resource.content?.toLowerCase().includes('video') || resource.title?.toLowerCase().includes('video');
+    if (resource.link) {
+      const lt = getLinkType(resource.link);
+      if (lt === 'youtube' || lt === 'vimeo') return <FaVideo size={18} />;
+      return <FaExternalLinkAlt size={18} />;
+    }
+    const isVideo =
+      resource.content?.toLowerCase().includes('video') ||
+      resource.title?.toLowerCase().includes('video');
     if (isVideo) return <FaVideo size={18} />;
-    if (resource.link) return <FaExternalLinkAlt size={18} />;
     return <FaBookOpen size={18} />;
   };
 
@@ -298,30 +306,51 @@ const ResourceView = () => {
           </div>
         )}
         {preview && <p className="resource-preview">{preview}</p>}
+        {resource.link && (
+          <div
+            className="resource-media-section"
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
+            role="presentation"
+          >
+            <VideoEmbed url={resource.link} title={resource.title} />
+          </div>
+        )}
         <div className="card-footer">
           <span className={`source-badge ${source}`}>
             {source === 'therapist' ? '🩺 Therapist Resource' : '⚙️ System Resource'}
           </span>
-          <span className="view-btn">View →</span>
+          <span className="view-btn">
+            {!resource.link
+              ? '—'
+              : getLinkType(resource.link) === 'external'
+                ? 'Open link →'
+                : 'Watch above'}
+          </span>
         </div>
       </>
     );
+
+    const linkType = resource.link ? getLinkType(resource.link) : null;
+    const cardOpensExternal = linkType === 'external';
 
     const card = (
       <div
         key={resource.id}
         className={`resource-card ${isTherapistResource(resource) ? 'therapist-resource' : ''}`}
         onClick={() => {
-          if (resource.link) window.open(resource.link, '_blank', 'noopener,noreferrer');
+          if (resource.link && cardOpensExternal) {
+            window.open(resource.link, '_blank', 'noopener,noreferrer');
+          }
         }}
         onKeyDown={(e) => {
-          if ((e.key === 'Enter' || e.key === ' ') && resource.link) {
+          if ((e.key === 'Enter' || e.key === ' ') && resource.link && cardOpensExternal) {
             e.preventDefault();
             window.open(resource.link, '_blank', 'noopener,noreferrer');
           }
         }}
-        role={resource.link ? 'button' : undefined}
-        tabIndex={resource.link ? 0 : undefined}
+        role={cardOpensExternal ? 'button' : undefined}
+        tabIndex={cardOpensExternal ? 0 : undefined}
       >
         {cardContent}
       </div>

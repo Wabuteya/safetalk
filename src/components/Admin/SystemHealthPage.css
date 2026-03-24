@@ -1,0 +1,308 @@
+/* System Health Page */
+.system-health-page {
+  max-width: 1200px;
+}
+
+.system-health-page .page-header {
+  margin-bottom: 24px;
+}
+
+.system-health-page .page-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 4px 0;
+}
+
+.system-health-page .page-subtitle {
+  font-size: 14px;
+  color: #6B7280;
+  margin: 0;
+}
+
+.overall-status {
+  border-radius: 10px;
+  padding: 14px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 24px;
+}
+
+.overall-status.operational {
+  background: #F0FDF4;
+  border-left: 4px solid #22C55E;
+  color: #15803D;
+}
+
+.overall-status.issues {
+  background: #FFFBEB;
+  border-left: 4px solid #F59E0B;
+  color: #92600A;
+}
+
+.overall-status.outage {
+  background: #FFF0F0;
+  border-left: 4px solid #DC2626;
+  color: #DC2626;
+}
+
+/* Quick stats */
+.health-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 28px;
+}
+
+.health-stat {
+  background: white;
+  border-radius: 12px;
+  padding: 18px 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  text-align: center;
+}
+
+.health-stat .stat-value {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #111827;
+}
+
+.health-stat .stat-label {
+  font-size: 12px;
+  color: #6B7280;
+  margin-top: 4px;
+}
+
+.health-stat:nth-child(1) {
+  border-top: 4px solid #003DA5;
+}
+
+.health-stat:nth-child(2) {
+  border-top: 4px solid #10B981;
+}
+
+.health-stat:nth-child(3) {
+  border-top: 4px solid #F5A800;
+}
+
+.health-stat:nth-child(4) {
+  border-top: 4px solid #DC2626;
+}
+
+/* Services grid */
+.services-section {
+  margin-bottom: 28px;
+}
+
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.service-card {
+  background: white;
+  border-radius: 12px;
+  padding: 16px 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.service-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.service-name {
+  font-weight: 600;
+  color: #111827;
+  font-size: 14px;
+}
+
+.service-status-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Activity cards */
+.activity-section {
+  margin-bottom: 28px;
+}
+
+.activity-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 28px;
+}
+
+.activity-card {
+  background: white;
+  border: none;
+  border-radius: 12px;
+  padding: 18px 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  text-align: center;
+}
+
+.activity-card.blue {
+  border-top: 4px solid #003DA5;
+}
+
+.activity-card.maroon {
+  border-top: 4px solid #7B1D1D;
+}
+
+.activity-card.gold {
+  border-top: 4px solid #F5A800;
+}
+
+.activity-card.red {
+  border-top: 4px solid #DC2626;
+}
+
+.activity-card .activity-value {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #111827;
+}
+
+.activity-card.blue .activity-value {
+  color: #003DA5;
+}
+
+.activity-card.maroon .activity-value {
+  color: #7B1D1D;
+}
+
+.activity-card.gold .activity-value {
+  color: #D98F00;
+}
+
+.activity-card.red .activity-value {
+  color: #DC2626;
+}
+
+.activity-card .activity-label {
+  font-size: 12px;
+  color: #6B7280;
+  margin-top: 4px;
+}
+
+/* System log */
+.log-section {
+  margin-bottom: 28px;
+}
+
+.log-card {
+  background: white;
+  border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.log-entry {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 20px;
+  border-bottom: 1px solid #F3F4F6;
+  font-size: 13px;
+}
+
+.log-entry:last-child {
+  border-bottom: none;
+}
+
+.log-time {
+  color: #9CA3AF;
+  min-width: 80px;
+  font-size: 12px;
+}
+
+.log-type {
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  min-width: 60px;
+  text-align: center;
+}
+
+.log-type.info {
+  background: #EFF6FF;
+  color: #003DA5;
+}
+
+.log-type.warning {
+  background: #FFFBEB;
+  color: #92600A;
+}
+
+.log-type.error {
+  background: #FFF0F0;
+  color: #DC2626;
+}
+
+.log-type.success {
+  background: #F0FDF4;
+  color: #15803D;
+}
+
+.log-message {
+  color: #374151;
+  flex: 1;
+}
+
+.section-title {
+  color: #111827;
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 14px;
+}
+
+@media (max-width: 900px) {
+  .health-stats-grid,
+  .activity-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .services-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .health-stats-grid,
+  .activity-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .services-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .log-entry {
+    flex-wrap: wrap;
+  }
+
+  .log-message {
+    width: 100%;
+    margin-top: 4px;
+  }
+}

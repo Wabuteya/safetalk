@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../supabaseClient';
 import { useUser } from '../../contexts/UserContext';
 import { FaPlus, FaEdit, FaTrash, FaExternalLinkAlt } from 'react-icons/fa';
+import { getLinkType } from '../../utils/videoUtils';
 import './ResourceManagement.css';
 
 /**
@@ -36,16 +37,20 @@ const ResourceManagement = ({ userRole }) => {
     return map[category] || 'badge-stress';
   };
 
-  const getTypeBadgeClass = (resource) => {
-    if (resource.link?.includes('youtube') || resource.content?.includes('youtube')) return 'badge-video';
-    if (resource.link) return 'badge-link';
-    return 'badge-content';
+  const getResourceType = (resource) => {
+    if (!resource.link) return 'Content';
+    const linkType = getLinkType(resource.link);
+    if (linkType === 'youtube') return 'YouTube';
+    if (linkType === 'vimeo') return 'Vimeo';
+    return 'Link';
   };
 
-  const getTypeLabel = (resource) => {
-    if (resource.link?.includes('youtube') || resource.content?.includes('youtube')) return 'Video';
-    if (resource.link) return 'Link';
-    return 'Content';
+  const getTypeBadgeClass = (resource) => {
+    if (!resource.link) return 'badge-content';
+    const linkType = getLinkType(resource.link);
+    if (linkType === 'youtube') return 'badge-youtube';
+    if (linkType === 'vimeo') return 'badge-vimeo';
+    return 'badge-link';
   };
 
   const filteredResources = resources.filter((r) => {
@@ -350,7 +355,7 @@ const ResourceManagement = ({ userRole }) => {
                     </td>
                     <td>
                       <span className={`badge-type ${getTypeBadgeClass(resource)}`}>
-                        {getTypeLabel(resource)}
+                        {getResourceType(resource)}
                       </span>
                     </td>
                     <td>
@@ -444,9 +449,11 @@ const ResourceManagement = ({ userRole }) => {
                   name="link"
                   value={formData.link}
                   onChange={handleInputChange}
-                  placeholder="https://example.com/article"
+                  placeholder="https://www.youtube.com/watch?v=… or https://vimeo.com/…"
                 />
-                <small className="form-hint">Provide either content or a link (or both)</small>
+                <small className="form-hint">
+                  Provide either content or a link (or both). YouTube and Vimeo URLs play in the app; other links open in a new tab.
+                </small>
               </div>
 
               <div className="form-group">

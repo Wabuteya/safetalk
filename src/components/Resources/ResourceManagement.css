@@ -190,17 +190,29 @@
   border: 1px solid transparent;
 }
 
-.badge-content {
-  background: #EFF6FF;
-  color: #003DA5;
-  border: 1px solid #BFDBFE;
-  border-radius: 6px;
-  padding: 4px 10px;
-  font-size: 12px;
-  font-weight: 600;
+.badge-youtube {
+  background: #fff0f0;
+  color: #dc2626;
+  border: 1px solid #fecaca;
 }
-.badge-video { background: #F5F3FF; color: #6D28D9; }
-.badge-link { background: #FFF7ED; color: #C2410C; }
+
+.badge-vimeo {
+  background: #eff6ff;
+  color: #003da5;
+  border: 1px solid #bfdbfe;
+}
+
+.badge-link {
+  background: #f0fdf4;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
+.badge-content {
+  background: #f8faff;
+  color: #374151;
+  border: 1px solid #e5e7eb;
+}
 
 /* Visibility badges */
 .badge-visibility {

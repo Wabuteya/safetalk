@@ -26,7 +26,11 @@ CHECK (
     'anxiety',
     'emotional_regulation',
     'stress_management',
-    'crisis_support'
+    'crisis_support',
+    'substance_use',
+    'tuition_financial',
+    'sexual_health',
+    'relationships'
   )
 );
 

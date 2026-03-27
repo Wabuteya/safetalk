@@ -24,6 +24,10 @@ const ResourceManagement = ({ userRole }) => {
     { value: 'emotional_regulation', label: 'Emotional Regulation' },
     { value: 'stress_management', label: 'Stress Management' },
     { value: 'crisis_support', label: 'Crisis Support' },
+    { value: 'substance_use', label: 'Alcohol & substance use' },
+    { value: 'tuition_financial', label: 'Tuition & financial stress' },
+    { value: 'sexual_health', label: 'Pornography, masturbation & sexual health' },
+    { value: 'relationships', label: 'Relationship issues' },
   ];
 
   const getCategoryBadgeClass = (category) => {
@@ -33,6 +37,10 @@ const ResourceManagement = ({ userRole }) => {
       depression: 'badge-depression',
       emotional_regulation: 'badge-academic',
       crisis_support: 'badge-crisis',
+      substance_use: 'badge-substance',
+      tuition_financial: 'badge-financial',
+      sexual_health: 'badge-sexual',
+      relationships: 'badge-relationships',
     };
     return map[category] || 'badge-stress';
   };

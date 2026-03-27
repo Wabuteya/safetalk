@@ -16,10 +16,26 @@ const TAG_COLORS = {
   sleep: { bg: '#F0FDF4', text: '#166534', border: '#BBF7D0' },
   emotional_regulation: { bg: '#F5F3FF', text: '#6D28D9', border: '#DDD6FE' },
   crisis_support: { bg: '#FFF0F0', text: '#7B1D1D', border: '#FECACA' },
+  substance_use: { bg: '#ECFDF5', text: '#047857', border: '#A7F3D0' },
+  tuition_financial: { bg: '#FFF7ED', text: '#C2410C', border: '#FDBA74' },
+  sexual_health: { bg: '#F5F3FF', text: '#5B21B6', border: '#DDD6FE' },
+  relationships: { bg: '#EFF6FF', text: '#1D4ED8', border: '#BFDBFE' },
   default: { bg: '#F3F4F6', text: '#374151', border: '#E5E7EB' },
 };
 
-const FILTER_CATEGORIES = ['All', 'Stress', 'Anxiety', 'Sleep', 'Academic'];
+const FILTER_CATEGORIES = [
+  'All',
+  'Depression',
+  'Anxiety',
+  'Stress',
+  'Substance',
+  'Tuition',
+  'Relationships',
+  'Sexual',
+  'Sleep',
+  'Academic',
+  'Crisis',
+];
 
 /**
  * ResourceView Component
@@ -35,6 +51,7 @@ const ResourceView = () => {
   const [error, setError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('All');
+  const [detailResource, setDetailResource] = useState(null);
 
   // Fetch student's assessment data for prioritization
   const fetchAssessment = useCallback(async () => {
@@ -200,6 +217,15 @@ const ResourceView = () => {
     }
   }, [user, linkedTherapist, fetchResources]);
 
+  useEffect(() => {
+    if (!detailResource) return;
+    const onKey = (e) => {
+      if (e.key === 'Escape') setDetailResource(null);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [detailResource]);
+
   // Prioritize resources based on assessment data
   const prioritizedResources = useMemo(() => {
     if (!assessment?.challenges || assessment.challenges.length === 0) {
@@ -286,10 +312,12 @@ const ResourceView = () => {
   }, [searchQuery, activeFilter]);
 
   const renderResourceCard = (resource) => {
-    const preview = resource.content
-      ? (resource.content.length > 200 ? `${resource.content.substring(0, 200)}...` : resource.content)
-      : '';
+    const bodyText = (resource.content || '').trim();
+    const hasBodyContent = bodyText.length > 0;
     const source = isTherapistResource(resource) ? 'therapist' : 'system';
+    const linkType = resource.link ? getLinkType(resource.link) : null;
+    const cardOpensExternal = linkType === 'external';
+
     const cardContent = (
       <>
         <div className="resource-header">
@@ -305,7 +333,9 @@ const ResourceView = () => {
             ))}
           </div>
         )}
-        {preview && <p className="resource-preview">{preview}</p>}
+        {hasBodyContent && (
+          <p className="resource-preview">{bodyText}</p>
+        )}
         {resource.link && (
           <div
             className="resource-media-section"
@@ -320,24 +350,32 @@ const ResourceView = () => {
           <span className={`source-badge ${source}`}>
             {source === 'therapist' ? '🩺 Therapist Resource' : '⚙️ System Resource'}
           </span>
-          <span className="view-btn">
-            {!resource.link
-              ? '—'
-              : getLinkType(resource.link) === 'external'
-                ? 'Open link →'
-                : 'Watch above'}
-          </span>
+          <div className="card-footer-actions">
+            {hasBodyContent && (
+              <button
+                type="button"
+                className="resource-detail-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setDetailResource(resource);
+                }}
+              >
+                View description in detail
+              </button>
+            )}
+            {!hasBodyContent && resource.link && cardOpensExternal && (
+              <span className="view-btn">Open link →</span>
+            )}
+            {!hasBodyContent && (!resource.link || !cardOpensExternal) && <span className="view-btn muted">—</span>}
+          </div>
         </div>
       </>
     );
 
-    const linkType = resource.link ? getLinkType(resource.link) : null;
-    const cardOpensExternal = linkType === 'external';
-
     const card = (
       <div
         key={resource.id}
-        className={`resource-card ${isTherapistResource(resource) ? 'therapist-resource' : ''}`}
+        className={`resource-card ${isTherapistResource(resource) ? 'therapist-resource' : ''} ${cardOpensExternal ? 'resource-card--external' : ''}`}
         onClick={() => {
           if (resource.link && cardOpensExternal) {
             window.open(resource.link, '_blank', 'noopener,noreferrer');
@@ -457,6 +495,68 @@ const ResourceView = () => {
             </>
           )}
         </>
+      )}
+
+      {detailResource && (
+        <div
+          className="resource-detail-overlay"
+          role="presentation"
+          onClick={() => setDetailResource(null)}
+        >
+          <div
+            className="resource-detail-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="resource-detail-title"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              className="resource-detail-close"
+              onClick={() => setDetailResource(null)}
+              aria-label="Close"
+            >
+              ×
+            </button>
+            <h2 id="resource-detail-title" className="resource-detail-heading">
+              {detailResource.title || 'Resource'}
+            </h2>
+            {detailResource.tags && detailResource.tags.length > 0 && (
+              <div className="resource-detail-tags">
+                {detailResource.tags.map((tag, idx) => (
+                  <span key={idx} className="tag" style={getTagStyle(tag)}>
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
+            <div className="resource-detail-body">
+              {(detailResource.content || '').trim()}
+            </div>
+            {detailResource.link && getLinkType(detailResource.link) === 'external' && (
+              <a
+                href={detailResource.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="resource-detail-external-link"
+              >
+                Open resource link ↗
+              </a>
+            )}
+            {detailResource.link && getLinkType(detailResource.link) !== 'external' && (
+              <p className="resource-detail-video-hint">
+                Video is available in the player on the card above.
+              </p>
+            )}
+            <button
+              type="button"
+              className="resource-detail-done"
+              onClick={() => setDetailResource(null)}
+            >
+              Close
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

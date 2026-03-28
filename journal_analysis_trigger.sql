@@ -5,5 +5,6 @@
 -- Run journal_crisis_rpc.sql for crisis creation from journal.
 -- Set HUGGINGFACE_ACCESS_TOKEN in Supabase Edge Function secrets for emotion API.
 
+DROP TRIGGER IF EXISTS trigger_analyze_journal_on_insert ON journal_entries_enc;
 DROP TRIGGER IF EXISTS trigger_analyze_journal_on_insert ON journal_entries;
 DROP FUNCTION IF EXISTS analyze_journal_on_insert();

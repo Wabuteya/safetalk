@@ -39,6 +39,10 @@
 }
 
 .mood-option-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
   padding: 0.5rem 1rem;
   border: 1px solid #ddd;
   border-radius: 8px;
@@ -46,6 +50,15 @@
   font-size: 0.95rem;
   cursor: pointer;
   transition: background-color 0.2s, border-color 0.2s;
+}
+
+.mood-option-emoji {
+  font-size: 1.2em;
+  line-height: 1;
+}
+
+.mood-option-label {
+  line-height: 1.2;
 }
 
 .mood-option-btn:hover {

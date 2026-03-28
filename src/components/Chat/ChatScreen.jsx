@@ -208,7 +208,10 @@ const ChatScreen = ({ conversationId, otherUserId, otherUserName, otherUserPhoto
         },
         (payload) => {
           const newMsg = normalizeMessage(payload.new);
-          if (newMsg) setMessages((prev) => [...prev, newMsg]);
+          if (!newMsg?.id) return;
+          setMessages((prev) =>
+            prev.some((m) => m.id === newMsg.id) ? prev : [...prev, newMsg]
+          );
         }
       )
       .subscribe();
@@ -271,9 +274,13 @@ const ChatScreen = ({ conversationId, otherUserId, otherUserName, otherUserPhoto
 
       if (error) throw error;
 
-      // Message will be added via real-time subscription, but add immediately for better UX
+      // Optimistic append; realtime INSERT may also fire — dedupe by id in subscription + here
       const normalized = normalizeMessage(data);
-      if (normalized) setMessages((prev) => [...prev, normalized]);
+      if (normalized?.id) {
+        setMessages((prev) =>
+          prev.some((m) => m.id === normalized.id) ? prev : [...prev, normalized]
+        );
+      }
 
       // Update conversation updated_at
       await supabase

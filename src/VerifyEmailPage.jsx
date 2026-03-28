@@ -1,7 +1,37 @@
-import { Link } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { supabase, SUPABASE_AUTH_STORAGE_KEY } from './supabaseClient';
 import './VerifyEmailPage.css';
 
 const VerifyEmailPage = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const goToTermsIfVerified = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (cancelled || !session?.user?.email_confirmed_at) return;
+      navigate('/terms', { replace: true });
+    };
+
+    const onStorage = (e) => {
+      if (e.key !== SUPABASE_AUTH_STORAGE_KEY || !e.newValue) return;
+      goToTermsIfVerified();
+    };
+
+    window.addEventListener('storage', onStorage);
+    goToTermsIfVerified();
+
+    const poll = window.setInterval(goToTermsIfVerified, 1500);
+
+    return () => {
+      cancelled = true;
+      window.removeEventListener('storage', onStorage);
+      window.clearInterval(poll);
+    };
+  }, [navigate]);
+
   return (
     <div className="verify-email-container">
       <div className="verify-email-card">
@@ -13,6 +43,9 @@ const VerifyEmailPage = () => {
           </p>
           <p className="ve-sub-text">
             Please check your inbox and click the link to activate your account and complete your registration.
+          </p>
+          <p className="ve-keep-tab-hint">
+            Keep this tab open. After you verify in the email link, we will continue here in this tab automatically.
           </p>
         </div>
         
@@ -27,7 +60,7 @@ const VerifyEmailPage = () => {
           </div>
           <div className="ve-info-item">
             <span className="ve-info-icon">✓</span>
-            <span>Complete your registration</span>
+            <span>Review terms, then complete your setup</span>
           </div>
         </div>
 

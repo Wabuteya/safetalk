@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { LazyLottie } from '../LazyLottie';
 import { FaGraduationCap, FaStethoscope, FaLock } from 'react-icons/fa';
 import './Landing.css';
@@ -109,7 +109,12 @@ const LandingPage = () => {
       </main>
 
       <footer id="contact" className="footer">
-        <p>&copy; 2025 SafeTalk. All rights reserved.</p>
+        <p>&copy; 2026 SafeTalk. All rights reserved.</p>
+        <p>
+          <Link to="/terms" className="footer-link">
+            Terms &amp; Conditions
+          </Link>
+        </p>
         <p>Contact us: support@safetalk.university</p>
       </footer>
     </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
+import { mustAcceptTermsBeforeApp } from '../../utils/termsAcceptance';
 import './InitialAssessment.css';
 
 const ADJECTIVES = ['Anonymous', 'Clever', 'Quiet', 'Brave', 'Calm', 'Gentle', 'Happy'];
@@ -29,6 +30,23 @@ const InitialAssessment = () => {
       if (!user.email_confirmed_at) {
         alert('Please confirm your email address before proceeding. Check your inbox for the confirmation link.');
         navigate('/please-verify');
+        return;
+      }
+
+      if (mustAcceptTermsBeforeApp(user)) {
+        navigate('/terms', { replace: true });
+        return;
+      }
+
+      const { data: existingAssessment } = await supabase
+        .from('assessments')
+        .select('id')
+        .eq('user_id', user.id)
+        .limit(1)
+        .maybeSingle();
+
+      if (existingAssessment) {
+        navigate('/student-dashboard', { replace: true });
         return;
       }
 

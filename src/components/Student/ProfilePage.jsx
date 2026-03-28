@@ -26,6 +26,11 @@ const ProfilePage = () => {
   const [passwordSuccess, setPasswordSuccess] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [confirmText, setConfirmText] = useState('');
+  const [deleteReason, setDeleteReason] = useState('');
+  const [pendingDeletionRequest, setPendingDeletionRequest] = useState(null);
+  const [deleteSubmitting, setDeleteSubmitting] = useState(false);
+  const [deleteRequestError, setDeleteRequestError] = useState('');
+  const [deleteRequestSuccess, setDeleteRequestSuccess] = useState(false);
 
   const fetchProfile = useCallback(async () => {
     if (!user?.id || user?.user_metadata?.role !== 'student') return;
@@ -58,6 +63,29 @@ const ProfilePage = () => {
     if (userProfile?.alias) setAlias(userProfile.alias);
     fetchProfile();
   }, [user?.id, userProfile?.alias, fetchProfile]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadPendingDeletion = async () => {
+      if (!user?.id || user?.user_metadata?.role !== 'student') {
+        setPendingDeletionRequest(null);
+        return;
+      }
+      const { data, error } = await supabase
+        .from('account_deletion_requests')
+        .select('id, requested_at, reason')
+        .eq('student_id', user.id)
+        .eq('status', 'pending')
+        .maybeSingle();
+      if (cancelled) return;
+      if (error || !data) setPendingDeletionRequest(null);
+      else setPendingDeletionRequest(data);
+    };
+    loadPendingDeletion();
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id, user?.user_metadata?.role]);
 
   useEffect(() => {
     if (!deleteModalOpen) return;
@@ -124,16 +152,44 @@ const ProfilePage = () => {
     setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
   };
 
-  const openDeleteModal = () => setDeleteModalOpen(true);
+  const openDeleteModal = () => {
+    setDeleteRequestError('');
+    setDeleteModalOpen(true);
+  };
   const closeDeleteModal = () => {
     setDeleteModalOpen(false);
     setConfirmText('');
+    setDeleteReason('');
+    setDeleteRequestError('');
   };
 
-  const handleDeleteConfirm = () => {
-    if (confirmText !== 'DELETE') return;
+  const handleDeleteConfirm = async () => {
+    if (confirmText !== 'DELETE' || !user?.id) return;
+    setDeleteRequestError('');
+    setDeleteSubmitting(true);
+    const { error } = await supabase.from('account_deletion_requests').insert({
+      student_id: user.id,
+      reason: deleteReason.trim() || null,
+    });
+    setDeleteSubmitting(false);
+    if (error) {
+      if (error.code === '23505') {
+        setDeleteRequestError('You already have a pending account deletion request.');
+        return;
+      }
+      setDeleteRequestError('Could not submit your request. Please try again or contact support.');
+      return;
+    }
+    setDeleteRequestSuccess(true);
     closeDeleteModal();
-    alert('To delete your account, please contact support. Account deletion requires verification.');
+    const { data } = await supabase
+      .from('account_deletion_requests')
+      .select('id, requested_at, reason')
+      .eq('student_id', user.id)
+      .eq('status', 'pending')
+      .maybeSingle();
+    setPendingDeletionRequest(data || null);
+    setTimeout(() => setDeleteRequestSuccess(false), 8000);
   };
 
 
@@ -217,16 +273,43 @@ const ProfilePage = () => {
       {/* --- Danger Zone Section --- */}
       <div className="danger-zone-card profile-section danger-zone">
         <h2 className="danger-title">⚠️ Danger Zone</h2>
-        <p className="danger-description">Permanently delete your account and all associated data, including journals and mood history. This action cannot be undone.</p>
-        <button type="button" className="delete-btn" onClick={openDeleteModal}>Delete My Account</button>
+        <p className="danger-description">
+          Request permanent deletion of your account and associated data. Our team will verify and complete removal; you will be notified when processing is finished.
+        </p>
+        {deleteRequestSuccess && (
+          <div className="profile-success danger-success">Your deletion request was submitted. We will process it as soon as possible.</div>
+        )}
+        {pendingDeletionRequest ? (
+          <div className="deletion-pending-banner">
+            <strong>Deletion request pending.</strong> You submitted a request on{' '}
+            {new Date(pendingDeletionRequest.requested_at).toLocaleString()}
+            . You cannot submit another until it is processed.
+          </div>
+        ) : (
+          <button type="button" className="delete-btn" onClick={openDeleteModal}>Request account deletion</button>
+        )}
       </div>
 
       {/* Delete Confirmation Modal */}
       {deleteModalOpen && (
         <div className="delete-modal-overlay" onClick={closeDeleteModal} role="presentation">
           <div className="delete-modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="delete-modal-title">
-            <h3 id="delete-modal-title">Delete Account</h3>
-            <p>Type <strong>DELETE</strong> to confirm permanently deleting your account.</p>
+            <h3 id="delete-modal-title">Request account deletion</h3>
+            <p>
+              Type <strong>DELETE</strong> to confirm. This sends a secure request to our team; your account stays active until we complete verification and removal.
+            </p>
+            <div className="form-group">
+              <label htmlFor="delete-reason">Reason (optional)</label>
+              <textarea
+                id="delete-reason"
+                className="profile-input delete-reason-textarea"
+                rows={3}
+                value={deleteReason}
+                onChange={(e) => setDeleteReason(e.target.value)}
+                placeholder="Optional note for our team"
+              />
+            </div>
+            {deleteRequestError && <div className="profile-error">{deleteRequestError}</div>}
             <input
               type="text"
               className="delete-modal-input profile-input"
@@ -236,9 +319,14 @@ const ProfilePage = () => {
               autoFocus
             />
             <div className="delete-modal-actions">
-              <button type="button" className="delete-modal-cancel" onClick={closeDeleteModal}>Cancel</button>
-              <button type="button" className="delete-confirm-btn" disabled={confirmText !== 'DELETE'} onClick={handleDeleteConfirm}>
-                Permanently Delete Account
+              <button type="button" className="delete-modal-cancel" onClick={closeDeleteModal} disabled={deleteSubmitting}>Cancel</button>
+              <button
+                type="button"
+                className="delete-confirm-btn"
+                disabled={confirmText !== 'DELETE' || deleteSubmitting}
+                onClick={handleDeleteConfirm}
+              >
+                {deleteSubmitting ? 'Submitting…' : 'Submit deletion request'}
               </button>
             </div>
           </div>

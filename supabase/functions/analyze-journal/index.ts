@@ -17,9 +17,13 @@ Deno.serve(async (req) => {
     const payload = await req.json();
     const { type, table, record } = payload;
 
-    if (table !== 'journal_entries' || type !== 'INSERT' || !record?.id) {
+    const isJournalInsert =
+      (table === 'journal_entries' || table === 'journal_entries_enc') &&
+      type === 'INSERT' &&
+      record?.id;
+    if (!isJournalInsert) {
       return new Response(
-        JSON.stringify({ message: 'Ignored: not a journal_entries INSERT' }),
+        JSON.stringify({ message: 'Ignored: not a journal entry INSERT' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
       );
     }

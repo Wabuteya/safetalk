@@ -392,6 +392,17 @@ body {
   font-size: 0.9rem;
 }
 
+.footer-link {
+  color: #ffffff;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.footer-link:hover {
+  color: #e0e7ff;
+}
+
 @media (max-width: 768px) {
   .navbar {
     flex-direction: column;

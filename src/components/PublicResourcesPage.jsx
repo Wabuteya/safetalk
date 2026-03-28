@@ -1,6 +1,11 @@
-import { useState } from 'react';
+import { useState, useRef, useLayoutEffect, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { LazyLottie } from './LazyLottie';
+import {
+  EMERGENCY_CONTACTS,
+  emergencyTelHref,
+  emergencyDisplayNumber,
+} from '../config/emergencyContacts';
 import './PublicResourcesPage.css';
 
 const BREATHING_LOTTIE_PATH = '/Lottie/Deep%20Breathing.json';
@@ -21,18 +26,46 @@ const LOTTIE_BY_CATEGORY = {
 const PublicResourcesPage = () => {
   const navigate = useNavigate();
   const [expandedCard, setExpandedCard] = useState(null);
+  const toolsGridRef = useRef(null);
+  const [collapsedCardMinPx, setCollapsedCardMinPx] = useState(null);
+
+  const measureCollapsedRow = useCallback(() => {
+    const grid = toolsGridRef.current;
+    if (!grid || expandedCard !== null) return;
+    const cards = [...grid.querySelectorAll('.tool-card')];
+    if (!cards.length) return;
+    cards.forEach((el) => el.classList.add('tool-card--measuring-natural'));
+    const heights = cards.map((el) => el.getBoundingClientRect().height);
+    cards.forEach((el) => el.classList.remove('tool-card--measuring-natural'));
+    const maxH = Math.max(...heights, 0);
+    if (maxH <= 0) return;
+    const next = Math.ceil(maxH);
+    setCollapsedCardMinPx((prev) => (prev === next ? prev : next));
+  }, [expandedCard]);
+
+  useLayoutEffect(() => {
+    measureCollapsedRow();
+  }, [measureCollapsedRow]);
+
+  useEffect(() => {
+    if (expandedCard !== null) return;
+    const grid = toolsGridRef.current;
+    if (!grid || typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(() => {
+      measureCollapsedRow();
+    });
+    ro.observe(grid);
+    return () => ro.disconnect();
+  }, [expandedCard, measureCollapsedRow]);
 
   const toggleCard = (cardId, e) => {
     if (e) {
       e.preventDefault();
       e.stopPropagation();
     }
-    setExpandedCard((prevExpanded) => {
-      // If clicking the same card, collapse it. Otherwise, expand the clicked card.
-      const newExpanded = prevExpanded === cardId ? null : cardId;
-      console.log('Toggle card:', { cardId, prevExpanded, newExpanded });
-      return newExpanded;
-    });
+    setExpandedCard((prevExpanded) =>
+      prevExpanded === cardId ? null : cardId
+    );
   };
 
   const selfHelpCategories = [
@@ -167,12 +200,20 @@ const PublicResourcesPage = () => {
                 </div>
                 <h3>Emergency Contacts</h3>
                 <div className="emergency-list">
-                  <p><strong>If you're in immediate danger, call:</strong></p>
+                  <p><strong>Campus contacts:</strong></p>
                   <ul>
-                    <li><strong>Emergency Services:</strong> 911 (or your local emergency number)</li>
-                    <li><strong>Crisis Text Line:</strong> Text HOME to 741741</li>
-                    <li><strong>National Suicide Prevention Lifeline:</strong> 988</li>
-                    <li><strong>University Counseling Center:</strong> Check your campus directory</li>
+                    {EMERGENCY_CONTACTS.map((contact) => (
+                      <li key={contact.number}>
+                        <strong>{contact.label}:</strong>{' '}
+                        <a
+                          className="emergency-tel"
+                          href={emergencyTelHref(contact)}
+                          aria-label={`Call ${contact.label}`}
+                        >
+                          {emergencyDisplayNumber(contact)}
+                        </a>
+                      </li>
+                    ))}
                   </ul>
                   <p className="important-note">
                     <strong>Remember:</strong> You are not alone. Help is available 24/7. Reach out if you need immediate support.
@@ -190,7 +231,7 @@ const PublicResourcesPage = () => {
               <h2>Self-Help Tools</h2>
               <p className="section-subtitle">Explore strategies to support your mental well-being</p>
             </div>
-            <div className="tools-grid">
+            <div className="tools-grid" ref={toolsGridRef}>
               {selfHelpCategories.map((category) => {
                 const isExpanded = expandedCard === category.id;
                 const borderClass = ['coping', 'sleep'].includes(category.id) ? 'tool-card--blue' : 'tool-card--maroon';
@@ -199,6 +240,9 @@ const PublicResourcesPage = () => {
                   <div 
                     key={category.id} 
                     className={`tool-card ${borderClass} ${isExpanded ? 'expanded' : ''} tool-card--with-sticker`}
+                    style={
+                      collapsedCardMinPx != null ? { minHeight: collapsedCardMinPx } : undefined
+                    }
                   >
                     {lottiePath && (
                       <div className="tool-card-sticker card-sticker">

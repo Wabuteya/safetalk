@@ -2,11 +2,11 @@ import { supabase } from '../supabaseClient';
 
 /** Predefined mood options for student selection. Do not use for risk or alerts. */
 export const MOOD_OPTIONS = [
-  { value: 'great', label: 'Great' },
-  { value: 'good', label: 'Good' },
-  { value: 'okay', label: 'Okay' },
-  { value: 'low', label: 'Low' },
-  { value: 'difficult', label: 'Difficult' },
+  { value: 'great', label: 'Great', emoji: '😄' },
+  { value: 'good', label: 'Good', emoji: '🙂' },
+  { value: 'okay', label: 'Okay', emoji: '😐' },
+  { value: 'low', label: 'Low', emoji: '😔' },
+  { value: 'difficult', label: 'Difficult', emoji: '😢' },
 ];
 
 /** Numeric mood values for charts: 1=Difficult, 5=Great */

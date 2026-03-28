@@ -1,5 +1,9 @@
 import React from 'react';
-import { EMERGENCY_CONTACTS } from '../../config/emergencyContacts';
+import {
+  EMERGENCY_CONTACTS,
+  emergencyTelHref,
+  emergencyDisplayNumber,
+} from '../../config/emergencyContacts';
 import './CrisisResponseModal.css';
 
 /**
@@ -36,11 +40,8 @@ const CrisisResponseModal = ({ therapistNotified, noTherapist, sendFailed, onClo
             <ul className="crisis-response-contact-list">
               {EMERGENCY_CONTACTS.map((contact) => (
                 <li key={contact.number}>
-                  <a
-                    href={`tel:${contact.number.replace(/\s/g, '')}`}
-                    className="crisis-response-contact-link"
-                  >
-                    {contact.label} — {contact.number}
+                  <a href={emergencyTelHref(contact)} className="crisis-response-contact-link">
+                    {contact.label} — {emergencyDisplayNumber(contact)}
                   </a>
                 </li>
               ))}
@@ -69,8 +70,8 @@ const CrisisResponseModal = ({ therapistNotified, noTherapist, sendFailed, onClo
             <ul className="crisis-response-contact-list">
               {EMERGENCY_CONTACTS.map((contact) => (
                 <li key={contact.number}>
-                  <a href={`tel:${contact.number.replace(/\s/g, '')}`} className="crisis-response-contact-link">
-                    {contact.label} — {contact.number}
+                  <a href={emergencyTelHref(contact)} className="crisis-response-contact-link">
+                    {contact.label} — {emergencyDisplayNumber(contact)}
                   </a>
                 </li>
               ))}
@@ -95,8 +96,8 @@ const CrisisResponseModal = ({ therapistNotified, noTherapist, sendFailed, onClo
             <ul className="crisis-response-contact-list">
               {EMERGENCY_CONTACTS.map((contact) => (
                 <li key={contact.number}>
-                  <a href={`tel:${contact.number.replace(/\s/g, '')}`} className="crisis-response-contact-link">
-                    {contact.label} — {contact.number}
+                  <a href={emergencyTelHref(contact)} className="crisis-response-contact-link">
+                    {contact.label} — {emergencyDisplayNumber(contact)}
                   </a>
                 </li>
               ))}

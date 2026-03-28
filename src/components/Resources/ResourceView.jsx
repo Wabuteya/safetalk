@@ -1,7 +1,14 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../../supabaseClient';
 import { useUser } from '../../contexts/UserContext';
-import { FaExternalLinkAlt, FaVideo, FaBookOpen } from 'react-icons/fa';
+import {
+  FaBookOpen,
+  FaExternalLinkAlt,
+  FaLayerGroup,
+  FaStar,
+  FaUserMd,
+  FaVideo,
+} from 'react-icons/fa';
 import VideoEmbed from '../VideoEmbed';
 import { getLinkType } from '../../utils/videoUtils';
 import './ResourceView.css';
@@ -46,7 +53,7 @@ const ResourceView = () => {
   const [allResources, setAllResources] = useState([]);
   const [assessment, setAssessment] = useState(null);
   const [linkedTherapist, setLinkedTherapist] = useState(null);
-  const [hasMediumRiskJournal, setHasMediumRiskJournal] = useState(false);
+  const [journalRecommendedResourceIds, setJournalRecommendedResourceIds] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -93,20 +100,24 @@ const ResourceView = () => {
     }
   }, [user]);
 
-  // Fetch medium-risk journal status via RPC (no direct journal_analysis access for students)
-  const fetchMediumRiskStatus = useCallback(async () => {
+  // Resource IDs linked from journal analysis (Edge Function → journal_recommendations)
+  const fetchJournalRecommendations = useCallback(async () => {
     if (!user) return;
 
     try {
-      const { data, error: rpcError } = await supabase.rpc('has_medium_risk_journal', {
-        p_student_id: user.id
-      });
+      const { data, error: jrError } = await supabase
+        .from('journal_recommendations')
+        .select('resource_id')
+        .eq('student_id', user.id);
 
-      if (!rpcError && data === true) {
-        setHasMediumRiskJournal(true);
+      if (!jrError && data?.length) {
+        setJournalRecommendedResourceIds(data.map((row) => row.resource_id).filter(Boolean));
+      } else {
+        setJournalRecommendedResourceIds([]);
       }
     } catch (err) {
-      console.log('Medium-risk check failed (non-critical):', err);
+      console.log('Journal recommendations fetch failed (non-critical):', err);
+      setJournalRecommendedResourceIds([]);
     }
   }, [user]);
 
@@ -191,7 +202,7 @@ const ResourceView = () => {
     }
   }, [user, linkedTherapist]);
 
-  // Fetch assessment, therapist, and medium-risk status first, then resources
+  // Fetch assessment, therapist link, and journal-backed recommendations
   useEffect(() => {
     const loadData = async () => {
       if (!user) return;
@@ -199,12 +210,12 @@ const ResourceView = () => {
       await Promise.all([
         fetchAssessment(),
         fetchLinkedTherapist(),
-        fetchMediumRiskStatus()
+        fetchJournalRecommendations()
       ]);
     };
 
     loadData();
-  }, [user, fetchAssessment, fetchLinkedTherapist, fetchMediumRiskStatus]);
+  }, [user, fetchAssessment, fetchLinkedTherapist, fetchJournalRecommendations]);
 
   // Fetch resources after linkedTherapist is determined (even if null)
   useEffect(() => {
@@ -226,46 +237,72 @@ const ResourceView = () => {
     return () => window.removeEventListener('keydown', onKey);
   }, [detailResource]);
 
-  // Prioritize resources based on assessment data
+  const journalRecIdSet = useMemo(
+    () => new Set(journalRecommendedResourceIds),
+    [journalRecommendedResourceIds]
+  );
+
   const prioritizedResources = useMemo(() => {
-    if (!assessment?.challenges || assessment.challenges.length === 0) {
-      // No assessment data - return resources as-is
-      return {
-        recommended: [],
-        general: allResources,
-        therapist: []
-      };
-    }
+    const studentConcerns = (assessment?.challenges?.length
+      ? assessment.challenges.map((c) => c.toLowerCase())
+      : []);
 
-    // Normalize assessment challenges to lowercase for matching
-    const studentConcerns = (assessment.challenges || []).map(c => c.toLowerCase());
-
-    // Categorize resources
-    const recommended = [];
-    const general = [];
-    const therapist = [];
-
-    allResources.forEach(resource => {
-      // Check if resource tags match student concerns
-      const resourceTags = (resource.tags || []).map(t => t.toLowerCase());
-      const hasMatchingTag = resourceTags.some(tag => 
-        studentConcerns.some(concern => 
-          concern.includes(tag) || tag.includes(concern)
+    const matchesAssessment = (resource) => {
+      if (!studentConcerns.length) return false;
+      const resourceTags = (resource.tags || []).map((t) => t.toLowerCase());
+      return resourceTags.some((tag) =>
+        studentConcerns.some(
+          (concern) => concern.includes(tag) || tag.includes(concern)
         )
       );
+    };
 
-      // Categorize by visibility scope
+    const recommended = [];
+    const general = [];
+    const therapistOnly = [];
+    const seenRecommended = new Set();
+
+    allResources.forEach((resource) => {
+      const fromJournal = journalRecIdSet.has(resource.id);
+      const fromAssessment = matchesAssessment(resource);
+      const isRecommended = fromJournal || fromAssessment;
+
       if (resource.visibility_scope === 'therapist_attached') {
-        therapist.push(resource);
-      } else if (hasMatchingTag) {
+        if (isRecommended && !seenRecommended.has(resource.id)) {
+          seenRecommended.add(resource.id);
+          recommended.push(resource);
+        } else if (!isRecommended) {
+          therapistOnly.push(resource);
+        }
+        return;
+      }
+
+      if (isRecommended && !seenRecommended.has(resource.id)) {
+        seenRecommended.add(resource.id);
         recommended.push(resource);
-      } else {
+      } else if (!isRecommended) {
         general.push(resource);
       }
     });
 
-    return { recommended, general, therapist };
-  }, [allResources, assessment]);
+    return { recommended, general, therapist: therapistOnly };
+  }, [allResources, assessment, journalRecIdSet]);
+
+  const recommendedSectionSubtitle = useMemo(() => {
+    const hasJournalSignals = journalRecIdSet.size > 0;
+    const hasAssessment =
+      (assessment?.challenges?.length ?? 0) > 0;
+    if (hasJournalSignals && hasAssessment) {
+      return 'Based on your journaling and your initial assessment.';
+    }
+    if (hasJournalSignals) {
+      return 'Based on your recent journaling.';
+    }
+    if (hasAssessment) {
+      return 'Matched to interests you shared in your signup assessment.';
+    }
+    return 'Selected for you.';
+  }, [journalRecIdSet, assessment]);
 
   const getResourceIcon = (resource) => {
     if (resource.link) {
@@ -413,14 +450,19 @@ const ResourceView = () => {
     );
   }
 
-  const renderSection = (title, subtitle, resources) => {
+  const renderSection = (title, subtitle, resources, SectionIcon) => {
     const filtered = filterResources(resources);
     if (filtered.length === 0) return null;
     return (
       <section className="resource-section">
-        <div className="section-heading">
-          <h2 className="section-title">{title}</h2>
-        </div>
+        <h2 className="section-title">
+          {SectionIcon ? (
+            <span className="section-title-icon" aria-hidden>
+              <SectionIcon />
+            </span>
+          ) : null}
+          <span className="section-title-text">{title}</span>
+        </h2>
         <p className="section-subtitle">{subtitle}</p>
         <div className="resources-grid">
           {filtered.map(renderResourceCard)}
@@ -438,7 +480,9 @@ const ResourceView = () => {
 
       {allResources.length === 0 ? (
         <div className="empty-state">
-          <div className="empty-icon">📚</div>
+          <div className="empty-icon" aria-hidden>
+            <FaBookOpen />
+          </div>
           <h2>Resources Coming Soon</h2>
           <p>Our therapists are curating helpful resources for you. Check back soon for articles, videos, and tools to support your well-being.</p>
         </div>
@@ -466,34 +510,29 @@ const ResourceView = () => {
             </div>
           </div>
 
-          {hasMediumRiskJournal ? (
-            renderSection(
-              '✨ Recommended for You',
-              'Resources that may help based on your recent journal entries',
-              allResources
-            )
-          ) : (
-            <>
-              {prioritizedResources.recommended.length > 0 &&
-                renderSection(
-                  '✨ Recommended for You',
-                  'Resources that match your areas of interest',
-                  prioritizedResources.recommended
-                )}
-              {prioritizedResources.therapist.length > 0 &&
-                renderSection(
-                  '👤 Your Therapist\'s Resources',
-                  'Resources shared specifically with you',
-                  prioritizedResources.therapist
-                )}
-              {prioritizedResources.general.length > 0 &&
-                renderSection(
-                  '📚 General Resources',
-                  'Helpful resources available to all students',
-                  prioritizedResources.general
-                )}
-            </>
-          )}
+          <>
+            {prioritizedResources.recommended.length > 0 &&
+              renderSection(
+                'Recommended for You',
+                recommendedSectionSubtitle,
+                prioritizedResources.recommended,
+                FaStar
+              )}
+            {prioritizedResources.therapist.length > 0 &&
+              renderSection(
+                'Your Therapist\'s Resources',
+                'Resources your therapist shared specifically with you.',
+                prioritizedResources.therapist,
+                FaUserMd
+              )}
+            {prioritizedResources.general.length > 0 &&
+              renderSection(
+                'General Resources',
+                'Broader resources available to all students.',
+                prioritizedResources.general,
+                FaLayerGroup
+              )}
+          </>
         </>
       )}
 

@@ -39,8 +39,5 @@ CREATE TRIGGER update_therapist_notes_updated_at
   FOR EACH ROW
   EXECUTE FUNCTION update_therapist_notes_updated_at();
 
--- Note: RLS is disabled for now to ensure a stable working base.
--- To enable RLS later, run:
--- ALTER TABLE therapist_notes ENABLE ROW LEVEL SECURITY;
--- Then add appropriate policies for therapists.
-
+-- Note: RLS is disabled here so this file stays a safe baseline. To enable RLS,
+-- run therapist_notes_rls.sql (all statements in one go) in the SQL editor.

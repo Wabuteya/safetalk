@@ -73,19 +73,36 @@
   color: white;
 }
 
-/* Section Headings */
-.section-heading {
+/* Section heading: icon + title in one flex row (avoids SVG vs h2 misalignment) */
+.section-title {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 4px;
+  gap: 10px;
+  margin: 0 0 4px 0;
+  padding: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 1.25;
+  color: #111827;
 }
 
-.section-title {
-  color: #111827;
-  font-weight: 700;
-  font-size: 1.2rem;
-  margin: 0;
+.section-title-text {
+  min-width: 0;
+}
+
+.section-title-icon {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  color: #003da5;
+}
+
+.section-title-icon svg {
+  display: block;
+  width: 1.1em;
+  height: 1.1em;
+  flex-shrink: 0;
 }
 
 .section-subtitle {
@@ -421,8 +438,16 @@
 }
 
 .empty-icon {
-  font-size: 4rem;
+  display: flex;
+  justify-content: center;
   margin-bottom: 1rem;
+  color: #003da5;
+  line-height: 0;
+}
+
+.empty-icon svg {
+  width: 4rem;
+  height: 4rem;
 }
 
 .error-banner {

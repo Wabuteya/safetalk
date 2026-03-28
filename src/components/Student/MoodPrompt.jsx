@@ -38,8 +38,12 @@ const MoodPrompt = ({ onClose, onSave }) => {
               className={`mood-option-btn ${selectedMood === opt.value ? 'selected' : ''}`}
               onClick={() => setSelectedMood(opt.value)}
               aria-pressed={selectedMood === opt.value}
+              aria-label={opt.label}
             >
-              {opt.label}
+              <span className="mood-option-emoji" aria-hidden="true">
+                {opt.emoji}
+              </span>
+              <span className="mood-option-label">{opt.label}</span>
             </button>
           ))}
         </div>

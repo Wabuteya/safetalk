@@ -82,7 +82,7 @@ const SignUpPage = () => {
             gender: formData.gender,
           },
           // This tells Supabase where to send the user AFTER they click the email link
-          emailRedirectTo: `${window.location.origin}/assessment`
+          emailRedirectTo: `${window.location.origin}/terms`
         }
       });
       
@@ -140,9 +140,9 @@ const SignUpPage = () => {
           setLoading(false); // Stop loading before navigation
           navigate('/please-verify');
         } else if (data.session) {
-          // Email confirmation not required or already confirmed - go to assessment
+          // Email confirmation not required or already confirmed - accept terms then assessment
           setLoading(false); // Stop loading before navigation
-          navigate('/assessment');
+          navigate('/terms');
         } else {
           // Edge case - user created but unclear state
           setError('Account created but email confirmation status is unclear. Please check your email or contact support.');
@@ -174,7 +174,7 @@ const SignUpPage = () => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/assessment`,
+          redirectTo: `${window.location.origin}/terms`,
         }
       });
       

@@ -20,6 +20,9 @@ if (!supabaseUrl || !supabaseAnonKey) {
   );
 }
 
+/** Must match auth.storageKey — used for cross-tab session sync (e.g. email verification). */
+export const SUPABASE_AUTH_STORAGE_KEY = 'sb-auth-token';
+
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     storage: typeof window !== 'undefined' ? window.localStorage : undefined,
@@ -27,6 +30,6 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     persistSession: true,
     detectSessionInUrl: true,
     // Ensure session is stored properly in Chrome
-    storageKey: 'sb-auth-token',
+    storageKey: SUPABASE_AUTH_STORAGE_KEY,
   },
 });

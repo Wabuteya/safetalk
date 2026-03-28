@@ -152,7 +152,11 @@ Deno.serve(async (req) => {
 
     if (payload?.journal_id) {
       journalId = payload.journal_id;
-    } else if (payload?.table === 'journal_entries' && payload?.type === 'INSERT' && payload?.record?.id) {
+    } else if (
+      (payload?.table === 'journal_entries' || payload?.table === 'journal_entries_enc') &&
+      payload?.type === 'INSERT' &&
+      payload?.record?.id
+    ) {
       journalId = payload.record.id;
     }
 

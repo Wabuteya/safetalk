@@ -3,7 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
 import { useUser } from '../../contexts/UserContext';
 import { usePostCrisis, POST_CRISIS_REMINDER_MINUTES } from '../../contexts/PostCrisisContext';
-import { EMERGENCY_CONTACTS } from '../../config/emergencyContacts';
+import {
+  EMERGENCY_CONTACTS,
+  emergencyTelHref,
+  emergencyDisplayNumber,
+} from '../../config/emergencyContacts';
 import './PostCrisisBanner.css';
 
 /**
@@ -114,10 +118,10 @@ const PostCrisisBanner = () => {
             {EMERGENCY_CONTACTS.map((contact) => (
               <a
                 key={contact.number}
-                href={`tel:${contact.number.replace(/\s/g, '')}`}
+                href={emergencyTelHref(contact)}
                 className="post-crisis-banner-link"
               >
-                {contact.label} — {contact.number}
+                {contact.label} — {emergencyDisplayNumber(contact)}
               </a>
             ))}
           </div>

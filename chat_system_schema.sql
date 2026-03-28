@@ -120,7 +120,8 @@ CREATE TRIGGER update_user_presence_updated_at
 -- ============================================
 -- ROW LEVEL SECURITY (RLS)
 -- ============================================
--- Disable RLS for now (configure based on your security requirements)
+-- Baseline schema disables RLS. For production, run messages_conversations_rls.sql
+-- (enable RLS + policies on conversations + messages).
 ALTER TABLE conversations DISABLE ROW LEVEL SECURITY;
 ALTER TABLE messages DISABLE ROW LEVEL SECURITY;
 ALTER TABLE user_presence DISABLE ROW LEVEL SECURITY;

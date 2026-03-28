@@ -10,6 +10,7 @@ const ManageStudentsPage = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [assignmentFilter, setAssignmentFilter] = useState('all');
   const [changeRequestFilter, setChangeRequestFilter] = useState('all');
+  const [deletionRequestFilter, setDeletionRequestFilter] = useState('all');
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
@@ -18,6 +19,9 @@ const ManageStudentsPage = () => {
   const [isChangeRequestModalOpen, setIsChangeRequestModalOpen] = useState(false);
   const [selectedChangeRequest, setSelectedChangeRequest] = useState(null);
   const [changeRequestAction, setChangeRequestAction] = useState('');
+  const [isDeletionRequestModalOpen, setIsDeletionRequestModalOpen] = useState(false);
+  const [selectedDeletionRequest, setSelectedDeletionRequest] = useState(null);
+  const [deletionDismissFormOpen, setDeletionDismissFormOpen] = useState(false);
   const [adminNotes, setAdminNotes] = useState('');
   const [processing, setProcessing] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -29,7 +33,8 @@ const ManageStudentsPage = () => {
     active: 0,
     suspended: 0,
     withoutTherapist: 0,
-    pendingChangeRequests: 0
+    pendingChangeRequests: 0,
+    pendingDeletionRequests: 0
   });
 
   useEffect(() => {
@@ -43,7 +48,7 @@ const ManageStudentsPage = () => {
 
       // Fetch all students with their profiles and assignments
       // Note: account_status and last_login may not exist yet - handle gracefully
-      const [profilesResult, relationsResult, changeRequestsResult] = await Promise.all([
+      const [profilesResult, relationsResult, changeRequestsResult, deletionRequestsResult] = await Promise.all([
         supabase
           .from('student_profiles')
           .select('user_id, alias, created_at, account_status')
@@ -53,6 +58,10 @@ const ManageStudentsPage = () => {
           .select('student_id, therapist_id'),
         supabase
           .from('therapist_change_requests')
+          .select('*')
+          .eq('status', 'pending'),
+        supabase
+          .from('account_deletion_requests')
           .select('*')
           .eq('status', 'pending')
       ]);
@@ -75,9 +84,14 @@ const ManageStudentsPage = () => {
         // This allows partial data display rather than complete failure
       }
 
+      if (deletionRequestsResult.error) {
+        console.error('Error fetching account deletion requests:', deletionRequestsResult.error);
+      }
+
       const profiles = profilesResult.data || [];
       const relations = relationsResult.error ? [] : (relationsResult.data || []);
       const pendingRequests = changeRequestsResult.error ? [] : (changeRequestsResult.data || []);
+      const pendingDeletionRequests = deletionRequestsResult.error ? [] : (deletionRequestsResult.data || []);
 
       // Create a map of student_id -> therapist_id
       const assignmentMap = new Map();
@@ -91,12 +105,18 @@ const ManageStudentsPage = () => {
         requestMap.set(req.student_id, req);
       });
 
+      const deletionRequestMap = new Map();
+      pendingDeletionRequests.forEach(req => {
+        deletionRequestMap.set(req.student_id, req);
+      });
+
       // Fetch last login from auth.users (we'll use created_at as fallback)
       // Note: Supabase doesn't expose last_sign_in_at directly from client
       // We'll use created_at for now, or you can add a last_login field to student_profiles
       const enrichedStudents = profiles.map(profile => {
         const hasTherapist = assignmentMap.has(profile.user_id);
         const pendingRequest = requestMap.get(profile.user_id);
+        const pendingDeletion = deletionRequestMap.get(profile.user_id);
         
         // Get account status from database, default to 'active' if not set
         // account_status column may not exist yet - handle gracefully
@@ -111,7 +131,9 @@ const ManageStudentsPage = () => {
           dateJoined: profile.created_at,
           lastLogin: profile.last_login || profile.created_at, // Use last_login if available, fallback to created_at
           changeRequestStatus: pendingRequest ? 'pending' : 'none',
-          changeRequest: pendingRequest || null
+          changeRequest: pendingRequest || null,
+          deletionRequestStatus: pendingDeletion ? 'pending' : 'none',
+          deletionRequest: pendingDeletion || null
         };
       });
 
@@ -123,7 +145,8 @@ const ManageStudentsPage = () => {
         active: enrichedStudents.filter(s => s.accountStatus === 'active').length,
         suspended: enrichedStudents.filter(s => s.accountStatus === 'suspended').length,
         withoutTherapist: enrichedStudents.filter(s => !s.therapistAssigned).length,
-        pendingChangeRequests: pendingRequests.length
+        pendingChangeRequests: pendingRequests.length,
+        pendingDeletionRequests: pendingDeletionRequests.length
       };
       setSummaryStats(stats);
     } catch (err) {
@@ -164,8 +187,14 @@ const ManageStudentsPage = () => {
       filtered = filtered.filter(student => student.changeRequestStatus === 'none');
     }
 
+    if (deletionRequestFilter === 'pending') {
+      filtered = filtered.filter(student => student.deletionRequestStatus === 'pending');
+    } else if (deletionRequestFilter === 'none') {
+      filtered = filtered.filter(student => student.deletionRequestStatus === 'none');
+    }
+
     return filtered;
-  }, [students, searchTerm, statusFilter, assignmentFilter, changeRequestFilter]);
+  }, [students, searchTerm, statusFilter, assignmentFilter, changeRequestFilter, deletionRequestFilter]);
 
   const paginatedStudents = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
@@ -295,6 +324,85 @@ const ManageStudentsPage = () => {
     setIsChangeRequestModalOpen(true);
   };
 
+  const handleDeletionRequestAction = (student, request) => {
+    setSelectedStudent(student);
+    setSelectedDeletionRequest(request);
+    setDeletionDismissFormOpen(false);
+    setAdminNotes('');
+    setIsDeletionRequestModalOpen(true);
+  };
+
+  const handlePermanentDeleteStudent = async () => {
+    if (!selectedStudent || !selectedDeletionRequest) return;
+    const ok = window.confirm(
+      `Permanently delete ${selectedStudent.alias}? This removes their login and related data in the database. This cannot be undone.`
+    );
+    if (!ok) return;
+
+    try {
+      setProcessing(true);
+      const { data, error } = await supabase.functions.invoke('admin-delete-student', {
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          student_id: selectedStudent.id,
+          deletion_request_id: selectedDeletionRequest.id,
+        }),
+      });
+
+      if (error) {
+        const msg = (data && typeof data === 'object' && 'error' in data && data.error) || error.message;
+        throw new Error(typeof msg === 'string' ? msg : 'Failed to delete account.');
+      }
+
+      await fetchStudents();
+      setIsDeletionRequestModalOpen(false);
+      setSelectedDeletionRequest(null);
+      setSelectedStudent(null);
+      setAdminNotes('');
+    } catch (err) {
+      console.error('Error deleting student account:', err);
+      alert(err.message || 'Failed to delete account. Deploy the admin-delete-student edge function if you have not.');
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const handleDismissDeletionRequest = async () => {
+    if (!selectedDeletionRequest) return;
+
+    try {
+      setProcessing(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        alert('You must be logged in to process requests.');
+        return;
+      }
+
+      const { error: updateError } = await supabase
+        .from('account_deletion_requests')
+        .update({
+          status: 'dismissed',
+          processed_at: new Date().toISOString(),
+          processed_by: user.id,
+          admin_notes: adminNotes.trim() || null
+        })
+        .eq('id', selectedDeletionRequest.id);
+
+      if (updateError) throw updateError;
+
+      await fetchStudents();
+      setIsDeletionRequestModalOpen(false);
+      setSelectedDeletionRequest(null);
+      setAdminNotes('');
+      setDeletionDismissFormOpen(false);
+    } catch (err) {
+      console.error('Error dismissing account deletion request:', err);
+      alert('Failed to dismiss request. Please try again.');
+    } finally {
+      setProcessing(false);
+    }
+  };
+
   const handleProcessChangeRequest = async () => {
     if (!selectedChangeRequest || !changeRequestAction) return;
 
@@ -396,6 +504,10 @@ const ManageStudentsPage = () => {
           <p className="stat-value">{summaryStats.withoutTherapist}</p>
           <p className="stat-label">Without Therapist</p>
         </div>
+        <div className="stat-card deletion-pending">
+          <p className="stat-value">{summaryStats.pendingDeletionRequests}</p>
+          <p className="stat-label">Deletion Requests</p>
+        </div>
       </div>
 
       {/* Search and Filters */}
@@ -444,7 +556,7 @@ const ManageStudentsPage = () => {
           </select>
         </div>
         <div className="filter-group">
-          <label>Change Requests:</label>
+          <label>Therapist change:</label>
           <select
             value={changeRequestFilter}
             onChange={(e) => {
@@ -454,8 +566,23 @@ const ManageStudentsPage = () => {
             className="filter-select"
           >
             <option value="all">All</option>
-            <option value="pending">Pending Requests</option>
-            <option value="none">No Requests</option>
+            <option value="pending">Pending</option>
+            <option value="none">None</option>
+          </select>
+        </div>
+        <div className="filter-group">
+          <label>Account deletion:</label>
+          <select
+            value={deletionRequestFilter}
+            onChange={(e) => {
+              setDeletionRequestFilter(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="filter-select"
+          >
+            <option value="all">All</option>
+            <option value="pending">Pending</option>
+            <option value="none">None</option>
           </select>
         </div>
       </div>
@@ -474,7 +601,8 @@ const ManageStudentsPage = () => {
                   <th>Alias</th>
                   <th>Account Status</th>
                   <th>Therapist Assignment</th>
-                  <th>Change Request</th>
+                  <th>Therapist change</th>
+                  <th>Deletion</th>
                   <th>Date Joined</th>
                   <th>Last Login</th>
                   <th>Actions</th>
@@ -501,6 +629,13 @@ const ManageStudentsPage = () => {
                         <span className="change-request-badge pending">Pending</span>
                       ) : (
                         <span className="change-request-badge none">None</span>
+                      )}
+                    </td>
+                    <td>
+                      {student.deletionRequestStatus === 'pending' ? (
+                        <span className="deletion-request-badge pending">Pending</span>
+                      ) : (
+                        <span className="deletion-request-badge none">None</span>
                       )}
                     </td>
                     <td>{formatDate(student.dateJoined)}</td>
@@ -548,6 +683,15 @@ const ManageStudentsPage = () => {
                             title="Handle Change Request"
                           >
                             Change Request
+                          </button>
+                        )}
+                        {student.deletionRequestStatus === 'pending' && student.deletionRequest && (
+                          <button
+                            className="action-btn deletion-request"
+                            onClick={() => handleDeletionRequestAction(student, student.deletionRequest)}
+                            title="Handle account deletion request"
+                          >
+                            Deletion
                           </button>
                         )}
                         <button
@@ -633,6 +777,12 @@ const ManageStudentsPage = () => {
                   <strong>Student ID:</strong>
                   <span className="student-id">{selectedStudent.id}</span>
                 </div>
+                {selectedStudent.deletionRequestStatus === 'pending' && selectedStudent.deletionRequest && (
+                  <div className="detail-row">
+                    <strong>Account deletion:</strong>
+                    <span className="deletion-request-badge pending">Pending — use Deletion in the table to resolve</span>
+                  </div>
+                )}
               </div>
             </div>
             <div className="modal-footer">
@@ -681,6 +831,101 @@ const ManageStudentsPage = () => {
                 disabled={!selectedTherapistId}
               >
                 Assign
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Account deletion request modal */}
+      {isDeletionRequestModalOpen && selectedDeletionRequest && selectedStudent && (
+        <div className="modal-overlay" onClick={() => !processing && setIsDeletionRequestModalOpen(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Account deletion request</h2>
+              <button
+                className="modal-close-btn"
+                onClick={() => !processing && setIsDeletionRequestModalOpen(false)}
+                disabled={processing}
+              >
+                ×
+              </button>
+            </div>
+            <div className="modal-body">
+              <div className="request-summary">
+                <p><strong>Student:</strong> {selectedStudent.alias}</p>
+                {selectedDeletionRequest.reason ? (
+                  <p><strong>Reason:</strong> {selectedDeletionRequest.reason}</p>
+                ) : (
+                  <p><strong>Reason:</strong> <em>None provided</em></p>
+                )}
+                <p><strong>Requested:</strong> {formatDateTime(selectedDeletionRequest.requested_at)}</p>
+                <p className="deletion-modal-hint">
+                  <strong>Delete account</strong> removes the student from authentication and clears related rows (profiles, journals, etc.) where the database is set to cascade.
+                  Use <strong>Dismiss</strong> if the request should not proceed (withdrawn, duplicate, etc.)—the student account stays active.
+                </p>
+              </div>
+              <div className="deletion-modal-actions-primary">
+                <button
+                  type="button"
+                  className="btn-delete-student-confirm"
+                  onClick={handlePermanentDeleteStudent}
+                  disabled={processing}
+                >
+                  {processing ? 'Working…' : 'Permanently delete account'}
+                </button>
+              </div>
+              <div className="deletion-modal-divider">
+                <span>or</span>
+              </div>
+              {!deletionDismissFormOpen ? (
+                <button
+                  type="button"
+                  className="btn-dismiss-deletion-request"
+                  onClick={() => setDeletionDismissFormOpen(true)}
+                  disabled={processing}
+                >
+                  Dismiss request (keep account)
+                </button>
+              ) : (
+                <div className="form-group">
+                  <label htmlFor="deletionAdminNotes">Admin notes</label>
+                  <textarea
+                    id="deletionAdminNotes"
+                    value={adminNotes}
+                    onChange={(e) => setAdminNotes(e.target.value)}
+                    placeholder="Optional: reason for dismissal…"
+                    rows={4}
+                    disabled={processing}
+                  />
+                  <div className="deletion-dismiss-actions">
+                    <button
+                      type="button"
+                      className="btn-cancel"
+                      onClick={() => !processing && setDeletionDismissFormOpen(false)}
+                      disabled={processing}
+                    >
+                      Back
+                    </button>
+                    <button
+                      type="button"
+                      className="btn-confirm-reject"
+                      onClick={handleDismissDeletionRequest}
+                      disabled={processing}
+                    >
+                      {processing ? 'Saving…' : 'Confirm dismiss'}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="modal-footer">
+              <button
+                className="btn-cancel"
+                onClick={() => !processing && setIsDeletionRequestModalOpen(false)}
+                disabled={processing}
+              >
+                Cancel
               </button>
             </div>
           </div>

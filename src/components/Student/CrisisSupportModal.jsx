@@ -1,5 +1,9 @@
 import React, { useState } from 'react';
-import { EMERGENCY_CONTACTS } from '../../config/emergencyContacts';
+import {
+  EMERGENCY_CONTACTS,
+  emergencyTelHref,
+  emergencyDisplayNumber,
+} from '../../config/emergencyContacts';
 import './CrisisSupportModal.css';
 
 /**
@@ -51,11 +55,8 @@ const CrisisSupportModal = ({ onNotifyTherapist, onCancel }) => {
             <ul className="crisis-support-contact-list">
               {EMERGENCY_CONTACTS.map((contact) => (
                 <li key={contact.number}>
-                  <a
-                    href={`tel:${contact.number.replace(/\s/g, '')}`}
-                    className="crisis-support-contact-link"
-                  >
-                    {contact.label} — {contact.number}
+                  <a href={emergencyTelHref(contact)} className="crisis-support-contact-link">
+                    {contact.label} — {emergencyDisplayNumber(contact)}
                   </a>
                 </li>
               ))}

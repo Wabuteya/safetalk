@@ -8,6 +8,7 @@ import { PostCrisisProvider } from '../../contexts/PostCrisisContext';
 import './Dashboard.css';
 import { useUser } from '../../contexts/UserContext';
 import { supabase } from '../../supabaseClient';
+import { mustAcceptTermsBeforeApp } from '../../utils/termsAcceptance';
 
 const Dashboard = () => {
   const { user, loading } = useUser();
@@ -34,6 +35,11 @@ const Dashboard = () => {
         setCheckingAuth(false);
       } else if (!loading && user) {
         console.log('Dashboard rendering with user:', user.user_metadata?.role, 'ID:', user.id);
+        if (mustAcceptTermsBeforeApp(user)) {
+          navigate('/terms', { replace: true });
+          setCheckingAuth(false);
+          return;
+        }
         setCheckingAuth(false);
       } else if (loading) {
         // Still loading, wait a bit more

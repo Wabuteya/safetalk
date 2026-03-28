@@ -1,7 +1,7 @@
 /* Main Layout for Admin Dashboard */
 .admin-dashboard-layout {
   display: flex;
-  min-height: 100vh;
+  min-height: var(--app-height, 100vh);
   /* Full-bleed to remove right gutter on ultra-wide screens */
   /* Cross-browser full-bleed fix - use 100% instead of 100vw */
   width: 100%;
@@ -46,7 +46,7 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   overflow: hidden;
   margin: 12px 0 12px 12px;
-  height: calc(100vh - 24px);
+  height: calc(var(--app-height, 100vh) - 24px);
   position: sticky;
   top: 1.5rem;
 }
@@ -207,7 +207,7 @@
   background: #003DA5;
   border-radius: 16px;
   margin: 12px 0 12px 12px;
-  height: calc(100vh - 24px);
+  height: calc(var(--app-height, 100vh) - 24px);
   padding: 24px 16px;
   display: flex;
   flex-direction: column;

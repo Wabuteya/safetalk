@@ -14,7 +14,7 @@
   padding: 1.5rem;
   max-width: 480px;
   width: 90%;
-  max-height: 90vh;
+  max-height: calc(var(--app-height, 100vh) * 0.9);
   overflow-y: auto;
 }
 

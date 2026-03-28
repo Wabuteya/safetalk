@@ -4,8 +4,8 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
-    padding: clamp(2rem, 5vw, 3rem) 1.5rem;
+    min-height: var(--app-height, 100vh);
+    padding: calc(clamp(2rem, 5vw, 3rem) + env(safe-area-inset-top, 0px)) calc(1.5rem + env(safe-area-inset-right, 0px)) calc(clamp(2rem, 5vw, 3rem) + env(safe-area-inset-bottom, 0px)) calc(1.5rem + env(safe-area-inset-left, 0px));
     background: radial-gradient(circle at top left, #d1e9ff, transparent 55%),
                 radial-gradient(circle at bottom right, #fbd3ff, transparent 50%),
                 linear-gradient(135deg, #f5f8ff 0%, #fdfdfd 100%);

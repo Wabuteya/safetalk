@@ -16,6 +16,9 @@ html {
   /* Standardize scrollbar behavior */
   scrollbar-width: thin;
   scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+  height: 100%;
+  /* iOS Safari: stretch to visible viewport when 100vh is unreliable */
+  height: -webkit-fill-available;
 }
 
 /* Webkit scrollbar styling for Chrome/Safari */
@@ -33,6 +36,8 @@ html::-webkit-scrollbar-thumb {
 }
 
 :root {
+  /* Full viewport height on mobile: 100dvh tracks visible area (toolbar hide/show). */
+  --app-height: 100vh;
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
@@ -45,6 +50,12 @@ html::-webkit-scrollbar-thumb {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+@supports (height: 100dvh) {
+  :root {
+    --app-height: 100dvh;
+  }
 }
 
 a {
@@ -60,9 +71,13 @@ body {
   margin: 0;
   padding: 0;
   min-width: 320px;
-  min-height: 100vh;
+  min-height: 100%;
+  min-height: var(--app-height);
+  min-height: -webkit-fill-available;
   /* Remove flex centering that can cause alignment issues */
   width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
   /* Ensure consistent rendering across browsers */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -70,7 +85,12 @@ body {
 
 #root {
   width: 100%;
-  min-height: 100vh;
+  max-width: 100%;
+  min-height: 100%;
+  min-height: var(--app-height);
+  min-height: -webkit-fill-available;
+  display: flex;
+  flex-direction: column;
 }
 
 h1 {

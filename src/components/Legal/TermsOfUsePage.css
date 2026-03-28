@@ -1,7 +1,7 @@
 .terms-page {
-  min-height: 100vh;
+  min-height: var(--app-height, 100vh);
   background: linear-gradient(180deg, #f0f4ff 0%, #ffffff 48%);
-  padding: 1.5rem 1rem 3rem;
+  padding: calc(1.5rem + env(safe-area-inset-top, 0px)) calc(1rem + env(safe-area-inset-right, 0px)) calc(3rem + env(safe-area-inset-bottom, 0px)) calc(1rem + env(safe-area-inset-left, 0px));
   box-sizing: border-box;
 }
 
@@ -43,7 +43,7 @@
   padding: 1.5rem 1.75rem;
   box-shadow: 0 4px 24px rgba(0, 61, 165, 0.08);
   border: 1px solid #e8ecf4;
-  max-height: min(70vh, 520px);
+  max-height: min(calc(var(--app-height, 100vh) * 0.7), 520px);
   overflow-y: auto;
   font-size: 0.92rem;
   line-height: 1.55;

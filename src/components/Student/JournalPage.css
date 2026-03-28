@@ -1,14 +1,14 @@
 /* Full-height page */
 .journal-page {
   background-color: #f5f5f5;
-  min-height: 100vh;
+  min-height: var(--app-height, 100vh);
 }
 
 .journal-page.journal-layout {
   display: grid;
   grid-template-columns: 280px 1fr;
   gap: 0;
-  height: calc(100vh - 4rem);
+  height: calc(var(--app-height, 100vh) - 4rem);
 }
 
 /* Left Sidebar */

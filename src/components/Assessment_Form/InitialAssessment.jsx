@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
-import { mustAcceptTermsBeforeApp } from '../../utils/termsAcceptance';
+import { ACCEPT_TERMS_ROUTE, mustAcceptTermsBeforeApp } from '../../utils/termsAcceptance';
 import './InitialAssessment.css';
 
 const ADJECTIVES = ['Anonymous', 'Clever', 'Quiet', 'Brave', 'Calm', 'Gentle', 'Happy'];
@@ -34,7 +34,7 @@ const InitialAssessment = () => {
       }
 
       if (mustAcceptTermsBeforeApp(user)) {
-        navigate('/terms', { replace: true });
+        navigate(ACCEPT_TERMS_ROUTE, { replace: true });
         return;
       }
 

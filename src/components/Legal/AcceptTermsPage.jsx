@@ -1,15 +1,16 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 import { supabase } from '../../supabaseClient';
 import { mustAcceptTermsBeforeApp, recordTermsAcceptance } from '../../utils/termsAcceptance';
-import termsSource from '../../../docs/TERMS_AND_CONDITIONS.md?raw';
+import TermsMarkdownBody from './TermsMarkdownBody';
 import './TermsOfUsePage.css';
 
-const TermsOfUsePage = () => {
+/**
+ * Post–email-verification flow: confirmed students who have not yet accepted terms.
+ * Not linked from the public footer — use `/terms` for the read-only document + sign in/up.
+ */
+export default function AcceptTermsPage() {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [checked, setChecked] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -21,10 +22,26 @@ const TermsOfUsePage = () => {
     (async () => {
       const { data: { user: nextUser } } = await supabase.auth.getUser();
       if (cancelled) return;
-      setUser(nextUser ?? null);
-      setLoading(false);
 
-      if (!nextUser?.email_confirmed_at) return;
+      if (!nextUser) {
+        navigate('/login', { replace: true });
+        return;
+      }
+
+      if (!nextUser.email_confirmed_at) {
+        navigate('/please-verify', { replace: true });
+        return;
+      }
+
+      const role = nextUser.user_metadata?.role;
+      if (role === 'therapist') {
+        navigate('/therapist-dashboard', { replace: true });
+        return;
+      }
+      if (role === 'admin') {
+        navigate('/admin-dashboard', { replace: true });
+        return;
+      }
 
       if (!mustAcceptTermsBeforeApp(nextUser)) {
         const { data: assess } = await supabase
@@ -35,7 +52,10 @@ const TermsOfUsePage = () => {
           .maybeSingle();
         if (cancelled) return;
         navigate(assess ? '/student-dashboard' : '/assessment', { replace: true });
+        return;
       }
+
+      setLoading(false);
     })();
 
     return () => {
@@ -58,8 +78,6 @@ const TermsOfUsePage = () => {
     }
   };
 
-  const showAccept = Boolean(user?.email_confirmed_at && mustAcceptTermsBeforeApp(user));
-
   if (loading) {
     return (
       <div className="terms-page">
@@ -74,48 +92,44 @@ const TermsOfUsePage = () => {
     <div className="terms-page">
       <div className="terms-page-inner">
         <header className="terms-page-header">
-          <h1>Terms &amp; Conditions</h1>
+          <h1>Accept Terms &amp; Conditions</h1>
           <Link to="/" className="terms-back-link">
             ← Home
           </Link>
         </header>
 
-        <div className="terms-document">
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>{termsSource}</ReactMarkdown>
+        <p className="terms-accept-lead">
+          Your email is verified. Please read the terms below, then check the box to continue to your assessment.
+        </p>
+
+        <TermsMarkdownBody />
+
+        <div className="terms-accept-panel">
+          <label>
+            <input
+              type="checkbox"
+              checked={checked}
+              onChange={(e) => setChecked(e.target.checked)}
+            />
+            <span>I have read and agree to the Terms and Conditions of Use.</span>
+          </label>
+          <div className="terms-accept-actions">
+            <button
+              type="button"
+              className="terms-continue-btn"
+              disabled={!checked || submitting}
+              onClick={handleContinue}
+            >
+              {submitting ? 'Saving…' : 'Continue to assessment'}
+            </button>
+          </div>
+          {error ? <p className="terms-error">{error}</p> : null}
         </div>
 
-        {showAccept ? (
-          <div className="terms-accept-panel">
-            <label>
-              <input
-                type="checkbox"
-                checked={checked}
-                onChange={(e) => setChecked(e.target.checked)}
-              />
-              <span>I have read and agree to the Terms and Conditions of Use.</span>
-            </label>
-            <div className="terms-accept-actions">
-              <button
-                type="button"
-                className="terms-continue-btn"
-                disabled={!checked || submitting}
-                onClick={handleContinue}
-              >
-                {submitting ? 'Saving…' : 'Continue to assessment'}
-              </button>
-            </div>
-            {error ? <p className="terms-error">{error}</p> : null}
-          </div>
-        ) : !user ? (
-          <p className="terms-public-footer">
-            <Link to="/login">Sign in</Link>
-            {' · '}
-            <Link to="/signup">Create an account</Link>
-          </p>
-        ) : null}
+        <p className="terms-accept-alt">
+          Wrong place? <Link to="/terms">View terms only</Link> · <Link to="/login">Sign in</Link>
+        </p>
       </div>
     </div>
   );
-};
-
-export default TermsOfUsePage;
+}

@@ -32,7 +32,9 @@ import ManageStudentsPage from './components/Admin/ManageStudentsPage';
 import SignUpPage from './components/SignUp/SignUpPage';
 import InitialAssessment from './components/Assessment_Form/InitialAssessment';
 import VerifyEmailPage from './VerifyEmailPage';
-import TermsOfUsePage from './components/Legal/TermsOfUsePage';
+import PublicTermsPage from './components/Legal/PublicTermsPage';
+import AcceptTermsPage from './components/Legal/AcceptTermsPage';
+import { ACCEPT_TERMS_ROUTE } from './utils/termsAcceptance';
 import ForgotPasswordPage from './components/ForgotPasswordPage';
 import UpdatePasswordPage from './components/UpdatePasswordPage';
 import SetPasswordPage from './components/SetPasswordPage';
@@ -53,7 +55,8 @@ const AppRoutes = () => {
       <Route path="/update-password" element={<UpdatePasswordPage />} />
       <Route path="/set-password" element={<SetPasswordPage />} />
       <Route path="/please-verify" element={<VerifyEmailPage />} />
-      <Route path="/terms" element={<TermsOfUsePage />} />
+      <Route path="/terms" element={<PublicTermsPage />} />
+      <Route path={ACCEPT_TERMS_ROUTE} element={<AcceptTermsPage />} />
       <Route path="/assessment" element={<InitialAssessment />} />
 
       {/* Student Dashboard Nested Routes */}

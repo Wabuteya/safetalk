@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase, SUPABASE_AUTH_STORAGE_KEY } from './supabaseClient';
+import { ACCEPT_TERMS_ROUTE } from './utils/termsAcceptance';
 import './VerifyEmailPage.css';
 
 const VerifyEmailPage = () => {
@@ -12,7 +13,7 @@ const VerifyEmailPage = () => {
     const goToTermsIfVerified = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (cancelled || !session?.user?.email_confirmed_at) return;
-      navigate('/terms', { replace: true });
+      navigate(ACCEPT_TERMS_ROUTE, { replace: true });
     };
 
     const onStorage = (e) => {

@@ -4,6 +4,7 @@ import { LazyLottie } from '../LazyLottie';
 import { FaLock, FaUserSecret, FaStethoscope } from 'react-icons/fa';
 import './SignUpPage.css';
 import { supabase } from '../../supabaseClient';
+import { ACCEPT_TERMS_ROUTE } from '../../utils/termsAcceptance';
 
 const SIGNUP_LOTTIE_PATH = '/Lottie/Student%20with%20books.json';
 
@@ -82,7 +83,7 @@ const SignUpPage = () => {
             gender: formData.gender,
           },
           // This tells Supabase where to send the user AFTER they click the email link
-          emailRedirectTo: `${window.location.origin}/terms`
+          emailRedirectTo: `${window.location.origin}${ACCEPT_TERMS_ROUTE}`
         }
       });
       
@@ -97,7 +98,7 @@ const SignUpPage = () => {
           errorMessage = 'An account with this email already exists. Please log in instead.';
         } else if (errorMessage.includes('email') || errorMessage.includes('confirmation')) {
           // Show the actual error from Supabase for debugging
-          errorMessage = `Error sending confirmation email.\n\nSupabase Error: ${errorMessage}\n\nPlease check:\n1. Go to Supabase Dashboard → Authentication → Settings\n2. Enable "Enable email confirmations"\n3. Set Site URL to: http://localhost:5173\n4. Add Redirect URL: http://localhost:5173/**\n5. Go to Email Templates → Reset "Confirm signup" template to default\n\nCheck browser console (F12) for detailed error.`;
+          errorMessage = `Error sending confirmation email.\n\nSupabase Error: ${errorMessage}\n\nPlease check:\n1. Go to Supabase Dashboard → Authentication → Settings\n2. Enable "Enable email confirmations"\n3. Set Site URL to your app origin (e.g. http://localhost:5173 or your production URL)\n4. Under Redirect URLs add your wildcard (e.g. https://yourdomain.com/**) and ensure https://yourdomain.com/accept-terms is allowed\n5. Go to Email Templates → Reset "Confirm signup" template to default\n\nCheck browser console (F12) for detailed error.`;
         } else if (errorMessage.includes('rate limit')) {
           errorMessage = 'Too many requests. Please wait a few minutes and try again.';
         }
@@ -142,7 +143,7 @@ const SignUpPage = () => {
         } else if (data.session) {
           // Email confirmation not required or already confirmed - accept terms then assessment
           setLoading(false); // Stop loading before navigation
-          navigate('/terms');
+          navigate(ACCEPT_TERMS_ROUTE);
         } else {
           // Edge case - user created but unclear state
           setError('Account created but email confirmation status is unclear. Please check your email or contact support.');
@@ -174,7 +175,7 @@ const SignUpPage = () => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/terms`,
+          redirectTo: `${window.location.origin}${ACCEPT_TERMS_ROUTE}`,
         }
       });
       

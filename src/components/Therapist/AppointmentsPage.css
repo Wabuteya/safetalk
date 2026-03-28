@@ -131,7 +131,7 @@
 
 /* react-big-calendar overrides */
 .calendar-wrapper .rbc-calendar {
-  min-height: 65vh;
+  min-height: calc(var(--app-height, 100vh) * 0.65);
   width: 100%;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   color: #1f2846;

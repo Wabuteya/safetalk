@@ -9,7 +9,7 @@
 }
 
 .public-resources-page {
-  min-height: 100vh;
+  min-height: var(--app-height, 100vh);
   display: flex;
   flex-direction: column;
   background-color: #f8f9fa;
@@ -30,13 +30,14 @@
   top: 0;
   z-index: 1000;
   border-bottom: 1px solid #e5e7eb;
+  padding-top: env(safe-area-inset-top, 0px);
 }
 
 .resources-navbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 2rem;
+  padding: 0.75rem calc(2rem + env(safe-area-inset-right, 0px)) 0.75rem calc(2rem + env(safe-area-inset-left, 0px));
   max-width: 1200px;
   margin: 0 auto;
   width: 100%;

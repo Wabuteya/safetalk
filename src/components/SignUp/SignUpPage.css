@@ -9,11 +9,11 @@
 }
 
 .signup-page {
-  min-height: 100vh;
+  min-height: var(--app-height, 100vh);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: clamp(2rem, 5vw, 3rem) 1.5rem;
+  padding: calc(clamp(2rem, 5vw, 3rem) + env(safe-area-inset-top, 0px)) calc(1.5rem + env(safe-area-inset-right, 0px)) calc(clamp(2rem, 5vw, 3rem) + env(safe-area-inset-bottom, 0px)) calc(1.5rem + env(safe-area-inset-left, 0px));
   background: linear-gradient(135deg, #003DA5 0%, #001f5b 100%);
   box-sizing: border-box;
   width: 100%;

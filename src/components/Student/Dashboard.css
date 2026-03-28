@@ -11,8 +11,8 @@
   overflow: hidden;
   border-radius: 16px;
   margin: 12px 0 12px 12px;
-  height: calc(100vh - 24px);
-  max-height: calc(100vh - 24px);
+  height: calc(var(--app-height, 100vh) - 24px);
+  max-height: calc(var(--app-height, 100vh) - 24px);
   position: sticky;
   top: 12px;
 }
@@ -246,7 +246,7 @@
     #F0E8E8 50%,
     #F5E6E6 100%
   );
-  min-height: calc(100vh - 3rem);
+  min-height: calc(var(--app-height, 100vh) - 3rem);
   padding: 40px;
   overflow-y: auto;
   border-radius: 14px;

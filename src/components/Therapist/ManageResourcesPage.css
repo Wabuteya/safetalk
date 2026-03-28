@@ -1,6 +1,6 @@
 .manage-resources-layout {
   position: relative;
-  min-height: 100vh;
+  min-height: var(--app-height, 100vh);
 }
 
 .manage-resources-layout .page-header {

@@ -2,7 +2,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
+  min-height: var(--app-height, 100vh);
   background: radial-gradient(circle at top left, #cfe0ff, transparent 55%),
     radial-gradient(circle at bottom right, #ffe3f2, transparent 50%),
     linear-gradient(135deg, #f4f7ff 0%, #fdfdff 100%);

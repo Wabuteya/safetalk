@@ -589,7 +589,7 @@
 
 /* Chat Tab */
 .chat-tab {
-  height: calc(100vh - 300px);
+  height: calc(var(--app-height, 100vh) - 300px);
   min-height: 500px;
 }
 

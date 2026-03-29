@@ -6,8 +6,8 @@ import TermsMarkdownBody from './TermsMarkdownBody';
 import './TermsOfUsePage.css';
 
 /**
- * Post–email-verification flow: confirmed students who have not yet accepted terms.
- * Not linked from the public footer — use `/terms` for the read-only document + sign in/up.
+ * Student signup only: confirmed students who must accept terms before assessment.
+ * Reached via signup/verify redirects or in-app guards — not from the landing `/terms` link (that page is read-only).
  */
 export default function AcceptTermsPage() {
   const navigate = useNavigate();

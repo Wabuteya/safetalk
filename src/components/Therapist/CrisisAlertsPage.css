@@ -2,6 +2,8 @@
   padding: 1.5rem;
   max-width: 1400px;
   margin: 0 auto;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .crisis-alerts-loading {
@@ -98,11 +100,17 @@
   background: white;
   border-radius: 14px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
-  overflow: hidden;
+  /* Horizontal scroll for wide tables — do not clip action column */
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-color: rgba(0, 61, 165, 0.35) transparent;
 }
 
 .crisis-table {
   width: 100%;
+  min-width: 820px;
   border-collapse: collapse;
 }
 
@@ -345,12 +353,28 @@
   .crisis-alerts-layout {
     padding: 0.75rem 0.5rem;
     max-width: 100%;
-    box-sizing: border-box;
+    overflow-x: hidden;
   }
 
   .crisis-layout {
     grid-template-columns: minmax(0, 1fr);
     gap: 1rem;
+    min-width: 0;
+  }
+
+  .crisis-alerts-list-panel {
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .crisis-table-wrapper {
+    margin-left: 0;
+    margin-right: 0;
+    border-radius: 12px;
+  }
+
+  .alert-details-panel {
+    position: static;
   }
 
   .alert-filters {

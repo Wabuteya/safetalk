@@ -188,6 +188,9 @@
     /* space for fixed topbar + notch / status bar */
     padding-top: calc(56px + env(safe-area-inset-top, 0px));
     padding-bottom: env(safe-area-inset-bottom, 0px);
+    max-width: 100%;
+    overflow-x: hidden;
+    overscroll-behavior-x: none;
   }
 
   .dashboard-layout-mobile-topbar {
@@ -208,6 +211,9 @@
     transform: translateX(-100%);
     transition: transform 0.25s ease;
     box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    box-sizing: border-box;
   }
 
   .dashboard-layout-sidebar.open {
@@ -232,6 +238,7 @@
     min-height: calc(var(--app-height, 100vh) - 56px - env(safe-area-inset-top, 0px));
     overflow-x: hidden;
     box-sizing: border-box;
+    overscroll-behavior-x: none;
   }
 }
 

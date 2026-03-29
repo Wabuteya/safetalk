@@ -71,6 +71,30 @@
     border-radius: 0;
     height: 100%;
     max-height: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+
+  .admin-sidebar .sidebar-nav {
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    padding-right: 4px;
+  }
+
+  .admin-sidebar .sidebar-nav a {
+    min-width: 0;
+    word-break: break-word;
+    hyphens: auto;
+    padding-right: 14px;
+  }
+
+  .admin-sidebar .sidebar-header {
+    padding-right: 8px;
+  }
+
+  .admin-sidebar .sidebar-profile {
+    word-break: break-word;
   }
 }
 

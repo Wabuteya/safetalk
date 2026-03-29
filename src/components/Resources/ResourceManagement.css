@@ -2,6 +2,8 @@
   padding: 2rem;
   max-width: 1400px;
   margin: 0 auto;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 
@@ -96,12 +98,17 @@
   background: white;
   border-radius: 14px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
-  overflow: hidden;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-color: rgba(0, 61, 165, 0.35) transparent;
 }
 
 .content-table,
 .resources-table {
   width: 100%;
+  min-width: 920px;
   border-collapse: collapse;
 }
 
@@ -161,7 +168,9 @@
   padding: 4px 12px;
   font-size: 11px;
   font-weight: 700;
-  white-space: nowrap;
+  white-space: normal;
+  line-height: 1.35;
+  max-width: 220px;
   border: 1px solid transparent;
 }
 
@@ -461,5 +470,42 @@
 
 .btn-secondary:hover {
   background-color: #5a6268;
+}
+
+@media (max-width: 767px) {
+  .resource-management-container {
+    padding: 1rem 0.5rem;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .page-title {
+    font-size: 1.45rem;
+  }
+
+  .table-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-select {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .table-card {
+    border-radius: 12px;
+  }
+
+  .resources-table th,
+  .resources-table td {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+
+  .badge-category {
+    max-width: 160px;
+    font-size: 10px;
+  }
 }
 

@@ -257,3 +257,30 @@
     margin-bottom: 1.5rem;
     border-left: 4px solid #c33;
   }
+
+@media (max-width: 767px) {
+  .caseload-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+  }
+
+  .search-wrapper {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-input,
+  .search-bar input {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .caseload-layout .page-title {
+    font-size: 1.45rem;
+  }
+
+  .student-card {
+    padding: 18px;
+  }
+}

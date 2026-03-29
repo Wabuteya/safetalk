@@ -7,6 +7,9 @@
   display: flex;
   flex-direction: column;
   height: calc(var(--app-height, 100vh) - 4rem);
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   background-color: #ffffff;
   border-radius: 14px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -129,9 +132,12 @@
   font-size: 13px;
   color: #78450A;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   margin: 0;
+  box-sizing: border-box;
+  max-width: 100%;
+  flex-shrink: 0;
 }
 
 .warning-banner strong,
@@ -830,22 +836,35 @@
 @media (max-width: 768px) {
   .chat-screen {
     height: calc(var(--app-height, 100vh) - 2rem);
+    border-radius: 12px;
   }
 
+  .warning-banner,
+  .chat-disclaimer {
+    padding: 10px 12px;
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  .message,
   .message-bubble {
-    max-width: 85%;
+    max-width: min(88%, calc(100% - 12px));
   }
 
   .chat-header {
-    padding: 0.75rem 1rem;
+    padding: 0.65rem 0.75rem;
+    gap: 10px;
+    flex-wrap: wrap;
   }
 
+  .messages-area,
   .messages-container {
-    padding: 1rem;
+    padding: 12px;
+    min-width: 0;
   }
 
   .message-input-form {
-    padding: 0.75rem 1rem;
+    padding: 0.65rem 0.75rem;
   }
 }
 

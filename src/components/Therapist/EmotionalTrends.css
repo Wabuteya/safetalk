@@ -243,3 +243,20 @@
   border-top: 1px solid #eee;
   font-size: 0.85rem;
 }
+
+@media (max-width: 767px) {
+  .risk-stats {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .risk-card,
+  .chart-card {
+    padding: 1rem 1rem;
+  }
+
+  .risk-legend {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+}

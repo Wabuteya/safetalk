@@ -241,13 +241,16 @@
     #F5E6E6 100%
   );
   min-height: 0;
+  min-width: 0;
   padding: 32px 40px;
   flex-grow: 1;
   border-radius: 14px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
   margin: 1rem;
   max-width: 100%;
-  overflow: visible;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  overflow-y: visible;
 }
 
 @media (min-width: 768px) {
@@ -257,13 +260,26 @@
 }
 
 @media (max-width: 767px) {
-  .therapist-page-content {
-    padding: 1rem;
-    margin: 0.5rem;
+  .therapist-page-content.main-content {
+    padding: 1rem 0.75rem;
+    margin: 0.25rem 0 0.5rem;
     border-radius: 12px;
   }
+
   .therapist-page-content .dashboard-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+  }
+
+  .dashboard-header {
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 14px 16px;
+    margin-bottom: 20px;
+  }
+
+  .welcome-title {
+    font-size: 1.45rem;
   }
 }
 
@@ -304,8 +320,13 @@
 /* Dashboard grid + cards */
 .therapist-page-content .dashboard-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 20px;
+}
+@media (max-width: 900px) {
+  .therapist-page-content .dashboard-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .dash-card {
@@ -323,6 +344,12 @@
 .dash-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 12px 28px rgba(0, 61, 165, 0.12);
+}
+
+@media (max-width: 767px) {
+  .therapist-page-content .dash-card {
+    padding: 18px;
+  }
 }
 
 .dash-card.maroon {

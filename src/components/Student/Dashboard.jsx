@@ -68,7 +68,11 @@ const Dashboard = () => {
 
   return (
     <PostCrisisProvider>
-      <DashboardLayout sidebar={<SideNav />} title="SafeTalk">
+      <DashboardLayout
+        sidebar={<SideNav />}
+        title="SafeTalk"
+        mobileLogoSrc="/SafeTalk_Colour.svg"
+      >
         <div className="dashboard-content">
           <PostCrisisBanner />
           <Outlet />

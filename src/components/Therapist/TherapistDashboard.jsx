@@ -195,7 +195,11 @@ const TherapistDashboard = () => {
 
     return (
         <CrisisRealtimeProvider>
-            <DashboardLayout sidebar={<TherapistSideNav />} title="Therapist Portal">
+            <DashboardLayout
+              sidebar={<TherapistSideNav />}
+              title="Therapist Portal"
+              mobileLogoSrc="/SafeTalk_Colour.svg"
+            >
                 <div className="therapist-page-content main-content">
                     <Outlet />
                 </div>

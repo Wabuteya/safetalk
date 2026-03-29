@@ -251,8 +251,12 @@
     #F5E6E6 100%
   );
   min-height: 0;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
   padding: 40px;
-  overflow: visible;
+  overflow-x: hidden;
+  overflow-y: visible;
   border-radius: 14px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
   margin: 1rem;
@@ -266,8 +270,23 @@
 
 @media (max-width: 767px) {
   .dashboard-content {
-    padding: 1rem;
+    padding: 1rem 0.75rem;
+    margin: 0.25rem 0 0.5rem;
     min-height: auto;
+    border-radius: 12px;
+  }
+
+  .welcome-title {
+    font-size: 1.65rem;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+  }
+
+  .dashboard-card {
+    padding: 18px;
   }
 }
 

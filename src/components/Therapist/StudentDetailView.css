@@ -1085,9 +1085,29 @@
 
 /* Responsive */
 @media (max-width: 768px) {
+  .student-detail-view {
+    padding: 1rem 0.75rem;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .detail-header {
+    flex-wrap: wrap;
+  }
+
+  .page-title,
+  .detail-header h1 {
+    font-size: 1.45rem;
+  }
+
+  .appointments-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .tabs-container {
     overflow-x: auto;
     flex-wrap: nowrap;
+    max-width: 100%;
   }
   
   .tab-btn {

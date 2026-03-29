@@ -55,6 +55,22 @@
   color: #1a1a1a;
 }
 
+.dashboard-layout-mobile-title--logo {
+  display: flex;
+  align-items: center;
+  line-height: 0;
+  min-width: 0;
+}
+
+.dashboard-layout-mobile-logo {
+  display: block;
+  height: 28px;
+  width: auto;
+  max-width: min(200px, 55vw);
+  object-fit: contain;
+  object-position: left center;
+}
+
 /* Backdrop: only visible when sidebar open on mobile */
 .dashboard-layout-backdrop {
   display: none;
@@ -211,9 +227,11 @@
   }
 
   .dashboard-layout-main {
-    padding: 1rem;
-    padding-top: 0.5rem;
+    padding: 0.5rem 0.65rem 1rem;
+    padding-top: 0.35rem;
     min-height: calc(var(--app-height, 100vh) - 56px - env(safe-area-inset-top, 0px));
+    overflow-x: hidden;
+    box-sizing: border-box;
   }
 }
 

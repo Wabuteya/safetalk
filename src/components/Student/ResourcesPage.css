@@ -160,3 +160,9 @@
     max-width: 500px;
     line-height: 1.6;
   }
+
+@media (max-width: 767px) {
+  .resources-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

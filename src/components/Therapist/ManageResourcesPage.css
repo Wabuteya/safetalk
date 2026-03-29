@@ -86,3 +86,21 @@
   }
   .action-btn.edit { background-color: #ffc107; }
   .action-btn.delete { background-color: #dc3545; color: white; }
+
+@media (max-width: 767px) {
+  .manage-resources-layout .page-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .resource-modal .form-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .resources-table th,
+  .resources-table td {
+    padding: 0.65rem 0.5rem;
+    font-size: 0.85rem;
+  }
+}

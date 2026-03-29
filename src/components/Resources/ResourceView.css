@@ -461,7 +461,35 @@
 /* Responsive */
 @media (max-width: 768px) {
   .resource-view-container {
-    padding: 1rem;
+    padding: 1rem 0.75rem;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .page-title {
+    font-size: 1.45rem;
+  }
+
+  .resources-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .resource-search {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .filter-chips {
+    gap: 6px;
+  }
+
+  .resource-card {
+    padding: 16px;
   }
 }
 

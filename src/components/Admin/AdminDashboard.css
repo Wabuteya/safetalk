@@ -25,16 +25,34 @@
   border-radius: 14px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
   margin: 1rem;
+  min-height: 0;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  overflow-y: visible;
+}
+
+.admin-main-content main {
+  min-width: 0;
+  max-width: 100%;
+}
+
+@media (min-width: 768px) {
+  .admin-main-content {
+    min-height: min-content;
+  }
 }
 
 @media (max-width: 767px) {
   .admin-main-content {
-    padding: 1rem;
-    border-radius: 0;
+    padding: 1rem 0.75rem;
+    margin: 0.25rem 0 0.5rem;
+    border-radius: 12px;
   }
 }
 
-/* Admin Sidebar - Card/Tile Format */
+/* Admin Sidebar - height from DashboardLayout on desktop */
 .admin-sidebar {
   width: 280px;
   background-color: #ffffff;
@@ -45,10 +63,15 @@
   border-radius: 16px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   overflow: hidden;
-  margin: 12px 0 12px 12px;
-  height: calc(var(--app-height, 100vh) - 24px);
-  position: sticky;
-  top: 1.5rem;
+}
+
+@media (max-width: 767px) {
+  .admin-sidebar {
+    margin: 0;
+    border-radius: 0;
+    height: 100%;
+    max-height: 100%;
+  }
 }
 
 .admin-sidebar .sidebar-header {
@@ -206,15 +229,15 @@
 .admin-sidebar {
   background: #003DA5;
   border-radius: 16px;
-  margin: 12px 0 12px 12px;
-  height: calc(var(--app-height, 100vh) - 24px);
+  margin: 0;
+  height: auto;
   padding: 24px 16px;
   display: flex;
   flex-direction: column;
   color: #ffffff;
   box-shadow: none;
   max-height: none;
-  position: static;
+  position: relative;
 }
 
 .admin-sidebar .sidebar-header {
@@ -351,6 +374,16 @@
   }
 }
 
+@media (max-width: 767px) {
+  .analytics-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .analytics-title {
+    font-size: 1.45rem;
+  }
+}
+
 .admin-home .stat-card {
   background: #ffffff;
   border-radius: 14px;
@@ -411,4 +444,14 @@
 
 .admin-home .stat-card.resources {
   border-top: 4px solid #7B1D1D;
+}
+
+@media (max-width: 767px) {
+  .admin-home .stat-card {
+    padding: 18px 20px;
+  }
+
+  .stat-card-value {
+    font-size: 2.25rem;
+  }
 }

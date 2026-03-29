@@ -1,6 +1,6 @@
 /* Student Dashboard — UCU Identity */
 
-/* Sidebar — UCU Blue, floating panel */
+/* Sidebar — UCU Blue; desktop height from DashboardLayout column (does not scroll with main) */
 .sidebar {
   width: 280px;
   background: #003DA5;
@@ -10,11 +10,15 @@
   flex-shrink: 0;
   overflow: hidden;
   border-radius: 16px;
-  margin: 12px 0 12px 12px;
-  height: calc(var(--app-height, 100vh) - 24px);
-  max-height: calc(var(--app-height, 100vh) - 24px);
-  position: sticky;
-  top: 12px;
+}
+
+@media (max-width: 767px) {
+  .sidebar {
+    margin: 0;
+    border-radius: 0;
+    height: 100%;
+    max-height: 100%;
+  }
 }
 
 .sidebar-logo {
@@ -237,7 +241,7 @@
   font-size: 0.95rem;
 }
 
-/* Main content — contained card with gradient, not full-bleed */
+/* Main content — contained card; outer main (.dashboard-layout-main) scrolls on desktop */
 .dashboard-content {
   flex-grow: 1;
   background: linear-gradient(
@@ -246,17 +250,43 @@
     #F0E8E8 50%,
     #F5E6E6 100%
   );
-  min-height: calc(var(--app-height, 100vh) - 3rem);
+  min-height: 0;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
   padding: 40px;
-  overflow-y: auto;
+  overflow-x: hidden;
+  overflow-y: visible;
   border-radius: 14px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
   margin: 1rem;
 }
 
+@media (min-width: 768px) {
+  .dashboard-content {
+    min-height: min-content;
+  }
+}
+
 @media (max-width: 767px) {
   .dashboard-content {
-    padding: 1rem;
+    padding: 1rem 0.75rem;
+    margin: 0.25rem 0 0.5rem;
+    min-height: auto;
+    border-radius: 12px;
+  }
+
+  .welcome-title {
+    font-size: 1.65rem;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+  }
+
+  .dashboard-card {
+    padding: 18px;
   }
 }
 

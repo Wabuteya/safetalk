@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../supabaseClient';
+import { supabase, PWD_UPDATED_SESSION_FLAG } from '../supabaseClient';
 import './UpdatePasswordPage.css'; // Dedicated CSS file
 import PasswordInput from './PasswordInput';
 
@@ -74,29 +74,49 @@ const UpdatePasswordPage = () => {
                     // Start checking after a brief delay to let Supabase process the hash
                     setTimeout(checkSessionWithRetry, 500);
                 } else {
-                    // Check if we already have a session (user might have navigated here directly)
-                    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+                    // PKCE / async URL handling: code exchange may finish after first getSession()
+                    const searchParams = new URLSearchParams(
+                        typeof window !== 'undefined' ? window.location.search : ''
+                    );
+                    const hasPkceCode = !!searchParams.get('code');
+                    let pkceAttempts = 0;
+                    const pkceMaxAttempts = 12;
 
-                    if (sessionError) {
-                        console.error('Session error:', sessionError);
-                        if (mounted) {
-                            setError('Invalid or expired password reset link. Please request a new one.');
-                            setVerifyingSession(false);
+                    const tryFinishWithSession = async () => {
+                        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+                        if (sessionError) {
+                            console.error('Session error:', sessionError);
+                            if (mounted) {
+                                setError('Invalid or expired password reset link. Please request a new one.');
+                                setVerifyingSession(false);
+                            }
+                            return;
                         }
-                        return;
-                    }
 
-                    if (!session) {
+                        if (session) {
+                            if (mounted) setVerifyingSession(false);
+                            return;
+                        }
+
+                        if (hasPkceCode) {
+                            pkceAttempts++;
+                            if (pkceAttempts < pkceMaxAttempts && mounted) {
+                                setTimeout(tryFinishWithSession, 400);
+                            } else if (mounted) {
+                                setError('Could not verify your reset link. Please open the link again or request a new reset email.');
+                                setVerifyingSession(false);
+                            }
+                            return;
+                        }
+
                         if (mounted) {
                             setError('No active session found. Please click the link from your password reset email.');
                             setVerifyingSession(false);
                         }
-                        return;
-                    }
+                    };
 
-                    if (mounted) {
-                        setVerifyingSession(false);
-                    }
+                    await tryFinishWithSession();
                 }
             } catch (err) {
                 console.error('Error verifying session:', err);
@@ -158,7 +178,13 @@ const UpdatePasswordPage = () => {
             clearTimeout(timeoutId);
 
             if (error) throw error;
-            
+
+            try {
+              sessionStorage.setItem(PWD_UPDATED_SESSION_FLAG, String(Date.now()));
+            } catch {
+              /* ignore */
+            }
+
             // LOGIC: Now that the password is updated, log them in and redirect
             // The updated user data is in data.user
             const userRole = data.user.user_metadata?.role;

@@ -4,6 +4,7 @@ import {
   Route,
   Routes
 } from 'react-router-dom';
+import AuthRecoveryRouteSync from './components/AuthRecoveryRouteSync';
 import LandingPage from './components/Landing/LandingPage';
 import Login from './components/Auth/Login';
 import Dashboard from './components/Student/Dashboard';
@@ -111,6 +112,7 @@ const AppRoutes = () => {
 
 const App = () => (
   <BrowserRouter>
+    <AuthRecoveryRouteSync />
     <AppRoutes />
   </BrowserRouter>
 );

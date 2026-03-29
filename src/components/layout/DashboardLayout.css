@@ -78,7 +78,7 @@
   z-index: 1000;
 }
 
-/* Main content — fill viewport height to match sidebar */
+/* Main content — scrolls on desktop; grows on mobile */
 .dashboard-layout-main {
   flex-grow: 1;
   min-width: 0;
@@ -93,8 +93,17 @@
   min-height: 0;
 }
 
-/* Desktop: sidebar inline, no topbar/backdrop */
+/* Desktop: lock viewport — sidebar fixed in row, only main scrolls */
 @media (min-width: 768px) {
+  .dashboard-layout-root.portal-layout {
+    height: var(--app-height, 100vh);
+    max-height: var(--app-height, 100vh);
+    min-height: 0;
+    overflow: hidden;
+    align-items: stretch;
+    box-sizing: border-box;
+  }
+
   .dashboard-layout-root {
     padding: 1.5rem;
     gap: 1.5rem;
@@ -111,10 +120,47 @@
   .dashboard-layout-sidebar {
     position: relative;
     transform: none;
+    display: flex;
+    flex-direction: column;
+    align-self: stretch;
+    min-height: 0;
+    max-height: 100%;
+    overflow: hidden;
+    padding: 12px 0 12px 12px;
+    box-sizing: border-box;
+  }
+
+  /* Sidebars fill the column; inner nav scrolls its own list if needed */
+  .dashboard-layout-sidebar .sidebar,
+  .dashboard-layout-sidebar .therapist-sidebar,
+  .dashboard-layout-sidebar .admin-sidebar {
+    flex: 1 1 0;
+    min-height: 0;
+    min-width: 0;
+    margin: 0;
+    height: auto;
+    max-height: none;
+    position: relative;
+    top: auto;
+    align-self: stretch;
   }
 
   .dashboard-layout-main {
     padding: 0;
+    display: block;
+    flex: 1 1 0%;
+    min-width: 0;
+    min-height: 0;
+    max-height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .dashboard-layout-main > div {
+    flex: none;
+    min-height: 0;
+    width: 100%;
   }
 }
 

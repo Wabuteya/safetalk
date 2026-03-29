@@ -18,11 +18,17 @@ const Login = () => {
     e.preventDefault();
     setError('');
 
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail || !password) {
+      setError('Please enter your email and password.');
+      return;
+    }
+
     try {
       console.log('Attempting login...');
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: email,
-        password: password,
+        email: trimmedEmail,
+        password,
       });
 
       if (error) {
@@ -258,7 +264,7 @@ const Login = () => {
           <p className="login-subtitle">Your confidential space for mental health support.</p>
         </header>
 
-        <form onSubmit={handleEmailLogin} className="login-form" noValidate>
+        <form onSubmit={handleEmailLogin} className="login-form">
           <label className="input-group">
             <span className="input-label">Email</span>
             <input

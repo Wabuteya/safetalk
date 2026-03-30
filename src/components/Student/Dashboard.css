@@ -404,6 +404,14 @@
   color: #003DA5;
   font-weight: 700;
   font-size: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.dashboard-latest-mood .latest-mood-emoji {
+  font-size: 1.35rem;
+  line-height: 1;
 }
 
 .dashboard-latest-mood .latest-mood-link {

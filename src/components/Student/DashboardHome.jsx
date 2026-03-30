@@ -7,6 +7,7 @@ import UpcomingAppointmentsWidget from './UpcomingAppointmentsWidget';
 import MessageOfTheDay from './MessageOfTheDay';
 
 const moodLabel = (value) => MOOD_OPTIONS.find((o) => o.value === value)?.label || value;
+const moodEmoji = (value) => MOOD_OPTIONS.find((o) => o.value === value)?.emoji || '';
 
 const DashboardHome = () => {
   const navigate = useNavigate();
@@ -93,7 +94,12 @@ const DashboardHome = () => {
       {latestMood && (
         <div className="dashboard-latest-mood mood-bar">
           <span className="latest-mood-label mood-label">How you're feeling:</span>
-          <span className="latest-mood-value mood-value">{moodLabel(latestMood.mood)}</span>
+          <span className="latest-mood-value mood-value">
+            <span className="latest-mood-emoji" aria-hidden="true">
+              {moodEmoji(latestMood.mood)}
+            </span>
+            {moodLabel(latestMood.mood)}
+          </span>
           {latestMood.note && (
             <p className="latest-mood-note">&ldquo;{latestMood.note}&rdquo;</p>
           )}
